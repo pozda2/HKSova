@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+{% include "_header.jinja" %}
+
+<body><div id="page">
+	{% include "_menu.jinja" %}
+	<div id="content">
+		{% with messages = get_flashed_messages(with_categories=true) %}
+			{% if messages %}
+				{% for category, message in messages %}
+					<div class="flash {{category}}">{{ message }}</div>
+				{% endfor %}
+			{% endif %}
+		{% endwith %}
+
+		<div class="padding">
+		{% block main %} {% endblock %}
+		</div>
+	</div>
+</div>
+</body>
+</html>
+

@@ -1,0 +1,17 @@
+<div id="menu">
+<div class="padding border">
+	<div class="logo">
+		<h1>Hradecká sova&nbsp;{{ rok }}</h1>
+		<img src={{url_for("static", filename="img/sova_bila_mala.png")}} title="Logo Hradecká sova" alt="Logo Hradecká sova" />
+	</div>
+
+	<div n:snippet="menu" id="collapsiblemenu" class="collapsed">
+		<ul>
+			<li><a href="{{ url_for('main.view_index') }}" title="informace o hře">Informace o hře</a></li>
+			<li><a href="{{ url_for('team.view_registration') }}" title="Registrace">Registrace</a></li>
+			<li><a href="{{ url_for('team.view_teams') }}" title="Registrace">Týmy</a></li>
+			<li><a href="javascript:void(0);" class="icon" onclick="toggleMenu()">&#9776;</a></li>
+		</ul>
+	</div>
+</div>
+</div>

@@ -1,0 +1,9 @@
+Flask==2.1.2
+Flask-MDEditor==0.1.4
+Flask-MySQLdb==1.0.1
+Flask-WTF==1.0.1
+mistune==2.0.2
+mysqlclient==2.1.0
+python-dateutil==2.8.2
+passlib==1.7.4
+email-validator==1.2.1
