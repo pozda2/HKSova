@@ -3,7 +3,6 @@ Vagrantfile
 __pycache__
 docker-compose.yml
 database/localhost.sql
-<<<<<<< HEAD
 bootstrap.sh
 .gitignore
 REST.txt
@@ -12,8 +11,6 @@ configs/docker.py
 hksova/configs/docker.py
 hksova/configs/default.py
 docker-compose.yml
-=======
 configs/docker.py
 configs/setevars.sh
 
->>>>>>> 282452f71dba27b048abe1a244c963c0bda29ff7

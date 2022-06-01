@@ -8,7 +8,7 @@ from flask import flash
 
 from .form import *
 from .model import *
-from ..Year.model import *
+from ..year.model import *
 
 team = Blueprint("team", __name__)
 

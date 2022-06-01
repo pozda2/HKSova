@@ -7,7 +7,7 @@ from flask import request
 import mistune
 from mistune.plugins import plugin_table
 
-from ..Year.model import *
+from ..year.model import *
 
 main = Blueprint("main", __name__)
 

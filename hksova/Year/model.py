@@ -2,7 +2,7 @@ import time
 from flask import current_app
 import re
 
-from ..Settings.model import *
+from ..settings.model import *
 
 def get_current_year():
     cursor = current_app.mysql.connection.cursor()  

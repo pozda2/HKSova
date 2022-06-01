@@ -5,9 +5,9 @@ from flask_wtf.csrf import CSRFProtect
 from flask_mdeditor import MDEditor
 from flask import render_template
 
-from .Page import main
-from .Team import team
-# from .Settings import settings
+from .page import main
+from .team import team
+# from .settings import settings
 
 def create_flask_app():
     flask_app = Flask(__name__)

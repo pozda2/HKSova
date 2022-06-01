@@ -5,7 +5,7 @@ from flask import current_app
 from passlib.hash import sha256_crypt
 from datetime import datetime
 
-from hksova.Settings.model import get_max_teams
+from hksova.settings.model import get_max_teams
 
 def is_unique_name(year, name):
     cursor = current_app.mysql.connection.cursor()

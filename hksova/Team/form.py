@@ -7,7 +7,7 @@ from wtforms import BooleanField
 from wtforms import FieldList, FormField
 from wtforms.validators import InputRequired, length, Email, ValidationError
 
-from ..Year.model import *
+from ..year.model import *
 
 def validate_url(form, field):
     if field.data:
