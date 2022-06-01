@@ -11,7 +11,7 @@ def get_current_year():
 	return data[0]['idYear']
 
 def get_year(blueprint_year):
-	pattern = re.compile(r'.+_(\d+)$')
+	pattern = re.compile(r'.+?(\d+)$')
 	if (pattern.match(blueprint_year)):
 		return pattern.search(blueprint_year).groups()[0]
 	else:

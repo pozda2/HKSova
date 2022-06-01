@@ -16,19 +16,36 @@ team = Blueprint("team", __name__)
 def view_login():
 	login_form = LoginForm()
 	year=get_year(request.blueprint)
-	return render_template("Team/login.jinja", form=login_form, title="Přihlášení", year=year)
+	if year == str(get_current_year()):
+		return render_template("Team/login.jinja", form=login_form, title="Přihlášení", year=year)
+	else:
+		flash ("Lze se přihlásit pouze do aktuálního ročníku", "error")
+		return redirect (url_for("main.view_index"))
 
 @team.route("/login/", methods=["POST"])
 def login_team():
+	year=get_year(request.blueprint)
+	if year != str(get_current_year()):
+		flash ("Lze se přihlásit pouze do aktuálního ročníku", "error")
+		return redirect (url_for("main.view_index"))
+
 	login_form = LoginForm(request.form)
 	if login_form.validate():
-		if (login_form.loginname.data=="admin" and login_form.password.data=="admin"):
+		if (check_password_team(year, login_form.loginname.data, login_form.password.data)):
 			session["logged"] = True
+			session["org"]=False
+			session["team"] = login_form.loginname.data
+			flash("Úspěšné přihlášení", "info")
+			return redirect (url_for("main.view_index"))
+		elif (check_password_org(login_form.loginname.data, login_form.password.data)):
+			session["logged"] = True
+			session["org"]=True
+			session["team"] = "org"
 			flash("Úspěšné přihlášení", "info")
 			return redirect (url_for("main.view_index"))
 		else:
 			flash("Chybné uživatelské jméno nebo heslo.", "error")
-			return render_template("Team/login.jinja", form=login_form)
+			return render_template("Team/login.jinja", form=login_form, year=year)
 	else:
 		for error in login_form.errors:
 			flash (f'{error} nezadán', "error")
@@ -37,8 +54,10 @@ def login_team():
 @team.route("/logout/", methods=["GET"])
 def logout_team():
 	session.pop("logged")
+	session.pop("org")
+	session.pop("team")
 	flash("Úspěšné odhlášení", "info")
-	return redirect (url_for("view_index"))
+	return redirect (url_for("main.view_index"))
 
 @team.route("/registration/", methods=["GET"])
 def view_registration():
@@ -54,7 +73,7 @@ def view_registration():
 	if (is_registration_open(year)):
 		return render_template("Team/registration.jinja", form=registration_form, title="Registrace", year=year, reg_from=reg_from, reg_to=reg_to, min_players=min_players, max_players=max_players)
 	else:
-		return (render_template("Team/registration_close.jinja", reg_from=reg_from, reg_to=reg_to, title="Registrace", year=year))
+		return (render_template("Team/registration_closed.jinja", reg_from=reg_from, reg_to=reg_to, title="Registrace", year=year))
 
 @team.route("/registration/", methods=["POST"])
 def register_team():
@@ -113,11 +132,9 @@ def register_team():
 			
 		return render_template("Team/registration.jinja", form=registration_form, year=year)
 
-
 @team.route("/teams/", methods=["GET"])
 def view_teams():
 	year=get_year(request.blueprint)
 	teams=get_teams(year)
-#	print (teams)
 	return render_template("Team/teams.jinja", title="Týmy", year=year, teams=teams)
 

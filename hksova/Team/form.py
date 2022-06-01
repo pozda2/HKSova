@@ -44,8 +44,8 @@ class PlayerForm(FlaskForm):
 	age = StringField("Věk", validators=[validate_age])
 
 class RegistrationForm (FlaskForm):
-	name = StringField("Název týmu", validators=[InputRequired(), length(min=3, max=100, message='Délka názvu týmu musí být v rozsahu 3-100) znaků')])
-	loginname = StringField("Přihlašovací jméno", validators=[InputRequired(), length(min=3, max=100, message='Délka přihlašovacího jména musí být v rozsahu 3-100) znaků')])
+	name = StringField("Název týmu", validators=[InputRequired(), length(min=1, max=100, message='Délka názvu týmu musí být v rozsahu 1-100) znaků')])
+	loginname = StringField("Přihlašovací jméno", validators=[InputRequired(), length(min=4, max=100, message='Délka přihlašovacího jména musí být v rozsahu 4-100) znaků')])
 	password = PasswordField("Heslo", validators=[InputRequired(), length(min=6, max=100, message='Délka hesla musí být v rozsahu (6-100) znaků')])
 	password2 = PasswordField("Heslo znovu", validators=[InputRequired(), length(min=6, max=100, message='Délka hesla musí být v rozsahu (6-100) znaků')])
 	email = StringField("Email", validators=[InputRequired(), length(max=255, message='Maximální délka email je 255 znaků'), Email()])

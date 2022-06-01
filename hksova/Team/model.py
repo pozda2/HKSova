@@ -77,9 +77,54 @@ def get_registred_num_teams(year):
 	data=cursor.fetchall()
 	return data[0]['count']
 
+def check_password_org (login, password):
+	# password for org stored in table settings
+	if (login == 'org'):
+		try:
+			cursor = current_app.mysql.connection.cursor()
+			cursor.execute('''select param, value from setting where idyear is null''')
+			data = cursor.fetchall()
+			hash_in_setting=None
+			salt_in_setting=None
+
+			for param in data:
+				if param['param']=='org-pass':
+					hash_in_setting=param['value']
+				elif param['param']=='org-salt':
+					salt_in_setting=param['value']
+
+			if hash_in_setting and salt_in_setting:
+				return sha256_crypt.verify(current_app.config['SECRET_PEPPER'] + password + salt_in_setting, hash_in_setting)
+			else:
+				return False
+		except Exception as e:
+			return False
+	else:
+		return False
+
+def check_password_team (year, login, password):
+	# password for team stored in table team
+	try:
+		cursor = current_app.mysql.connection.cursor()
+		cursor.execute('''select pass, salt from team where idyear = %s and login = %s''', [year, login])
+		data = cursor.fetchall()
+		
+		hash_in_table=None
+		salt_in_table=None
+		for team in data:
+			hash_in_table=team['pass']
+			salt_in_table=team['salt']
+
+		if hash_in_table and salt_in_table:
+			return sha256_crypt.verify(current_app.config['SECRET_PEPPER'] + password + salt_in_table, hash_in_table)
+		else:
+			return False
+	except Exception as e:
+		return False
+
 def create_team (form, year):
 	salt=secrets.token_hex(20)
-	password = sha256_crypt.encrypt(current_app.config['SECRET_PEPPER'] + form.password.data + salt)
+	password = sha256_crypt.hash(current_app.config['SECRET_PEPPER'] + form.password.data + salt)
 	mascot=get_unique_mascot(year)
 	today=datetime.now()
 	
@@ -99,7 +144,6 @@ def create_team (form, year):
 		idteam=cursor.lastrowid
 		
 	except Exception as e:
-		print (str(e))
 		return False, "Problem inserting into db: " + str(e)
 
 	# vlozeni hracu tymu
@@ -169,7 +213,6 @@ def get_teams(year):
 			team['order']=i
 			team['zaplaceno']=get_team_status_paid(team)
 			team['stav']=get_team_status(team)
-
 			i+=1
 	return data
 

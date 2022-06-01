@@ -32,6 +32,12 @@ Rename and change
 - configs/docker.py.sample
 - docker-compose.yml.sample
 
+Random key generation
+```
+import secrets
+print (token_urlsafe(20))
+```
+
 ```
 sudo docker-compose up --build
 docker exec -i hksova_database_1 mysql -uuser -ppassword database < database.sql

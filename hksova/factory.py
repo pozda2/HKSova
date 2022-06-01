@@ -33,13 +33,14 @@ def create_flask_app():
 
 	csrf = CSRFProtect(flask_app)
 
+	# blueprinty budou v cyklu podle select * from year
 	flask_app.register_blueprint (main)
-	#flask_app.register_blueprint (main, name="2021", url_prefix="/2021")
+	flask_app.register_blueprint (main, name="main2022", url_prefix="/2022")
+	flask_app.register_blueprint (main, name="main2021", url_prefix="/2021")
 
 	flask_app.register_blueprint (team)
-	#flask_app.register_blueprint (team, name="team_2021", url_prefix="/2021")
-	flask_app.register_blueprint (team, name="team_2022", url_prefix="/2022")
-
+	flask_app.register_blueprint (team, name="team2022", url_prefix="/2022")
+	flask_app.register_blueprint (team, name="team2021", url_prefix="/2021")
 
 	@flask_app.errorhandler(500)
 	def internal_server_error(error):

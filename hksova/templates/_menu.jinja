@@ -1,15 +1,28 @@
 <div id="menu">
 <div class="padding border">
 	<div class="logo">
-		<h1>Hradecká sova&nbsp;{{ rok }}</h1>
+		<h1>Hradecká sova&nbsp;{{ year }}</h1>
 		<img src={{url_for("static", filename="img/sova_bila_mala.png")}} title="Logo Hradecká sova" alt="Logo Hradecká sova" />
 	</div>
 
 	<div n:snippet="menu" id="collapsiblemenu" class="collapsed">
 		<ul>
-			<li><a href="{{ url_for('main.view_index') }}" title="informace o hře">Informace o hře</a></li>
-			<li><a href="{{ url_for('team.view_registration') }}" title="Registrace">Registrace</a></li>
-			<li><a href="{{ url_for('team.view_teams') }}" title="Registrace">Týmy</a></li>
+			{% if session.org %}
+			<li>Admin is logged
+			{% endif %}
+			<li><a href="{{ url_for('main' ~ year ~ '.view_index') }}" title="informace o hře">Informace o hře</a></li>
+			{% if session.logged %}
+			<li><a href="{{ url_for('team' ~ year ~ '.logout_team') }}" title="Odhlášení">Odhlášení</a></li>
+			{% else %}
+			<li><a href="{{ url_for('team' ~ year ~ '.view_registration') }}" title="Registrace">Registrace</a></li>
+			<li><a href="{{ url_for('team' ~ year ~ '.login_team') }}" title="Přihlášení">Přihlášení</a></li>
+			{% endif%}
+			<li><a href="{{ url_for('team' ~ year ~ '.view_teams') }}" title="Týmy">Týmy</a></li>
+			
+
+			<li><a href="{{ url_for('main2022.view_index') }}" title="informace o hře">Ročník 2022</a></li>
+			<li><a href="{{ url_for('main2021.view_index') }}" title="informace o hře">Ročník 2021</a></li>
+
 			<li><a href="javascript:void(0);" class="icon" onclick="toggleMenu()">&#9776;</a></li>
 		</ul>
 	</div>

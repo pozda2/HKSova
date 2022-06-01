@@ -2,3 +2,11 @@ Vagrantfile
 .vagrant
 __pycache__
 database/localhost.sql
+bootstrap.sh
+.gitignore
+REST.txt
+database/db_init.sh
+configs/docker.py
+hksova/configs/docker.py
+hksova/configs/default.py
+docker-compose.yml
