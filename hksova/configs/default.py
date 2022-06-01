@@ -1,5 +1,7 @@
 import os
 
+DEBUG = os.environ.get("HKSOVA_CONFIG_DEBUG", False)
+
 SECRET_KEY = os.environ.get("HKSOVA_CONFIG_SECRET_KEY", None)
 SECRET_PEPPER = os.environ.get("HKSOVA_CONFIG_SECRET_PEPPER", None)
 
