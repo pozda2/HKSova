@@ -34,6 +34,6 @@ Rename and change
 
 ```
 sudo docker-compose up --build
-docker exec -i hksova_database_1 mysql -uhksova -pdLxtYFQDAQzJEcSbHM9bEY osjak_cz3 < database.sql
+docker exec -i hksova_database_1 mysql -uuser -ppassword database < database.sql
 sudo docker-compose up -d
 ```
