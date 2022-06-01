@@ -1,4 +1,8 @@
 Vagrantfile
 .vagrant
 __pycache__
+docker-compose.yml
 database/localhost.sql
+configs/docker.py
+configs/setevars.sh
+
