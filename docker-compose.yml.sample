@@ -1,0 +1,39 @@
+version: "3"
+services:
+    website:
+        build: .
+        networks:
+            - nginx_network
+            - database_network
+        depends_on:
+            - database
+
+    nginx:
+        image: nginx:mainline-alpine
+        volumes:
+            - ./configs/nginx/docker_hksova.conf:/etc/nginx/conf.d/default.conf:ro
+        ports:
+            - 80:80
+        depends_on:
+            - website
+        networks:
+            - nginx_network
+
+    database:
+      image: mariadb:10.2
+      environment:
+        MYSQL_ROOT_PASSWORD: CHANGE_ME
+        MYSQL_DATABASE: CHANGE_ME
+        MYSQL_USER: CHANGE_ME
+        MYSQL_PASSWORD: CHANGE_ME
+      restart: on-failure
+      volumes:
+        - ${PWD}/mariadb:/var/lib/mysql
+      networks:
+        - database_network
+
+networks:
+    nginx_network:
+        driver: bridge
+    database_network:
+        driver: bridge
