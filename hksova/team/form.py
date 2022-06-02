@@ -56,3 +56,7 @@ class RegistrationForm (FlaskForm):
     agree2 = BooleanField ("Všichni účastnici dávají souhlas se shromažďováním osobních údajů pro účel uspořádání hry a evidenci hráčů, výsledků.", validators=[InputRequired()])
     players = FieldList(FormField(PlayerForm))
 
+class PasswordChangeForm (FlaskForm):
+    password_old = PasswordField("Staré heslo", validators=[InputRequired(), length(min=6, max=100)])
+    password1 = PasswordField("Nové heslo", validators=[InputRequired(), length(min=6, max=100)])
+    password2 = PasswordField("Nové heslo znovu", validators=[InputRequired(), length(min=6, max=100)])

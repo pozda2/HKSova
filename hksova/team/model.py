@@ -106,7 +106,7 @@ def check_password_team (year, login, password):
     # password for team stored in table team
     try:
         cursor = current_app.mysql.connection.cursor()
-        cursor.execute('''select pass, salt from team where idyear = %s and login = %s''', [year, login])
+        cursor.execute('''select pass, salt from team where idyear = %s and login = %s and isDeleted=0''', [year, login])
         data = cursor.fetchall()
         
         hash_in_table=None
@@ -215,6 +215,22 @@ def get_teams(year):
             team['stav']=get_team_status(team)
             i+=1
     return data
+
+def change_team_pass (year, login, password_old, password_new):
+    if (check_password_team (year, login, password_old)):
+        salt=secrets.token_hex(20)
+        hash_new = sha256_crypt.hash(current_app.config['SECRET_PEPPER'] + password_new + salt)
+
+        print (password_new)
+
+        try:
+            cursor = current_app.mysql.connection.cursor()
+            cursor.execute('''UPDATE team set pass=%s, salt=%s where idyear=%s and login=%s ''', [hash_new, salt, year, login])        
+        except Exception as e:
+            return False, "Problem updating db: " + str(e)
+        return True, ""
+    else:
+        return False, "Nesprávné staré heslo"
 
 
 

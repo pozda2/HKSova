@@ -31,7 +31,7 @@ def view_index():
     #markdown = mistune.create_markdown(escape=False, plugins=['table'])
     #t=markdown(texy)
 
-    r = make_response(render_template("Page/page.jinja", text=data[0]['html'], title="Informace", year=year))
+    r = make_response(render_template("page/page.jinja", text=data[0]['html'], title="Informace", year=year))
     #r.headers.set('Content-Security-Policy', "default-src 'self'")
     r.headers.set('X-Content-Type-Options', 'nosniff')
     r.headers.set('X-Frame-Options', 'SAMEORIGIN')

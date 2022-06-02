@@ -11,7 +11,9 @@
             <li>Admin is logged
             {% endif %}
             <li><a href="{{ url_for('main' ~ year ~ '.view_index') }}" title="informace o hře">Informace o hře</a></li>
+
             {% if session.logged %}
+            <li><a href="{{ url_for('team' ~ year ~ '.view_password_change') }}" title="Změna hesla">Změna hesla</a></li>
             <li><a href="{{ url_for('team' ~ year ~ '.logout_team') }}" title="Odhlášení">Odhlášení</a></li>
             {% else %}
             <li><a href="{{ url_for('team' ~ year ~ '.view_registration') }}" title="Registrace">Registrace</a></li>
