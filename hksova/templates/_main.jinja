@@ -1,14 +1,14 @@
 <!DOCTYPE html>
+
 {% include "_header.jinja" %}
 
 <body>
 <div class='dashboard'>
-    {% include "_menu.jinja" %}
-
+{% include "_menu.jinja" %}
     <div class='dashboard-app'>
         <header class='dashboard-toolbar'>
             <a href="#!" class="menu-toggle"><i class="fas fa-bars"></i></a>
-            <h1>Hradecká sova {{ year }}</h1>
+            <h1>Hradecká sova {{ year.year }}</h1>
         </header>
         <div class='dashboard-content'>
             <div class='container'>

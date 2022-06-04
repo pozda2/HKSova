@@ -9,23 +9,26 @@
             <a href="#" class="dashboard-nav-item">Administrace</a>
         {% endif %}
 
-        <a href="{{ url_for('main' ~ year ~ '.view_index') }}" title="informace o hře" class="dashboard-nav-item">Informace</a>
-        <a href="{{ url_for('team' ~ year ~ '.view_teams') }}" title="Týmy" class="dashboard-nav-item">Týmy </a>
+        <a href="{{ url_for('main' ~ year.year ~ '.view_index') }}" title="informace o hře" class="dashboard-nav-item">Informace</a>
+        <a href="{{ url_for('team' ~ year.year ~ '.view_teams') }}" title="Týmy" class="dashboard-nav-item">Týmy </a>
 
         {% if session.logged %}
-            
+            {% if year.is_current_year %}
             <div class='dashboard-nav-dropdown'><a href="#!" class="dashboard-nav-item dashboard-nav-dropdown-toggle"></i> Můj tým </a>
                 <div class='dashboard-nav-dropdown-menu'>
-                <a href="{{ url_for('team' ~ year ~ '.view_password_change') }}" title="Změna hesla" class="dashboard-nav-item">Změna hesla</a>
-                <a href="{{ url_for('team' ~ year ~ '.view_registration_cancel') }}" title="Zrušení registrace" class="dashboard-nav-item">Zrušení registrace</a>
-                <a href="{{ url_for('team' ~ year ~ '.logout_team') }}" title="Odhlášení" class="dashboard-nav-item">Odhlášení</a>
+                <a href="{{ url_for('team' ~ year.year ~ '.view_team') }}" title="Údaje o týmu" class="dashboard-nav-item">Údaje o týmu</a>
+                <a href="{{ url_for('team' ~ year.year ~ '.view_password_change') }}" title="Změna hesla" class="dashboard-nav-item">Změna hesla</a>
+                <a href="{{ url_for('team' ~ year.year ~ '.view_registration_cancel') }}" title="Zrušení registrace" class="dashboard-nav-item">Zrušení registrace</a>
+                <a href="{{ url_for('team' ~ year.year ~ '.logout_team') }}" title="Odhlášení" class="dashboard-nav-item">Odhlášení</a>
                 </div>
             </div>
+            {% endif %}
         {% else %}
-            <a href="{{ url_for('team' ~ year ~ '.view_registration') }}" title="Registrace" class="dashboard-nav-item ">Registrace</a>
-            <a href="{{ url_for('team' ~ year ~ '.login_team') }}" title="Přihlášení" class="dashboard-nav-item ">Přihlášení</a>
+            {% if year.is_current_year %}
+                <a href="{{ url_for('team' ~ year.year ~ '.view_registration') }}" title="Registrace" class="dashboard-nav-item ">Registrace</a>
+                <a href="{{ url_for('team' ~ year.year ~ '.login_team') }}" title="Přihlášení" class="dashboard-nav-item ">Přihlášení</a>
+            {% endif %}
         {% endif%}
-
 
           <div class="nav-item-divider"></div>
           <a href="{{ url_for('main2022.view_index') }}" title="informace o hře" class="dashboard-nav-item">Ročník 2022 </a>

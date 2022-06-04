@@ -12,7 +12,15 @@ def get_current_year():
 
 def get_year(blueprint_year):
     pattern = re.compile(r'.+?(\d+)$')
+    year={}
     if (pattern.match(blueprint_year)):
-        return str(pattern.search(blueprint_year).groups()[0])
+        year['year']=str(pattern.search(blueprint_year).groups()[0])
+        if year['year'] == get_current_year():
+            year['is_current_year']=True
+        else:
+            year['is_current_year']=False
+        return  year
     else:
-        return get_current_year()
+        year['year']=get_current_year()
+        year['is_current_year']= True
+        return year

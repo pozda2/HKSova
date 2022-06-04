@@ -9,7 +9,7 @@ from hksova.settings.model import get_max_teams
 
 def is_unique_name(year, name):
     cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''SELECT name FROM team where idYear=%s and name=%s''', [year, name])
+    cursor.execute('''SELECT name FROM team where idYear=%s and name=%s''', [year['year'], name])
     data = cursor.fetchall()
     if (len(data)==0):
         return True
@@ -18,7 +18,7 @@ def is_unique_name(year, name):
 
 def is_unique_loginname(year, name):
     cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''SELECT name FROM team where idYear=%s and login=%s''', [year, name])
+    cursor.execute('''SELECT name FROM team where idYear=%s and login=%s''', [year['year'], name])
     data = cursor.fetchall()
     if (len(data)==0):
         return True
@@ -27,7 +27,7 @@ def is_unique_loginname(year, name):
 
 def is_unique_email(year, email):
     cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''SELECT email FROM team where idYear=%s and email=%s''', [year, email])
+    cursor.execute('''SELECT email FROM team where idYear=%s and email=%s''', [year['year'], email])
     data = cursor.fetchall()
     if (len(data)==0):
         return True
@@ -54,7 +54,7 @@ def get_mascots():
 
 def get_used_mascot(year):
     cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''SELECT mascot FROM team where idYear=%s''', [year])
+    cursor.execute('''SELECT mascot FROM team where idYear=%s''', [year['year']])
     data = cursor.fetchall()
     return data
 
@@ -73,7 +73,7 @@ def get_unique_mascot(year):
 
 def get_registred_num_teams(year):
     cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''SELECT count(idTeam) as count FROM team where idYear=%s and isBackup=0''', [year])
+    cursor.execute('''SELECT count(idTeam) as count FROM team where idYear=%s and isBackup=0''', [year['year']])
     data=cursor.fetchall()
     return data[0]['count']
 
@@ -106,7 +106,7 @@ def check_password_team (year, login, password):
     # password for team stored in table team
     try:
         cursor = current_app.mysql.connection.cursor()
-        cursor.execute('''select pass, salt from team where idyear = %s and login = %s and isDeleted=0''', [year, login])
+        cursor.execute('''select pass, salt from team where idyear = %s and login = %s and isDeleted=0''', [year['year'], login])
         data = cursor.fetchall()
         
         hash_in_table=None
@@ -174,6 +174,19 @@ def get_team_players(idteam):
 def players_to_string(players):
     hraci=''
     for player in players:
+        if player['name']:
+            name=player['name']
+        else:
+            name='Anonymous'
+        if hraci:
+            hraci+=", "+name
+        else:
+            hraci=name
+    return hraci
+
+def players_to_public_string(players):
+    hraci=''
+    for player in players:
         if player['publicname']:
             name=player['publicname']
         else:
@@ -199,9 +212,9 @@ def get_team_status(team):
         else:
             return 'Registrováni'
     
-def get_teams(year):
+def get_teams_not_deleted(year):
     cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''SELECT  idteam, name, login, mascot, email, mobil, weburl, reporturl, isPaid, isBackup, isDeleted, registeredAt FROM team where idYear=%s and isdeleted=0 order by isBackup, registeredAt''', [year])
+    cursor.execute('''SELECT  idteam, name, login, mascot, email, mobil, weburl, reporturl, isPaid, isBackup, isDeleted, registeredAt FROM team where idYear=%s and isdeleted=0 order by isBackup, registeredAt''', [year['year']])
     data=cursor.fetchall()
 
     # podrobnosti o tymu
@@ -209,6 +222,7 @@ def get_teams(year):
         i=1
         for team in data:
             players=get_team_players(team['idteam'])
+            team['players_public']=players_to_public_string(players)
             team['players']=players_to_string(players)
             team['order']=i
             team['zaplaceno']=get_team_status_paid(team)
@@ -216,13 +230,29 @@ def get_teams(year):
             i+=1
     return data
 
+def get_team(year, login):
+    cursor = current_app.mysql.connection.cursor()
+    cursor.execute('''SELECT  idteam, name, login, mascot, email, mobil, weburl, reporturl, isPaid, isBackup, isDeleted, registeredAt FROM team where idYear=%s and isdeleted=0 and login=%s order by isBackup, registeredAt''', [year['year'], login])
+    data=cursor.fetchall()
+
+    # podrobnosti o tymu
+    if (data):
+        team=data[0]
+        players=get_team_players(team['idteam'])
+        team['players']=players_to_string(players)
+        team['zaplaceno']=get_team_status_paid(team)
+        team['stav']=get_team_status(team)
+        return team
+    else:
+        return None
+
 def change_team_pass (year, login, password_old, password_new):
     if (check_password_team (year, login, password_old)):
         salt=secrets.token_hex(20)
         hash_new = sha256_crypt.hash(current_app.config['SECRET_PEPPER'] + password_new + salt)
         try:
             cursor = current_app.mysql.connection.cursor()
-            cursor.execute('''UPDATE team set pass=%s, salt=%s where idyear=%s and login=%s ''', [hash_new, salt, year, login])
+            cursor.execute('''UPDATE team set pass=%s, salt=%s where idyear=%s and login=%s ''', [hash_new, salt, year['year'], login])
             current_app.mysql.connection.commit()
         except Exception as e:
             return False, "Problem updating db: " + str(e)
@@ -233,7 +263,7 @@ def change_team_pass (year, login, password_old, password_new):
 def cancel_registration (year, login):
     try:
         cursor = current_app.mysql.connection.cursor()
-        cursor.execute('''UPDATE team set isDeleted=%s where idyear=%s and login=%s ''', [1, year, login])
+        cursor.execute('''UPDATE team set isDeleted=%s where idyear=%s and login=%s ''', [1, year['year'], login])
     except Exception as e:
         return False, "Problem updating db: " + str(e)
 
@@ -246,7 +276,7 @@ def cancel_registration (year, login):
 
 def recalculate_teams(year):
     max_teams = get_max_teams(year)
-    teams = get_teams(year)
+    teams = get_teams_not_deleted(year)
     count=0
     cursor = current_app.mysql.connection.cursor()
     for team in teams:
@@ -256,7 +286,7 @@ def recalculate_teams(year):
             isBackup=1
         count+=1
         try:
-            cursor.execute('''UPDATE team set isBackup=%s where idyear=%s and login=%s ''', [isBackup, year, team['login']])
+            cursor.execute('''UPDATE team set isBackup=%s where idyear=%s and login=%s ''', [isBackup, year['year'], team['login']])
         except Exception as e:
             return False, "Problem calculation db: " + str(e)
         

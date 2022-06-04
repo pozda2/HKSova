@@ -3,7 +3,7 @@
 
 <h2>Zrušení registrace týmu {{ session.team }}</h2>
 
-<form {{url_for('team' ~ year ~ ".registration_cancel")}} method="post">
+<form {{url_for('team' ~ year.year ~ ".registration_cancel")}} method="post">
     {{ form.csrf_token }}
      <div class="form-row">
         {{ form.agree.label}}

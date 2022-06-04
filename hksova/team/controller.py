@@ -16,7 +16,7 @@ team = Blueprint("team", __name__)
 def view_login():
     login_form = LoginForm()
     year=get_year(request.blueprint)
-    if year == get_current_year():
+    if year['is_current_year']:
         return render_template("team/login.jinja", form=login_form, title="Přihlášení", year=year)
     else:
         flash ("Lze se přihlásit pouze do aktuálního ročníku", "error")
@@ -25,7 +25,7 @@ def view_login():
 @team.route("/login/", methods=["POST"])
 def login_team():
     year=get_year(request.blueprint)
-    if year != get_current_year():
+    if not year['is_current_year'] :
         flash ("Lze se přihlásit pouze do aktuálního ročníku", "error")
         return redirect (url_for("main.view_index"))
 
@@ -63,14 +63,14 @@ def logout_team():
 @team.route("/teams/", methods=["GET"])
 def view_teams():
     year=get_year(request.blueprint)
-    teams=get_teams(year)
+    teams=get_teams_not_deleted(year)
     return render_template("team/teams.jinja", title="Týmy", year=year, teams=teams)
 
 @team.route("/changepassword/", methods=["GET"])
 def view_password_change():
     password_change_form = PasswordChangeForm()
     year=get_year(request.blueprint)
-    if year == get_current_year():
+    if year['is_current_year']:
 
         if ("logged" in session.keys()):
             return render_template("team/password_change.jinja", form=password_change_form, title="Změna hesla", year=year)
@@ -85,7 +85,7 @@ def view_password_change():
 def change_password():
     year=get_year(request.blueprint)
     
-    if year != get_current_year():
+    if not year['is_current_year']:
         flash ("Heslo lze měnit pouze v aktuálním ročníku", "error")
         return redirect (url_for("main.view_index"))
 
@@ -108,6 +108,18 @@ def change_password():
         for error in password_change_form.errors:
             flash (f'{error} nezadán', "error")
         return redirect (url_for("team.view_password_change"))
+
+@team.route("/team", methods=["GET"])
+def view_team():
+    year=get_year(request.blueprint)
+    
+    if not year['is_current_year']:
+        flash ("Detailní informace jsou k dispozici pouze v aktuálním ročníku", "error")
+        return redirect (url_for("main.view_index"))
+
+    team=get_team(year, session['team'])
+    payment=get_payment_information(year)
+    return render_template("team/team.jinja", title="Údaje o týmu", year=year, team=team, payment=payment)
 
 @team.route("/registration/", methods=["GET"])
 def view_registration():
@@ -189,7 +201,7 @@ def register_team():
 def view_registration_cancel():
     registration_cancel_form = RegistrationCancelForm()
     year=get_year(request.blueprint)
-    if year == get_current_year():
+    if year['is_current_year']:
         if ("logged" in session.keys()):
             return render_template("team/registration_cancel.jinja", form=registration_cancel_form, title="Zrušení registrace", year=year)
         else:
@@ -203,7 +215,7 @@ def view_registration_cancel():
 def registration_cancel():
     year=get_year(request.blueprint)
     
-    if year != get_current_year():
+    if not year['is_current_year']:
         flash ("Registrace lze zrušit pouze v aktuálním ročníku", "error")
         return redirect (url_for("main.view_index"))
 

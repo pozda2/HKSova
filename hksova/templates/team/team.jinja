@@ -1,0 +1,74 @@
+{% extends "_main.jinja" %}
+{% block main%}
+
+<h2>Informace o týmu</h2>
+
+<table class="table table-dark table-striped">
+  <tbody>
+    <tr>
+      <td>Název týmu</td>
+      <td>{{ team.name }}</td>
+    </tr>
+    <tr>
+      <td>Tajný maskot</td>
+      <td>{{ team.mascot }}</td>
+    </tr>
+    <tr>
+      <td>Přihlašovací jméno</td>
+      <td>{{ team.login }}</td>
+    </tr>
+    <tr>
+      <td>Kontaktní email</td>
+      <td>{{ team.email }}</td>
+    </tr>
+    <tr>
+      <td>Kontaktní mobil</td>
+      <td>{{ team.mobil }}</td>
+    </tr>
+    <tr>
+      <td>Složení</td>
+      <td>{{ team.players }}</td>
+    </tr>
+
+    <tr>
+      <td>Zaplaceno</td>
+      <td>{{ team.zaplaceno }}</td>
+    </tr>
+    <tr>
+      <td>Stav</td>
+      <td>{{ team.stav }}</td>
+    </tr>
+  </tbody>
+  </table>
+
+  <button type="submit" class="btn btn-primary">Změna údajů</button>
+
+  {% if not team.isPaid and not team.isBackup and not team.isDeleted %}
+  <h2>Platební údaje</h2>
+  <table class="table table-dark table-striped">
+  <tbody>
+    <tr>
+      <td>Startovné</td>
+      <td>{{ payment.price }}</td>
+    </tr>
+    <tr>
+      <td>Splatnost</td>
+      <td>{{ payment.paid_to }}</td>
+    </tr>
+
+    <tr>
+      <td>Číslo účtu</td>
+      <td>{{ payment.account }}</td>
+    </tr>
+    <tr>
+      <td>Variabilní symbol</td>
+      <td>{{ year.year }}{{ team.idteam }}</td>
+    </tr>
+    <tr>
+      <td>Zpráva pro příjemce</td>
+      <td>{{ team.name }}</td>
+    </tr>
+
+
+  {% endif %}
+{% endblock %}

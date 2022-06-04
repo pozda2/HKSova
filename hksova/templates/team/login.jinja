@@ -2,8 +2,7 @@
 {% block main%}
 
 <h2>Přihlášení týmu</h2>
-
-<form {{url_for('team' ~ year ~ ".view_login")}} method="post">
+<form {{url_for('team' ~ year.year ~ ".view_login")}} method="post">
     {{ form.csrf_token }}
   <div class="form-row">
     <div class="form-group col-md-6">

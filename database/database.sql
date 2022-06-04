@@ -133,10 +133,14 @@ CREATE TABLE `setting` (
 
 INSERT INTO `setting` (`idSetting`, `idYear`, `param`, `value`) VALUES
 (1, NULL, 'org-pass', 'hash'),
+(1, NULL, 'org-salt', 'salt'),
 (2, 2022, 'max-players', '5'),
-(3, 2022, 'min-players', '2'),
-(4, 2022, 'reg-from', '2010-06-01'),
-(5, 2022, 'reg-to', '2010-09-01'),
+(3, 2022, 'min-players', '1'),
+(4, 2022, 'reg-from', '2022-06-01'),
+(5, 2022, 'reg-to', '2022-09-01'),
+(6, 2022, 'paid-to', '2022-09-01'),
+(6, 2022, 'account', '2600149940/2010'),
+(7, 2022, 'price', '250 Kč za tým')
 
 -- --------------------------------------------------------
 

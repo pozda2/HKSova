@@ -14,10 +14,9 @@ main = Blueprint("main", __name__)
 @main.route("/")
 def view_index():
     year=get_year(request.blueprint)
-
     cursor = current_app.mysql.connection.cursor()
     # mysql.connectin.commit()
-    cursor.execute('''SELECT * FROM page where idYear=%s and url=%s''', [year, "index"])
+    cursor.execute('''SELECT * FROM page where idYear=%s and url=%s''', [year['year'], "index"])
     data = cursor.fetchall()
 #   texy=data[0]['texy']
 

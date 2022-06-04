@@ -4,7 +4,7 @@
 <h2>Registrace týmu</h2>
 <p><strong>Registrace je otevřena v termínu:</strong> {{ reg_from}} do {{reg_to}}
 
-<form {{url_for('team' ~ year ~ ".register_team")}} method="post">
+<form {{url_for('team' ~ year.year ~ ".register_team")}} method="post">
     {{ form.csrf_token }}
 
     <div class="form-row">

@@ -2,11 +2,11 @@ import sys
 from flask import current_app
 from datetime import datetime
 from dateutil import parser
-from datetime import timedelta  
+from datetime import timedelta
 
 def get_settings_year(year, param):
     cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''SELECT value  FROM setting where idYear=%s and param=%s''', [year, param])
+    cursor.execute('''SELECT value  FROM setting where idYear=%s and param=%s''', [year['year'], param])
     data = cursor.fetchall()
     return data[0]['value']
 
@@ -40,3 +40,10 @@ def get_max_players(year):
 
 def get_max_teams(year):
     return int(get_settings_year(year, "max-teams"))
+
+def get_payment_information(year):
+    data={}
+    data['account']=get_settings_year(year, 'account')
+    data['price']=get_settings_year(year, 'price')
+    data['paid_to']=parser.parse(get_settings_year(year, "paid-to")).strftime("%-d. %-m. %Y")
+    return data
