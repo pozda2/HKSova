@@ -1,5 +1,5 @@
 <head>
-    <meta name="viewport" content="width=device-width">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name='keywords' content='šifry, hry, tmou, šifrovačka, outdoor' />
     <meta name='description' content='Noční šifrovací hra Hradecká sova' />
@@ -7,13 +7,15 @@
 
     <link rel="shortcut icon" href={{url_for("static", filename="img/favicon.ico")}} type="image/x-icon" />
 
-    <link href={{url_for("static", filename="css/screen.css")}} type='text/css' rel='stylesheet' media='screen,projection,tv' />
-    <link href={{url_for("static", filename="css/print.css")}} type='text/css' rel='stylesheet' media='print' />
-    <link href={{url_for("static", filename="css/bootstrap.min.css")}} type='text/css' rel='stylesheet' media='print' />
-    
-    <script type="text/javascript" src={{url_for("static", filename="js/toggle_menu.js")}}></script>
+    <link href={{url_for("static", filename="css/bootstrap.min.css")}} type='text/css' rel='stylesheet' />
+    <link href={{url_for("static", filename="css/all_min.css")}} type='text/css' rel='stylesheet'/>
+    <link href={{url_for("static", filename="css/style.css")}} type='text/css' rel='stylesheet'/>
+
+    <script type="text/javascript" src={{url_for("static", filename="js/popper.js")}}></script>
     <script type="text/javascript" src={{url_for("static", filename="js/jquery-3.6.0.min.js")}}></script>
-    <script type="text/javascript" src={{url_for("static", filename="js/bootstrap.bundle.min.js")}}></script>
+    <script type="text/javascript" src={{url_for("static", filename="js/bootstrap.min.js")}}></script>
+    <script type="text/javascript" src={{url_for("static", filename="js/all.min.js")}}></script>
+    <script type="text/javascript" src={{url_for("static", filename="js/style.js")}}></script>
 
     <title>{% block title %} {{title}} | Hradecká sova{% endblock %}</title>
 </head>

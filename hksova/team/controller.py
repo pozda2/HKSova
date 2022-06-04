@@ -53,9 +53,10 @@ def login_team():
 
 @team.route("/logout/", methods=["GET"])
 def logout_team():
+    print (type(session))
     session.pop("logged")
-    session.pop("org")
-    session.pop("team")
+    if session.get("org"): session.pop("org")
+    if session.get("team"): session.pop("team")
     flash("Úspěšné odhlášení", "info")
     return redirect (url_for("main.view_index"))
 
@@ -93,7 +94,7 @@ def register_team():
             valid=False
             flash (f'Zadané jméno týmu již existuje.', "error")
 
-        if ( not is_unique_loginname(year, registration_form.name.data)):
+        if ( not is_unique_loginname(year, registration_form.loginname.data)):
             valid=False
             flash (f'Zadané jméno týmu již existuje.', "error")
 
@@ -116,6 +117,9 @@ def register_team():
                 return render_template("Team/registration.jinja", form=registration_form, year=year)
             else:
                 session["logged"] = registration_form.name.data
+                session["org"]=False
+                session["team"] = registration_form.loginname.data
+
                 flash("Tým byl úspěšné registrován", "info")
                 return redirect (url_for("main.view_index"))
         else:

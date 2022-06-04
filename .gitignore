@@ -14,3 +14,4 @@ docker-compose.yml
 configs/docker.py
 configs/setevars.sh
 
+todo.txt

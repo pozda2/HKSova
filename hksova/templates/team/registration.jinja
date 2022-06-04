@@ -6,107 +6,83 @@
 
 <form {{url_for('team' ~ year ~ ".register_team")}} method="post">
     {{ form.csrf_token }}
+
+    <div class="form-row">
+      {{ form.name(class="form-control", id="inputName", placeholder= "Název týmu (povinné)" ) }}
+      <small>Lze měnit i po registraci. Nemůžete mít stejný název s jiným týmem.</small>
+    </div>
+
+    <div class="form-row">
+      {{ form.loginname(class="form-control", id="inputLogin", placeholder= "Přihlašovací jméno (povinné)" ) }}
+      <small>Nejde dodatečně změnit. Může být odlišné od Názvu týmu. </small>
+    </div>
+
+    <div class="form-row">
+      {{ form.password(class="form-control", id="inputPassword", placeholder= "Heslo (povinné)" ) }}
+      <small>Není uloženo v otevřené podobě. Slouží pouze pro přihlášení do webových stránek.</small>
+    </div>
+
+    <div class="form-row">
+      {{ form.password2(class="form-control", id="inputPassword2", placeholder= "Heslo znovu (povinné)" ) }}
+      <small>Musí být stejné jako předchozí heslo.</small>
+    </div>
+
+    <div class="form-row">
+      {{ form.email(class="form-control", id="inputEmail", placeholder= "Email (povinné)" ) }}
+      <small>Slouží pro komunikaci. Nebude nikde zveřejněný.</small>
+    </div>
+
+    <div class="form-row">
+      {{ form.mobil(class="form-control", id="inputMobil", placeholder= "Mobilní telefonní číslo (povinné)" ) }}
+      <small>Slouží pro komunikaci. Nebude nikde zveřejněný.</small>
+    </div>
+
+    <div class="form-row">
+      {{ form.weburl(class="form-control", id="inputWebURL", placeholder= "URL stránky týmu" ) }}
+      <small>Pokud máte svůj web týmu, zadejte jeho adresu.</small>
+    </div>
+
+    {% for player in form.players %}
+        <div class="form-row">
+            <div class="form-group col-md-3">
+                {{ player.form.name(class="form-control", placeholder= "Jméno hráče" ) }}
+            </div>
+            <div class="form-group col-md-3">
+                {{ player.form.publicname(size=10, class="form-control", placeholder= "Veřejné jméno na webu" ) }}
+            </div>
+            <div class="form-group col-md-3">
+                {{ player.form.city(size=10, class="form-control", placeholder= "Město" ) }}
+            </div>
+            <div class="form-group col-md-3">
+                {{ player.form.age(size=10, class="form-control", placeholder= "Věk" ) }}
+            </div>
+
+        </div>
+    {% endfor %}
     
-    <table>
-        <tr>
-            <th class="required">{{ form.name.label }}</th>
-            <td>
-                {{ form.name(size=50, class="form-control") }}
-                <small>Lze měnit i po registraci. Nemůžete mít stejný název s jiným týmem.</small>
-            </td>
-        </tr>
+    
+ 
+    <small>V týmu musí být minimálně {{min_players}} hráč.</small>
+    <br />
+    <small>Do města u hráče uveďte město v plném názvu s diakritikou, odkud hráč přijede. Pomůže nám to při plánování.</small>
+    <br />
+    <small>Veřejně na webu bude zobrazeno jméno hráče z políčka "Jméno hráče veřejně na webu". Pokud nechcete jméno zobrazit ponechte toto políčko prázdné.</small>
+    <br />
+    <small>Věk a město nejsou povinné údaje. Pokud je nechcete sdělit ponechte je prázdné.</small>
+    <br />
+    <br>
+    <br>
 
-        <tr>
-            <th class="required">{{ form.loginname.label }}</th>
-            <td>
-                {{ form.loginname(size=50, class="form-control") }}
-                <small>Nejde dodatečně změnit. Může být odlišné od Názvu týmu. </small>
-            </td>
-        </tr>
-        <tr>
-            <th class="required">{{ form.password.label }} </th>
-            <td>
-                {{ form.password(size=50, class="form-control") }}
-                <small>Není uloženo v otevřené podobě. Slouží pouze pro přihlášení do webových stránek.</small>
-            </td>
-        </tr>
-        <tr>
-            <th class="required">{{ form.password2.label }} </th>
-            <td>
-                {{ form.password2(size=50, class="form-control") }}
-            </td>
-        </tr>
-        <tr>
-            <th class="required">{{ form.email.label }}</th>
-            <td>
-                {{ form.email(size=50, class="form-control") }}
-                <small>Slouží pro komunikaci. Nebude nikde zveřejněný.</small>
-            </td>
-        </tr>
-        <tr>
-            <th class="required">{{ form.mobil.label }}</th>
-            <td>
-                {{ form.mobil(size=30, class="form-control") }}
-                <small>Slouží pro komunikaci. Nebude nikde zveřejněný.</small>
-            </td>
-        </tr>
+    <div class="form-row">
+        <label for="inputAgree">{{ form.agree.label }}</label>
+        {{ form.agree(class="form-control", id="inputAgree" ) }}
+    </div>
+    <div class="form-row">
+        <label for="inputAgree2">{{ form.agree2.label }}</label>
+        {{ form.agree2(class="form-control", id="inputAgree" ) }}
+    </div>
 
-        <tr>
-            <th>{{ form.weburl.label }}</th>
-            <td>
-                {{ form.weburl(size=50, class="form-control") }}
-                <small>Pokud máte svůj web týmu, zadejte jeho adresu.</small>
-            </td>
-        </tr>
-
-        <tr>
-            <td colspan="2">
-                <table class="list">
-                    <tr>
-                        <th class="required">Jméno hráče</th>
-                        <th>Jméno hráče<br />veřejně na webu</th>
-                        <th>Město</th>
-                        <th>Věk</th>
-                    </tr>
-
-                    {% for player in form.players %}
-                        <tr>
-                        <td>{{ player.form.name(size=30, class="form-control")}} </td>
-                        <td>{{ player.form.publicname }} </td>
-                        <td>{{ player.form.city }} </td>
-                        <td>{{ player.form.age }} </td>
-                        </  tr>
-                    {% endfor %}
-                </table>
-                <small>V týmu musí být minimálně {{min_players}} hráč.</small>
-                <br />
-                <small>Do města u hráče uveďte město v plném názvu s diakritikou, odkud hráč přijede. Pomůže nám to při plánování.</small>
-                <br />
-                <small>Veřejně na webu bude zobrazeno jméno hráče z políčka "Jméno hráče veřejně na webu". Pokud nechcete jméno zobrazit ponechte toto políčko prázdné.</small>
-                <br />
-                <small>Věk a město nejsou povinné údaje. Pokud je nechcete sdělit ponechte je prázdné.</small>
-                <br />
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2">
-            {{ form.agree.label }}	{{ form.agree( class="form-control") }}
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2">
-                {{ form.agree2.label }} {{ form.agree2( class="form-control") }}
-            </td>
-        </tr>
-
-        <tr>
-            <th></th>
-            <td>
-                <br />
-                <button type="submit" class="btn btn-primary">Registrovat</button>
-            </td>
-            </tr>
-        </table>
+    <button type="submit" class="btn btn-primary">Registrovat</button>
 </form>
 
 {% endblock %}

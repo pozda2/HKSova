@@ -3,18 +3,23 @@
 
 <h2>Registrované týmy</h2>
 
-<table border=1>
-<tr>
-    <th>#</th>
-    <th>Tým</th>
-    <th>Hráči</th>
-    <th>Startovné</th>
-    <th>Stav</th>
-</tr>
+<div class="container">
+
+<table class="table table-dark table-striped">
+  <thead>
+    <tr>
+        <th>#</th>
+        <th>Tým</th>
+        <th>Hráči</th>
+        <th>Startovné</th>
+        <th>Stav</th>
+    </tr>
+  </thead>
+  <tbody>
 {% if teams %}
     {% for team in teams %}
     <tr>
-        <td>{{ team.order}}</td>
+        <th scope="row">{{ team.order}}</td>
         <td>{{ team.name}}</td>
         <td>{{ team.players}}</td>
         <td>{{ team.zaplaceno}}</td>
@@ -22,6 +27,8 @@
     </tr>
     {% endfor %}
 {% endif %}
+  </tbody>
 </table>
+</div>
 
 {% endblock %}
