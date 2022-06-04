@@ -60,6 +60,55 @@ def logout_team():
     flash("Úspěšné odhlášení", "info")
     return redirect (url_for("main.view_index"))
 
+@team.route("/teams/", methods=["GET"])
+def view_teams():
+    year=get_year(request.blueprint)
+    teams=get_teams(year)
+    return render_template("team/teams.jinja", title="Týmy", year=year, teams=teams)
+
+@team.route("/changepassword/", methods=["GET"])
+def view_password_change():
+    password_change_form = PasswordChangeForm()
+    year=get_year(request.blueprint)
+    if year == get_current_year():
+
+        if ("logged" in session.keys()):
+            return render_template("team/password_change.jinja", form=password_change_form, title="Změna hesla", year=year)
+        else:
+            flash ("Před změnou hesla se musíte přihlásit", "info")
+            return redirect (url_for("team.view_login"))
+    else:
+        flash ("Heslo lze měnit pouze v aktuálním ročníku", "error")
+        return redirect (url_for("main.view_index"))
+
+@team.route("/changepassword/", methods=["POST"])
+def change_password():
+    year=get_year(request.blueprint)
+    
+    if year != get_current_year():
+        flash ("Heslo lze měnit pouze v aktuálním ročníku", "error")
+        return redirect (url_for("main.view_index"))
+
+    valid=True
+    password_change_form = PasswordChangeForm(request.form)
+
+    if (password_change_form.password1.data != password_change_form.password2.data):
+        valid=False
+        flash (f'Zadaná hesla nejsou stejná.', "error")
+
+    if password_change_form.validate() and valid:
+        status, message= change_team_pass(year, session['team'],password_change_form.password_old.data, password_change_form.password1.data)
+        if (status):
+            flash("Změna hesla proběhla přihlášení", "info")
+            return redirect (url_for("main.view_index"))
+        else:
+            flash(message, "error")
+            return render_template("team/password_change.jinja", form=password_change_form, year=year)
+    else:
+        for error in password_change_form.errors:
+            flash (f'{error} nezadán', "error")
+        return redirect (url_for("team.view_password_change"))
+
 @team.route("/registration/", methods=["GET"])
 def view_registration():
     year=get_year(request.blueprint)
@@ -136,51 +185,42 @@ def register_team():
             
         return render_template("team/registration.jinja", form=registration_form, year=year)
 
-@team.route("/teams/", methods=["GET"])
-def view_teams():
-    year=get_year(request.blueprint)
-    teams=get_teams(year)
-    return render_template("team/teams.jinja", title="Týmy", year=year, teams=teams)
-
-@team.route("/changepassword/", methods=["GET"])
-def view_password_change():
-    password_change_form = PasswordChangeForm()
+@team.route("/registration_cancel/", methods=["GET"])
+def view_registration_cancel():
+    registration_cancel_form = RegistrationCancelForm()
     year=get_year(request.blueprint)
     if year == get_current_year():
-
         if ("logged" in session.keys()):
-            return render_template("team/password_change.jinja", form=password_change_form, title="Změna hesla", year=year)
+            return render_template("team/registration_cancel.jinja", form=registration_cancel_form, title="Zrušení registrace", year=year)
         else:
-            flash ("Před změnou hesla se musíte přihlásit", "info")
+            flash ("Před zrušením registrace se musíte přihlásit", "info")
             return redirect (url_for("team.view_login"))
     else:
-        flash ("Heslo lze měnit pouze v aktuálním ročníku", "error")
+        flash ("Registrace lze zrušit pouze v aktuálním ročníku", "error")
         return redirect (url_for("main.view_index"))
 
-@team.route("/changepassword/", methods=["POST"])
-def change_password():
+@team.route("/registration_cancel/", methods=["POST"])
+def registration_cancel():
     year=get_year(request.blueprint)
     
     if year != get_current_year():
-        flash ("Heslo lze měnit pouze v aktuálním ročníku", "error")
+        flash ("Registrace lze zrušit pouze v aktuálním ročníku", "error")
         return redirect (url_for("main.view_index"))
 
-    valid=True
-    password_change_form = PasswordChangeForm(request.form)
+    registration_cancel_form = RegistrationCancelForm(request.form)
 
-    if (password_change_form.password1.data != password_change_form.password2.data):
-        valid=False
-        flash (f'Zadaná hesla nejsou stejná.', "error")
-
-    if password_change_form.validate() and valid:
-        status, message= change_team_pass(year, session['team'],password_change_form.password_old.data, password_change_form.password1.data)
+    if registration_cancel_form.validate() and registration_cancel_form.agree.data:
+        status, message = cancel_registration (year, session['team'])
         if (status):
-            flash("Změna hesla proběhla přihlášení", "info")
+            session.pop("logged")
+            if session.get("org"): session.pop("org")
+            if session.get("team"): session.pop("team")
+            flash("Registrace týmu byla zrušena", "info")
             return redirect (url_for("main.view_index"))
         else:
             flash(message, "error")
-            return render_template("team/password_change.jinja", form=password_change_form, year=year)
+            return render_template("team/registration_cancel.jinja", form=registration_cancel_form, year=year)
     else:
-        for error in password_change_form.errors:
+        for error in registration_cancel.errors:
             flash (f'{error} nezadán', "error")
-        return redirect (url_for("team.view_password_change"))
+        return redirect (url_for("team.view_registration_cancel"))

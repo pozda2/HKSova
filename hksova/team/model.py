@@ -201,7 +201,7 @@ def get_team_status(team):
     
 def get_teams(year):
     cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''SELECT  idteam, name, mascot, email, mobil, weburl, reporturl, isPaid, isBackup, isDeleted, registeredAt FROM team where idYear=%s and isdeleted=0 order by isBackup, registeredAt''', [year])
+    cursor.execute('''SELECT  idteam, name, login, mascot, email, mobil, weburl, reporturl, isPaid, isBackup, isDeleted, registeredAt FROM team where idYear=%s and isdeleted=0 order by isBackup, registeredAt''', [year])
     data=cursor.fetchall()
 
     # podrobnosti o tymu
@@ -229,6 +229,40 @@ def change_team_pass (year, login, password_old, password_new):
         return True, ""
     else:
         return False, "Nesprávné staré heslo"
+
+def cancel_registration (year, login):
+    try:
+        cursor = current_app.mysql.connection.cursor()
+        cursor.execute('''UPDATE team set isDeleted=%s where idyear=%s and login=%s ''', [1, year, login])
+    except Exception as e:
+        return False, "Problem updating db: " + str(e)
+
+    status, message = recalculate_teams(year)
+    if status:
+        current_app.mysql.connection.commit()
+        return True, ""
+    else:
+        return False, message
+
+def recalculate_teams(year):
+    max_teams = get_max_teams(year)
+    teams = get_teams(year)
+    count=0
+    cursor = current_app.mysql.connection.cursor()
+    for team in teams:
+        if count <= max_teams:
+            isBackup=0
+        else:
+            isBackup=1
+        count+=1
+        try:
+            cursor.execute('''UPDATE team set isBackup=%s where idyear=%s and login=%s ''', [isBackup, year, team['login']])
+        except Exception as e:
+            return False, "Problem calculation db: " + str(e)
+        
+    return True, ""
+
+
 
 
 

@@ -17,6 +17,7 @@
             <div class='dashboard-nav-dropdown'><a href="#!" class="dashboard-nav-item dashboard-nav-dropdown-toggle"></i> Můj tým </a>
                 <div class='dashboard-nav-dropdown-menu'>
                 <a href="{{ url_for('team' ~ year ~ '.view_password_change') }}" title="Změna hesla" class="dashboard-nav-item">Změna hesla</a>
+                <a href="{{ url_for('team' ~ year ~ '.view_registration_cancel') }}" title="Zrušení registrace" class="dashboard-nav-item">Zrušení registrace</a>
                 <a href="{{ url_for('team' ~ year ~ '.logout_team') }}" title="Odhlášení" class="dashboard-nav-item">Odhlášení</a>
                 </div>
             </div>

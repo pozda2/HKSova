@@ -60,3 +60,7 @@ class PasswordChangeForm (FlaskForm):
     password_old = PasswordField("Staré heslo", validators=[InputRequired(), length(min=6, max=100)])
     password1 = PasswordField("Nové heslo", validators=[InputRequired(), length(min=6, max=100)])
     password2 = PasswordField("Nové heslo znovu", validators=[InputRequired(), length(min=6, max=100)])
+
+class RegistrationCancelForm(FlaskForm):
+    agree = BooleanField ("Opravdu chcete zrušit vaši účast na hře?", validators=[InputRequired()] )
+    

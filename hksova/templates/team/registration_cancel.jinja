@@ -1,0 +1,14 @@
+{% extends "_main.jinja" %}
+{% block main%}
+
+<h2>Zrušení registrace týmu {{ session.team }}</h2>
+
+<form {{url_for('team' ~ year ~ ".registration_cancel")}} method="post">
+    {{ form.csrf_token }}
+     <div class="form-row">
+        {{ form.agree.label}}
+        {{ form.agree(class="form-control") }}
+    </div>
+    <button type="submit" class="btn btn-primary">Zrušit registraci</button>
+</form>
+{% endblock %}
