@@ -220,12 +220,10 @@ def change_team_pass (year, login, password_old, password_new):
     if (check_password_team (year, login, password_old)):
         salt=secrets.token_hex(20)
         hash_new = sha256_crypt.hash(current_app.config['SECRET_PEPPER'] + password_new + salt)
-
-        print (password_new)
-
         try:
             cursor = current_app.mysql.connection.cursor()
-            cursor.execute('''UPDATE team set pass=%s, salt=%s where idyear=%s and login=%s ''', [hash_new, salt, year, login])        
+            cursor.execute('''UPDATE team set pass=%s, salt=%s where idyear=%s and login=%s ''', [hash_new, salt, year, login])
+            current_app.mysql.connection.commit()
         except Exception as e:
             return False, "Problem updating db: " + str(e)
         return True, ""
