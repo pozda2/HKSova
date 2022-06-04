@@ -20,7 +20,12 @@
     {% for team in teams %}
     <tr>
         <th scope="row">{{ team.order}}</td>
-        <td>{{ team.name}}</td>
+        {% if team.weburl %}
+          <td><A href="{{ team.weburl}}">{{ team.name}}</A></td>
+        {% else %}
+          <td>{{ team.name}}</td>
+        {% endif %}
+        
         <td>{{ team.players}}</td>
         <td>{{ team.zaplaceno}}</td>
         <td>{{ team.stav}}</td>
