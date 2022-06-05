@@ -30,6 +30,8 @@
             {% endif %}
         {% endif%}
 
+        <a href="{{ url_for('forum' ~ year.year ~ '.view_forum_section') }}" title="=Fórum" class="dashboard-nav-item ">Fórum</a>
+
           <div class="nav-item-divider"></div>
           <a href="{{ url_for('main2022.view_index') }}" title="informace o hře" class="dashboard-nav-item">Ročník 2022 </a>
           <a href="{{ url_for('main2021.view_index') }}" title="informace o hře" class="dashboard-nav-item">Ročník 2021 </a>

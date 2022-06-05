@@ -1,0 +1,23 @@
+{% extends "_main.jinja" %}
+{% block main%}
+
+<h2>Fórum</h2>
+<table class="table table-dark table-striped">
+  <thead>
+    <tr>
+        <th>Sekce</th>
+        <th>Poslední příspěvek</th>
+    </tr>
+  </thead>
+  <tbody>
+{% if sections %}
+    {% for section in sections %}
+    <tr>
+        <td>{{ section.section}}</td>
+        <td>{{ section.last_post}}</td>
+    </tr>
+    {% endfor %}
+{% endif %}
+  </tbody>
+</table>
+{% endblock %}
