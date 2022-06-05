@@ -13,7 +13,8 @@
 {% if sections %}
     {% for section in sections %}
     <tr>
-        <td>{{ section.section}}</td>
+        <td><a href="{{ url_for('forum' ~ year.year ~ '.view_forum', section_id= section.idforumsection) }}">{{ section.section}}</a>
+        </td>
         <td>{{ section.last_post}}</td>
     </tr>
     {% endfor %}

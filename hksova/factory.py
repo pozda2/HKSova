@@ -23,11 +23,8 @@ def create_flask_app():
     if 'HKSOVA_CONFIG' in os.environ:
         flask_app.config.from_envvar("HKSOVA_CONFIG")
 
-    # print(flask_app.config)
-
     mysql = MySQL()
     mysql.init_app(flask_app)
-    print(flask_app.config['MYSQL_HOST'])
     flask_app.mysql = mysql
     mdeditor = MDEditor(flask_app)
     csrf = CSRFProtect(flask_app)
