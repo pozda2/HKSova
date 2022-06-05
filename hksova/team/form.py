@@ -56,6 +56,14 @@ class RegistrationForm (FlaskForm):
     agree2 = BooleanField ("Všichni účastnici dávají souhlas se shromažďováním osobních údajů pro účel uspořádání hry a evidenci hráčů, výsledků.", validators=[InputRequired()])
     players = FieldList(FormField(PlayerForm))
 
+class EditTeamForm (FlaskForm):
+    name = StringField("Název týmu", validators=[InputRequired(), length(min=1, max=100, message='Délka názvu týmu musí být v rozsahu 1-100) znaků')])
+    email = StringField("Email", validators=[InputRequired(), length(max=255, message='Maximální délka email je 255 znaků'), Email()])
+    mobil = StringField("Telefon", validators=[InputRequired(), length(max=30, message='Maximální délka telefonu je 30 znaků')])
+    weburl = StringField("Web stránka týmu (URL)", validators=[length(max=255, message='Maximální délka URL je 255 znaků'), validate_url])
+    reporturl = StringField("Web stránka s reportáží (URL)", validators=[length(max=255, message='Maximální délka URL je 255 znaků'), validate_url])
+    players = FieldList(FormField(PlayerForm))
+
 class PasswordChangeForm (FlaskForm):
     password_old = PasswordField("Staré heslo", validators=[InputRequired(), length(min=6, max=100)])
     password1 = PasswordField("Nové heslo", validators=[InputRequired(), length(min=6, max=100)])

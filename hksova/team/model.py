@@ -7,9 +7,12 @@ from datetime import datetime
 
 from hksova.settings.model import get_max_teams
 
-def is_unique_name(year, name):
+def is_unique_name(year, name, login):
     cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''SELECT name FROM team where idYear=%s and name=%s''', [year['year'], name])
+    if login is not None:
+        cursor.execute('''SELECT name FROM team where idYear=%s and name=%s and login<>%s''', [year['year'], name, login])
+    else:
+        cursor.execute('''SELECT name FROM team where idYear=%s and name=%s''', [year['year'], name])
     data = cursor.fetchall()
     if (len(data)==0):
         return True
@@ -25,9 +28,12 @@ def is_unique_loginname(year, name):
     else:
         return False
 
-def is_unique_email(year, email):
+def is_unique_email(year, email, login):
     cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''SELECT email FROM team where idYear=%s and email=%s''', [year['year'], email])
+    if login is not None:
+        cursor.execute('''SELECT email FROM team where idYear=%s and email=%s and login <> %s''', [year['year'], email, login])
+    else:
+        cursor.execute('''SELECT email FROM team where idYear=%s and email=%s''', [year['year'], email])
     data = cursor.fetchall()
     if (len(data)==0):
         return True
@@ -71,7 +77,7 @@ def get_unique_mascot(year):
             unique=True
     return mascot
 
-def get_registred_num_teams(year):
+def get_registred_number_teams(year):
     cursor = current_app.mysql.connection.cursor()
     cursor.execute('''SELECT count(idTeam) as count FROM team where idYear=%s and isBackup=0''', [year['year']])
     data=cursor.fetchall()
@@ -128,7 +134,7 @@ def create_team (form, year):
     mascot=get_unique_mascot(year)
     today=datetime.now()
     
-    if (get_registred_num_teams(year) >= get_max_teams(year)):
+    if (get_registred_number_teams(year) >= get_max_teams(year)):
         isBackup=1
     else:
         isBackup=0
@@ -140,7 +146,7 @@ def create_team (form, year):
             idYear, name, mascot, login, pass, salt, email, mobil, webUrl, isBackup, registeredAt)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             ''', 
-            [year, form.name.data, mascot, form.loginname.data, password, salt, form.email.data, form.mobil.data, form.weburl.data, isBackup, today])		
+            [year['year'], form.name.data, mascot, form.loginname.data, password, salt, form.email.data, form.mobil.data, form.weburl.data, isBackup, today])		
         idteam=cursor.lastrowid
         
     except Exception as e:
@@ -166,9 +172,53 @@ def create_team (form, year):
     current_app.mysql.connection.commit()
     return True, ""
 
+def save_team (form, year, login):
+    team=get_team(year, login)
+    try:
+        cursor = current_app.mysql.connection.cursor()
+        cursor.execute('''UPDATE team set name=%s, email=%s, mobil=%s, weburl=%s, reporturl=%s where idyear=%s and login=%s''',
+            [form.name.data, form.email.data, form.mobil.data, form.weburl.data, form.reporturl.data, year['year'], login])
+    except Exception as e:
+        return False, "Problem updatint db: " + str(e)
+
+    # update players
+    for i, player in enumerate(form.players.data):
+
+        # check player in form is in database
+        player_in_database=False
+        for saved_player in team['players']:
+            if saved_player['order']==i:
+                player_in_database=True
+        
+        if player['age'].strip() == "":
+            player['age']=None
+
+        if (player['name'].strip()):
+            if player_in_database:
+                try:
+                    cursor.execute('''UPDATE player set name=%s, publicname=%s, city=%s, age=%s where idteam=%s and `order`=%s''',
+                    [player['name'], player['publicname'], player['city'], player['age'], team['idteam'], i])
+                except Exception as e:
+                    return False, "Problem updatint db: " + str(e)
+            else:
+                try:
+                    cursor.execute('''INSERT into player (idteam, name, publicname, city, age, `order`) VALUES (%s, %s, %s, %s, %s, %s)''',
+                    [team['idteam'], player['name'], player['publicname'], player['city'], player['age'], i])
+                except Exception as e:
+                    return False, "Problem updatint db: " + str(e)
+        else:
+            if player_in_database:
+                try:
+                    cursor.execute('''DELETE from player where idteam=%s and `order`=%s''',
+                    [team['idteam'], i])
+                except Exception as e:
+                    return False, "Problem updatint db: " + str(e)
+    current_app.mysql.connection.commit()
+    return True, ""
+
 def get_team_players(idteam):
     cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''SELECT  idteam, name, publicname, city, age FROM player where idteam=%s order by `order`''', [idteam])
+    cursor.execute('''SELECT  idteam, name, publicname, city, age, `order` FROM player where idteam=%s order by `order`''', [idteam])
     return cursor.fetchall()
 
 def players_to_string(players):
@@ -222,8 +272,9 @@ def get_teams_not_deleted(year):
         i=1
         for team in data:
             players=get_team_players(team['idteam'])
+            team['player']=players
             team['players_public']=players_to_public_string(players)
-            team['players']=players_to_string(players)
+            team['players_private']=players_to_string(players)
             team['order']=i
             team['zaplaceno']=get_team_status_paid(team)
             team['stav']=get_team_status(team)
@@ -239,7 +290,9 @@ def get_team(year, login):
     if (data):
         team=data[0]
         players=get_team_players(team['idteam'])
-        team['players']=players_to_string(players)
+        team['players']=players
+        team['players_private']=players_to_string(players)
+        team['players_public']=players_to_public_string(players)
         team['zaplaceno']=get_team_status_paid(team)
         team['stav']=get_team_status(team)
         return team
@@ -291,6 +344,8 @@ def recalculate_teams(year):
             return False, "Problem calculation db: " + str(e)
         
     return True, ""
+
+
 
 
 

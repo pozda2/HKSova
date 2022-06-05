@@ -27,9 +27,12 @@
     </tr>
     <tr>
       <td>Složení</td>
-      <td>{{ team.players }}</td>
+      <td>{{ team.players_private }}</td>
     </tr>
-
+    <tr>
+      <td>Veřejné složení</td>
+      <td>{{ team.players_public }}</td>
+    </tr>
     <tr>
       <td>Zaplaceno</td>
       <td>{{ team.zaplaceno }}</td>
@@ -41,7 +44,9 @@
   </tbody>
   </table>
 
-  <button type="submit" class="btn btn-primary">Změna údajů</button>
+  <A href=" {{ url_for('team' ~ year.year ~ ".edit_team")}}">  <button type="submit" class="btn btn-primary" >Změna údajů</button></A>
+  <br>
+  <br>
 
   {% if not team.isPaid and not team.isBackup and not team.isDeleted %}
   <h2>Platební údaje</h2>
