@@ -42,7 +42,8 @@ CREATE TABLE `forum_section` (
   `idForumSection` int(10) UNSIGNED NOT NULL COMMENT 'PK',
   `idYear` int(10) UNSIGNED NOT NULL COMMENT 'FK - rok',
   `section` varchar(100) COLLATE utf8_czech_ci NOT NULL COMMENT 'nazev sekce',
-  `order` tinyint(10) UNSIGNED NOT NULL COMMENT 'razeni'
+  `order` tinyint(10) UNSIGNED NOT NULL COMMENT 'razeni',
+  `enabled` tinyint(10) UNSIGNED NOT NULL COMMENT 'povoleni'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci COMMENT='Sekce fora';
 
 
