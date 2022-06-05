@@ -48,3 +48,29 @@ Side notices
 ------------
 - `flask_mysqldb` needs `libmysqlclient-dev` package installed
 - DO NOT try to install it in conda env, you'll end in dependency hell (originates in mistune pkg)
+
+Future features 
+---------------
+- Login, reset of forgot password
+- Team, displaying payment detail as QR
+- Teams, display statistics
+- Menu - generate menu according database settings, displaying pages from database
+- Menu - add old years, probably need of manual page changes
+- Forum - add forum to pages
+
+Administration
+- Page management - pages preview
+- Page management - page edit
+- Menu managent - adding custom menu items
+- Teams management - overview
+- Teams management - edit team data
+- Teams management - switching form org to team perspective
+- Teams management - generating email lists
+- Teams management - export data
+- Forum management - section overview
+- Forum management - adding, editing, removing forum section
+- Settings - overview
+- Settings - adding, editing, removing setting
+- Settings - org password change
+- Settings - create new year by copying current year
+- Mascot - overview, adding, deleting 
