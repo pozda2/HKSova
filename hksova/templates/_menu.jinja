@@ -16,9 +16,11 @@
             {% if year.is_current_year %}
             <div class='dashboard-nav-dropdown'><a href="#!" class="dashboard-nav-item dashboard-nav-dropdown-toggle"></i> Můj tým </a>
                 <div class='dashboard-nav-dropdown-menu'>
+                {% if not session.org %}
                 <a href="{{ url_for('team' ~ year.year ~ '.view_team') }}" title="Údaje o týmu" class="dashboard-nav-item">Údaje o týmu</a>
                 <a href="{{ url_for('team' ~ year.year ~ '.view_password_change') }}" title="Změna hesla" class="dashboard-nav-item">Změna hesla</a>
                 <a href="{{ url_for('team' ~ year.year ~ '.view_registration_cancel') }}" title="Zrušení registrace" class="dashboard-nav-item">Zrušení registrace</a>
+                {% endif %}
                 <a href="{{ url_for('team' ~ year.year ~ '.logout_team') }}" title="Odhlášení" class="dashboard-nav-item">Odhlášení</a>
                 </div>
             </div>

@@ -1,5 +1,6 @@
 import sys
 from flask import current_app
+from datetime import datetime
 
 def get_forum_sections(year):
     cursor = current_app.mysql.connection.cursor()
@@ -41,3 +42,16 @@ def get_forum_post_count(idForumSection):
     if data:
         return data[0]['num']
     return 0
+
+def save_post (idforumsection, name, text, ip, dns, browser):
+    now=datetime.now()
+
+    text = "<br />".join(text.split("\n"))
+    try:
+        cursor = current_app.mysql.connection.cursor()
+        cursor.execute('''INSERT INTO forum (idforumsection, name, text, insertedAt, ip, dns, browser) VALUES (%s, %s, %s, %s, %s, %s, %s)''', 
+            [idforumsection, name, text, now, ip, dns, browser])
+    except Exception as e:
+        return False, "Problem inserting into db: " + str(e)
+    current_app.mysql.connection.commit()
+    return True, ""
