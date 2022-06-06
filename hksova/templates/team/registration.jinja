@@ -7,60 +7,57 @@
 <form {{url_for('team' ~ year.year ~ ".register_team")}} method="post">
     {{ form.csrf_token }}
 
-    <div class="form-row">
+    <div class="row">
       {{ form.name(class="form-control", id="inputName", placeholder= "Název týmu (povinné)" ) }}
       <small>Lze měnit i po registraci. Nemůžete mít stejný název s jiným týmem.</small>
     </div>
 
-    <div class="form-row">
+    <div class="row">
       {{ form.loginname(class="form-control", id="inputLogin", placeholder= "Přihlašovací jméno (povinné)" ) }}
       <small>Nejde dodatečně změnit. Může být odlišné od Názvu týmu. </small>
     </div>
 
-    <div class="form-row">
+    <div class="row">
       {{ form.password(class="form-control", id="inputPassword", placeholder= "Heslo (povinné)" ) }}
       <small>Není uloženo v otevřené podobě. Slouží pouze pro přihlášení do webových stránek.</small>
     </div>
 
-    <div class="form-row">
+    <div class="row">
       {{ form.password2(class="form-control", id="inputPassword2", placeholder= "Heslo znovu (povinné)" ) }}
       <small>Musí být stejné jako předchozí heslo.</small>
     </div>
 
-    <div class="form-row">
+    <div class="row">
       {{ form.email(class="form-control", id="inputEmail", placeholder= "Email (povinné)" ) }}
       <small>Slouží pro komunikaci. Nebude nikde zveřejněný.</small>
     </div>
 
-    <div class="form-row">
+    <div class="row">
       {{ form.mobil(class="form-control", id="inputMobil", placeholder= "Mobilní telefonní číslo (povinné)" ) }}
       <small>Slouží pro komunikaci. Nebude nikde zveřejněný.</small>
     </div>
 
-    <div class="form-row">
+    <div class="row">
       {{ form.weburl(class="form-control", id="inputWebURL", placeholder= "URL stránky týmu" ) }}
       <small>Pokud máte svůj web týmu, zadejte jeho adresu.</small>
     </div>
 
     {% for player in form.players %}
-        <div class="form-row">
-            <div class="form-group col-md-3">
+        <div class="row">
+            <div class="col">
                 {{ player.form.name(class="form-control", placeholder= "Jméno hráče" ) }}
             </div>
-            <div class="form-group col-md-3">
-                {{ player.form.publicname(size=10, class="form-control", placeholder= "Veřejné jméno na webu" ) }}
+            <div class="col">
+                {{ player.form.publicname(class="form-control", placeholder= "Veřejné jméno na webu" ) }}
             </div>
-            <div class="form-group col-md-3">
-                {{ player.form.city(size=10, class="form-control", placeholder= "Město" ) }}
+            <div class="col">
+                {{ player.form.city(class="form-control", placeholder= "Město" ) }}
             </div>
-            <div class="form-group col-md-3">
-                {{ player.form.age(size=10, class="form-control", placeholder= "Věk" ) }}
+            <div class="col">
+                {{ player.form.age(class="form-control", placeholder= "Věk" ) }}
             </div>
-
         </div>
     {% endfor %}
-    
-    
  
     <small>V týmu musí být minimálně {{min_players}} hráč.</small>
     <br />
@@ -71,15 +68,23 @@
     <small>Věk a město nejsou povinné údaje. Pokud je nechcete sdělit ponechte je prázdné.</small>
     <br />
     <br>
-    <br>
 
-    <div class="form-row">
-        <label for="inputAgree">{{ form.agree.label }}</label>
-        {{ form.agree(class="form-control", id="inputAgree" ) }}
+
+    <div class="row">
+     <div class="col">
+        <label for="inputAgree">{{ form.agree.label }}</label> 
+        </div>
+       <div class="col">
+        {{ form.agree( id="inputAgree" ) }}
+        </div>
     </div>
-    <div class="form-row">
+    <div class="row">
+      <div class="col">
         <label for="inputAgree2">{{ form.agree2.label }}</label>
-        {{ form.agree2(class="form-control", id="inputAgree" ) }}
+      </div>
+      <div class="col">
+        {{ form.agree2(id="inputAgree" ) }}
+      </div>
     </div>
 
     <button type="submit" class="btn btn-primary">Registrovat</button>

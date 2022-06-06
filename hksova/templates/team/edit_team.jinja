@@ -6,32 +6,32 @@
 <form {{url_for('team' ~ year.year ~ ".edit_team")}} method="post">
     {{ form.csrf_token }}
 
-    <div class="form-row">
+    <div class="row">
       {{ form.name(class="form-control", id="inputName", placeholder= "Název týmu (povinné)" ) }}
       <small>Lze měnit i po registraci. Nemůžete mít stejný název s jiným týmem.</small>
     </div>
 
-    <div class="form-row">
+    <div class="row">
       {{ form.email(class="form-control", id="inputEmail", placeholder= "Email (povinné)" ) }}
       <small>Slouží pro komunikaci. Nebude nikde zveřejněný.</small>
     </div>
 
-    <div class="form-row">
+    <div class="row">
       {{ form.mobil(class="form-control", id="inputMobil", placeholder= "Mobilní telefonní číslo (povinné)" ) }}
       <small>Slouží pro komunikaci. Nebude nikde zveřejněný.</small>
     </div>
 
-    <div class="form-row">
+    <div class="row">
       {{ form.weburl(class="form-control", id="inputWebURL", placeholder= "URL stránky týmu" ) }}
       <small>Pokud máte svůj web týmu, zadejte jeho adresu.</small>
     </div>
-    <div class="form-row">
+    <div class="row">
       {{ form.reporturl(class="form-control", id="inputWebURL", placeholder= "URL stránky s reportáží" ) }}
       <small>URL stránky s reportáží.</small>
     </div>
 
     {% for player in form.players %}
-        <div class="form-row">
+        <div class="row">
             <div class="form-group col-md-3">
                 {{ player.form.name(class="form-control", placeholder= "Jméno hráče" ) }}
             </div>
@@ -47,7 +47,7 @@
 
         </div>
     {% endfor %}
-
+    <br />
     <small>V týmu musí být minimálně {{min_players}} hráč.</small>
     <br />
     <small>Do města u hráče uveďte město v plném názvu s diakritikou, odkud hráč přijede. Pomůže nám to při plánování.</small>

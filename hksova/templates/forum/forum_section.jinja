@@ -19,7 +19,7 @@
 {% if section %}
 	{% for post in section %}
 	<table class="table table-dark table-striped">
-		<tr><td>{{post.name}} {% if session.org %} <small>({{ post.dns }})</small> {% endif %}</td><td class="text-right">{{post.insertedAt}}  </td></tr>
+		<tr><td>{{post.name}} {% if session.org %} <small>({{ post.dns }})</small> {% endif %}</td><td align="right">{{post.insertedAt}}  </td></tr>
 		<tr><td colspan=2>{{ post.text }} </td></tr>
 	</table>
 	{% endfor %}

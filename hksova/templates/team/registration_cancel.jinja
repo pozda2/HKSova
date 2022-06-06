@@ -7,8 +7,9 @@
     {{ form.csrf_token }}
      <div class="form-row">
         {{ form.agree.label}}
-        {{ form.agree(class="form-control") }}
+        {{ form.agree() }}
     </div>
+    <br>
     <button type="submit" class="btn btn-primary">Zrušit registraci</button>
 </form>
 {% endblock %}
