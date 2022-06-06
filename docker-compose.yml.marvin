@@ -1,0 +1,13 @@
+version: "3"
+services:
+    website_sova:
+        build: .
+
+    nginx:
+        image: nginx:mainline-alpine
+        volumes:
+            - ./configs/nginx/docker_hksova.conf:/etc/nginx/conf.d/default.conf:ro
+        ports:
+            - 23456:80
+        depends_on:
+            - website_sova
