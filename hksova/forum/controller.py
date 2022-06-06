@@ -15,7 +15,7 @@ from .model import *
 
 forum = Blueprint("forum", __name__)
 
-@forum.route("/forum")
+@forum.route("/forum/")
 def view_forum_section():
     year=get_year(request.blueprint)
     sections=get_forum_sections(year)

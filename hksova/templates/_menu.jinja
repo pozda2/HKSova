@@ -6,10 +6,14 @@
 
     <nav class="dashboard-nav-list">
         {% if session.org %}
-            <a href="#" class="dashboard-nav-item">Administrace</a>
+            <div class='dashboard-nav-dropdown'><a href="#!" class="dashboard-nav-item dashboard-nav-dropdown-toggle"></i> Administrace </a>
+            <div class='dashboard-nav-dropdown-menu'>
+                <a href="{{ url_for('admin' ~ year.year ~ '.view_pages') }}" title="Správa stránek" class="dashboard-nav-item">Správa stránek</a>
+            </div>
+            </div>
         {% endif %}
 
-        <a href="{{ url_for('main' ~ year.year ~ '.view_index') }}" title="informace o hře" class="dashboard-nav-item">Informace</a>
+        <a href="{{ url_for('main' ~ year.year ~ '.view_index') }}" title="Informace o hře" class="dashboard-nav-item">Informace</a>
         <a href="{{ url_for('team' ~ year.year ~ '.view_teams') }}" title="Týmy" class="dashboard-nav-item">Týmy </a>
 
         {% if session.logged %}

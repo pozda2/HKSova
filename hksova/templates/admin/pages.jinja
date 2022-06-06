@@ -1,0 +1,30 @@
+{% extends "_main.jinja" %}
+{% block main%}
+
+<h2>Správa stránek</h2>
+
+<table class="table table-dark table-striped">
+  <thead>
+    <tr>
+        <th>Název</th>
+        <th>URL</th>
+        <th>Viditelnost</th>
+        <th>Oprávnění</th>
+        <th>Akce</th>
+    </tr>
+  </thead>
+  <tbody>
+{% if pages %}
+    {% for page in pages %}
+    <tr>
+        <td >{{ page.title}}</td>
+        <td >{{ page.url}}</td>
+        <td >{{ page.visibility}}</td>
+        <td >{{ page.access_right}}</td>
+        <td ></td>
+    </tr>
+    {% endfor %}
+{% endif %}
+  </tbody>
+</table>
+{% endblock %}

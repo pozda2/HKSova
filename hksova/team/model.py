@@ -254,13 +254,10 @@ def get_team_status_paid(team):
         return 'Nezaplaceno'
 
 def get_team_status(team):
-    if (team['isPaid']==1):
-        return 'Hracící'
+    if (team['isBackup']==1):
+        return 'Náhradníci'
     else:
-        if (team['isBackup']==1):
-            return 'Náhradníci'
-        else:
-            return 'Registrováni'
+        return 'Hrající'
     
 def get_teams_not_deleted(year):
     cursor = current_app.mysql.connection.cursor()

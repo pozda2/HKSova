@@ -8,6 +8,7 @@ from flask import render_template
 from .page import main
 from .team import team
 from .forum import forum
+from .admin import admin
 # from .settings import settings
 
 def create_flask_app():
@@ -41,6 +42,10 @@ def create_flask_app():
     flask_app.register_blueprint (forum)
     flask_app.register_blueprint (forum, name="forum2022", url_prefix="/2022")
     flask_app.register_blueprint (forum, name="forum2021", url_prefix="/2021")
+
+    flask_app.register_blueprint (admin)
+    flask_app.register_blueprint (admin, name="admin2022", url_prefix="/2022")
+    flask_app.register_blueprint (admin, name="admin2021", url_prefix="/2021")
 
     @flask_app.errorhandler(500)
     def internal_server_error(error):
