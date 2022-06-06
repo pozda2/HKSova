@@ -40,16 +40,17 @@ def encode_access_rights(ispublic, isprivate):
 def decode_access_rights (rights):
     ispublic=1
     isprivate=0
-    if rights==0:
+
+    if rights=="0":
         ispublic=1
         isprivate=0
-    elif rights==1:
+    elif rights=="1":
         ispublic=0
         isprivate=1
-    elif rights==2:
+    elif rights=="2":
         ispublic=0
         isprivate=2
-    elif rights==3:
+    elif rights=="3":
         ispublic=0
         isprivate=3
     return ispublic, isprivate
