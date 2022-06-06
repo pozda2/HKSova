@@ -59,8 +59,8 @@ Future features
 - Forum - add forum to pages
 
 Administration
-- Page management - pages preview
-- Page management - page edit
+- Page mangement - insert new page
+- Page mangement - delete page
 - Menu managent - adding custom menu items
 - Teams management - overview
 - Teams management - edit team data

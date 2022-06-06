@@ -1,6 +1,6 @@
 <div class="dashboard-nav">
     <header>
-        <a href="#!" class="menu-toggle"><i class="fas fa-bars"></i></a>
+        <a href="#!" class="menu-toggle"><img src={{url_for("static", filename="img/bars.png")}}></a>
         <a href="/" class="brand-logo"><img src={{url_for("static", filename="img/sova_bila_mala.png")}} title="Logo Hradecká sova" alt="Logo Hradecká sova" /></a>
     </header>
 
@@ -8,7 +8,7 @@
         {% if session.org %}
             <div class='dashboard-nav-dropdown'><a href="#!" class="dashboard-nav-item dashboard-nav-dropdown-toggle"></i> Administrace </a>
             <div class='dashboard-nav-dropdown-menu'>
-                <a href="{{ url_for('admin' ~ year.year ~ '.view_pages') }}" title="Správa stránek" class="dashboard-nav-item">Správa stránek</a>
+                <a href="{{ url_for('admin' ~ year.year ~ '.view_admin_pages') }}" title="Správa stránek" class="dashboard-nav-item">Správa stránek</a>
             </div>
             </div>
         {% endif %}

@@ -17,11 +17,11 @@
 {% if pages %}
     {% for page in pages %}
     <tr>
-        <td >{{ page.title}}</td>
-        <td >{{ page.url}}</td>
-        <td >{{ page.visibility}}</td>
-        <td >{{ page.access_right}}</td>
-        <td ></td>
+        <td>{{ page.title}}</td>
+        <td>{{ page.url}}</td>
+        <td>{{ page.visibility}}</td>
+        <td>{{ page.access_right}}</td>
+        <td><a href="{{ url_for('admin' ~ year.year ~ '.view_admin_page', idpage=page.idpage) }}"><img alt="=Úprava" src={{url_for("static", filename="img/edit.gif")}}></a></td>
     </tr>
     {% endfor %}
 {% endif %}

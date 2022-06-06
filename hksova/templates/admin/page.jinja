@@ -1,0 +1,35 @@
+{% extends "_main.jinja" %}
+{% block main%}
+<form  <form  {{url_for('admin' ~ year.year ~ ".edit_page", idpage=idpage)}} method="post"> method="post">
+    {{ form.csrf_token }}
+    <div class="row">
+        {{ form.title(class="form-control", placeholder="Nadpis") }}
+    </div>
+    <p>
+    <div class="row">
+      {{ form.url(class="form-control", placeholder="URL") }}
+    </div>
+    <p>
+    <div class="row">
+        {{ form.content(class="form-control", placeholder="Příspěvek") }}
+    </div>
+    <div class="row">
+        <div class="col">
+            Stránka je aktivní
+        </div>
+        <div class="col">
+            {{ form.isvisible() }}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            Přístupová práva 
+        </div>
+        <div class="col">
+            {{ form.access_rights() }}
+        </div>
+    </div>
+  <p>
+  <button type="submit" class="btn btn-primary">Úpravit stránku</button>
+</form>
+{% endblock %}

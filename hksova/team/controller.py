@@ -48,7 +48,7 @@ def login_team():
     else:
         for error in login_form.errors:
             flash (f'{error} nezadán', "error")
-        return redirect (url_for("Team/view_login"))
+        return redirect (url_for("team.view_login"))
 
 @team.route("/logout/", methods=["GET"])
 @login_required
