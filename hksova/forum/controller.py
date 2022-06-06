@@ -7,6 +7,7 @@ from flask import redirect
 from flask import url_for
 from flask import session
 from flask import flash
+from .utils import current_year_required
 import socket
 
 from ..year.model import *
@@ -45,13 +46,10 @@ def view_forum(section_id):
     return render_template("forum/forum_section.jinja", title="Fórum", year=year, section=section, pagination=pagination, form=post_form, section_id=section_id)
 
 @forum.route("/forum/<int:section_id>", methods=["POST"])
+@current_year_required
 def create_post(section_id):
     year=get_year(request.blueprint)
     post_form = PostForm(request.form)
-
-    if not year['is_current_year']:
-        flash ("Komentovat lze pouze aktuální ročník", "error")
-        return redirect (url_for("forum"+year['year']+".view_forum", section_id=section_id))
 
     if post_form.validate():
         status, message=save_post(section_id, post_form.user.data, post_form.post.data, request.remote_addr, socket.getnameinfo((request.remote_addr, 0), 0)[0], request.headers.get('User-Agent'))
