@@ -9,25 +9,21 @@ from flask import flash
 from .form import *
 from .model import *
 from ..year.model import *
+from .utils import login_required, current_year_required
 
 team = Blueprint("team", __name__)
 
 @team.route("/login/", methods=["GET"])
+@current_year_required
 def view_login():
     login_form = LoginForm()
     year=get_year(request.blueprint)
-    if year['is_current_year']:
-        return render_template("team/login.jinja", form=login_form, title="Přihlášení", year=year)
-    else:
-        flash ("Lze se přihlásit pouze do aktuálního ročníku", "error")
-        return redirect (url_for("main.view_index"))
+    return render_template("team/login.jinja", form=login_form, title="Přihlášení", year=year)
 
 @team.route("/login/", methods=["POST"])
+@current_year_required
 def login_team():
     year=get_year(request.blueprint)
-    if not year['is_current_year'] :
-        flash ("Lze se přihlásit pouze do aktuálního ročníku", "error")
-        return redirect (url_for("main.view_index"))
 
     login_form = LoginForm(request.form)
     if login_form.validate():
@@ -55,10 +51,9 @@ def login_team():
         return redirect (url_for("Team/view_login"))
 
 @team.route("/logout/", methods=["GET"])
+@login_required
+@current_year_required
 def logout_team():
-    if (not "logged" in session.keys()):
-        return redirect (url_for("main.view_index"))
-
     session.pop("logged")
     if session.get("org"): session.pop("org")
     if session.get("team"): session.pop("team")
@@ -73,32 +68,20 @@ def view_teams():
     return render_template("team/teams.jinja", title="Týmy", year=year, teams=teams)
 
 @team.route("/changepassword/", methods=["GET"])
+@login_required
+@current_year_required
 def view_password_change():
     password_change_form = PasswordChangeForm()
     year=get_year(request.blueprint)
 
-    if not year['is_current_year'] :
-        flash ("Heslo lze měnit pouze v aktuálním ročníku", "error")
-        return redirect (url_for("main.view_index"))
-
-    if (not "logged" in session.keys()):
-        flash ("Musíte se přihlásit", "info")
-        return redirect (url_for("team.view_login"))
-
     return render_template("team/password_change.jinja", form=password_change_form, title="Změna hesla", year=year)
 
 @team.route("/changepassword/", methods=["POST"])
+@login_required
+@current_year_required
 def change_password():
     year=get_year(request.blueprint)
     
-    if not year['is_current_year']:
-        flash ("Heslo lze měnit pouze v aktuálním ročníku", "error")
-        return redirect (url_for("main.view_index"))
-
-    if (not "logged" in session.keys()):
-        flash ("Musíte se přihlásit", "info")
-        return redirect (url_for("team.view_login"))
-
     valid=True
     password_change_form = PasswordChangeForm(request.form)
 
@@ -120,22 +103,16 @@ def change_password():
         return redirect (url_for("team.view_password_change"))
 
 @team.route("/team", methods=["GET"])
+@login_required
+@current_year_required
 def view_team():
     year=get_year(request.blueprint)
-    
-    if not year['is_current_year']:
-        flash ("Detailní informace jsou k dispozici pouze v aktuálním ročníku", "error")
-        return redirect (url_for("main.view_index"))
-
-    if (not "logged" in session.keys()):
-        flash ("Musíte se přihlásit", "info")
-        return redirect (url_for("team.view_login"))
-
     team=get_team(year, session['login'])
     payment=get_payment_information(year)
     return render_template("team/team.jinja", title="Údaje o týmu", year=year, team=team, payment=payment)
 
 @team.route("/registration/", methods=["GET"])
+@current_year_required
 def view_registration():
     year=get_year(request.blueprint)
     reg_from=get_registration_from(year)
@@ -152,6 +129,7 @@ def view_registration():
         return (render_template("team/registration_closed.jinja", reg_from=reg_from, reg_to=reg_to, title="Registrace", year=year))
 
 @team.route("/registration/", methods=["POST"])
+@current_year_required
 def register_team():
     year=get_year(request.blueprint)
     reg_from=get_registration_from(year)
@@ -213,31 +191,19 @@ def register_team():
         return render_template("team/registration.jinja", form=registration_form, year=year)
 
 @team.route("/registration_cancel/", methods=["GET"])
+@login_required
+@current_year_required
 def view_registration_cancel():
     registration_cancel_form = RegistrationCancelForm()
     year=get_year(request.blueprint)
-    if not year['is_current_year']:
-        flash ("Registrace lze zrušit pouze v aktuálním ročníku", "error")
-        return redirect (url_for("main.view_index"))
-
-    if (not "logged" in session.keys()):
-        flash ("Musíte se přihlásit", "info")
-        return redirect (url_for("team.view_login"))
-
     return render_template("team/registration_cancel.jinja", form=registration_cancel_form, title="Zrušení registrace", year=year)
 
 @team.route("/registration_cancel/", methods=["POST"])
+@login_required
+@current_year_required
 def registration_cancel():
     year=get_year(request.blueprint)
     
-    if not year['is_current_year']:
-        flash ("Registrace lze zrušit pouze v aktuálním ročníku", "error")
-        return redirect (url_for("main.view_index"))
-
-    if (not "logged" in session.keys()):
-        flash ("Musíte se přihlásit", "info")
-        return redirect (url_for("team.view_login"))
-
     registration_cancel_form = RegistrationCancelForm(request.form)
 
     if registration_cancel_form.validate() and registration_cancel_form.agree.data:
@@ -258,16 +224,10 @@ def registration_cancel():
         return redirect (url_for("team.view_registration_cancel"))
 
 @team.route("/edit_team/", methods=["GET"])
+@login_required
+@current_year_required
 def view_edit_team():
     year=get_year(request.blueprint)
-
-    if not year['is_current_year']:
-        flash ("Změna údajů lze pouze v aktuálním ročníku", "error")
-        return redirect (url_for("main.view_index"))
-
-    if (not "logged" in session.keys()):
-        flash ("Musíte se přihlásit", "info")
-        return redirect (url_for("team.view_login"))
 
     min_players=get_min_players(year)
     max_players=get_max_players(year)
@@ -292,16 +252,10 @@ def view_edit_team():
     return render_template("team/edit_team.jinja", form=edit_team_form, title="Změna údajů", year=year, min_players=min_players, max_players=max_players)
 
 @team.route("/edit_team/", methods=["POST"])
+@login_required
+@current_year_required
 def edit_team():
     year=get_year(request.blueprint)
-
-    if not year['is_current_year']:
-        flash ("Změna údajů lze pouze v aktuálním ročníku", "error")
-        return redirect (url_for("main.view_index"))
-
-    if (not "logged" in session.keys()):
-        flash ("Musíte se přihlásit", "info")
-        return redirect (url_for("team.view_login"))
 
     min_players=get_min_players(year)
     edit_team_form = EditTeamForm(request.form)
