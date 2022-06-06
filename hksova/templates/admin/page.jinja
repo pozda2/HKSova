@@ -1,6 +1,6 @@
 {% extends "_main.jinja" %}
 {% block main%}
-<form  <form  {{url_for('admin' ~ year.year ~ ".edit_page", idpage=idpage)}} method="post"> method="post">
+<form  <form  {{url_for('admin' ~ year.year ~ ".edit_page", idpage=idpage)}} method="post">
     {{ form.csrf_token }}
     <div class="row">
         {{ form.title(class="form-control", placeholder="Nadpis") }}

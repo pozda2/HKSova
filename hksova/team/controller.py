@@ -29,17 +29,11 @@ def login_team():
     if login_form.validate():
         if (check_password_team(year, login_form.loginname.data, login_form.password.data)):
             team=get_team(year, login_form.loginname.data)
-            session["logged"] = True
-            session["org"]=False
-            session["team"]=team['name']
-            session["login"] = login_form.loginname.data
+            set_team_session(year, team['name'], login_form.loginname.data, False)
             flash("Úspěšné přihlášení", "info")
             return redirect (url_for("main.view_index"))
         elif (check_password_org(login_form.loginname.data, login_form.password.data)):
-            session["logged"] = True
-            session["org"]=True
-            session["login"] = "org"
-            session["team"] = "org"
+            set_team_session(year, "org", "org", True)
             flash("Úspěšné přihlášení", "info")
             return redirect (url_for("main.view_index"))
         else:
@@ -54,10 +48,7 @@ def login_team():
 @login_required
 @current_year_required
 def logout_team():
-    session.pop("logged")
-    if session.get("org"): session.pop("org")
-    if session.get("team"): session.pop("team")
-    if session.get("login"): session.pop("login")
+    unset_team_session()
     flash("Úspěšné odhlášení", "info")
     return redirect (url_for("main.view_index"))
 
@@ -169,11 +160,7 @@ def register_team():
                 flash (f'{error}', "error")
                 return render_template("Team/registration.jinja", form=registration_form, year=year)
             else:
-                session["logged"] = True
-                session["team"] = registration_form.name.data
-                session["org"]=False
-                session["login"] = registration_form.loginname.data
-
+                set_team_session(year, registration_form.name.data, registration_form.loginname.data, False)
                 flash("Tým byl úspěšné registrován", "info")
                 return redirect (url_for("main.view_index"))
         else:
@@ -209,10 +196,7 @@ def registration_cancel():
     if registration_cancel_form.validate() and registration_cancel_form.agree.data:
         status, message = cancel_registration (year, session['login'])
         if (status):
-            session.pop("logged")
-            if session.get("org"): session.pop("org")
-            if session.get("login"): session.pop("login")
-            if session.get("team"): session.pop("team")
+            unset_team_session()
             flash("Registrace týmu byla zrušena", "info")
             return redirect (url_for("main.view_index"))
         else:

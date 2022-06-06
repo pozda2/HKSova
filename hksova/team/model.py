@@ -4,6 +4,7 @@ import secrets
 from flask import current_app
 from passlib.hash import sha256_crypt
 from datetime import datetime
+from flask import session
 
 from hksova.settings.model import get_max_teams
 
@@ -341,6 +342,35 @@ def recalculate_teams(year):
             return False, "Problem calculation db: " + str(e)
         
     return True, ""
+
+def set_team_session(year, team_name, team_login, org):
+    session["logged"] = True
+    session["login"] = team_login
+    session["team"] = team_name
+    if (org):
+        session["org"] = True
+        session["ispaid"] = True
+        session["isbackup"]=False
+    else:
+        session["org"] = False
+        team=get_team(year, team_login)
+        if team['isPaid']==0:
+            session["ispaid"] = False
+        else:
+            session["ispaid"] = True
+
+        if team['isBackup']==0:
+            session["isbackup"] = False
+        else:
+            session["isbackup"] = True
+
+def unset_team_session():
+    session.pop("logged")
+    if session.get("org"): session.pop("org")
+    if session.get("team"): session.pop("team")
+    if session.get("login"): session.pop("login")
+    if session.get("ispaid"): session.pop("ispaid")
+    if session.get("isbackup"): session.pop("isbackup")
 
 
 
