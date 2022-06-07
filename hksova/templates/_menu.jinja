@@ -9,6 +9,7 @@
             <div class='dashboard-nav-dropdown'><a href="#!" class="dashboard-nav-item dashboard-nav-dropdown-toggle"></i> Administrace </a>
             <div class='dashboard-nav-dropdown-menu'>
                 <a href="{{ url_for('admin' ~ year.year ~ '.view_admin_pages') }}" title="Správa stránek" class="dashboard-nav-item">Správa stránek</a>
+                <a href="{{ url_for('admin' ~ year.year ~ '.view_admin_menu') }}" title="Správa menu" class="dashboard-nav-item">Správa menu</a>
             </div>
             </div>
         {% endif %}
@@ -38,9 +39,12 @@
 
         <a href="{{ url_for('forum' ~ year.year ~ '.view_forum_section') }}" title="=Fórum" class="dashboard-nav-item ">Fórum</a>
 
-          <div class="nav-item-divider"></div>
+        <div class='dashboard-nav-dropdown'><a href="#!" class="dashboard-nav-item dashboard-nav-dropdown-toggle"></i> Ročníky </a>
+        <div class='dashboard-nav-dropdown-menu'>
           <a href="{{ url_for('main2022.view_index') }}" title="informace o hře" class="dashboard-nav-item">Ročník 2022 </a>
           <a href="{{ url_for('main2021.view_index') }}" title="informace o hře" class="dashboard-nav-item">Ročník 2021 </a>
+        </div>
+        </div>
     </nav>
 </div>
 

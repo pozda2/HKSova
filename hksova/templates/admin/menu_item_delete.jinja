@@ -1,0 +1,15 @@
+{% extends "_main.jinja" %}
+{% block main%}
+
+<h2>Zrušení položky menu: {{ menuitem.menu }}</h2>
+<form {{url_for('admin' ~ year.year ~ ".menu_item_delete", idmenu=menuitem.idmenu)}} method="POST" >
+    {{ form.csrf_token }}
+     <div class="form-row">
+        <div class="col">{{ form.agree.label}}</div>
+        <div class="col">{{ form.agree() }}</div>
+    </div>
+    <br>
+    <button type="submit" class="btn btn-primary">Zrušit položku menu</button>
+    <button type="button"  class="btn btn-primary" onclick="history.back()">Zpět</button>
+</form>
+{% endblock %}

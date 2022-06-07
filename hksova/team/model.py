@@ -129,7 +129,7 @@ def check_password_team (year, login, password):
     except Exception as e:
         return False
 
-def create_team (form, year):
+def insert_team (form, year):
     salt=secrets.token_hex(20)
     password = sha256_crypt.hash(current_app.config['SECRET_PEPPER'] + form.password.data + salt)
     mascot=get_unique_mascot(year)
@@ -173,7 +173,7 @@ def create_team (form, year):
     current_app.mysql.connection.commit()
     return True, ""
 
-def save_team (form, year, login):
+def update_team (form, year, login):
     team=get_team(year, login)
     try:
         cursor = current_app.mysql.connection.cursor()

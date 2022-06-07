@@ -6,8 +6,8 @@
 <form {{url_for('team' ~ year.year ~ ".registration_cancel")}} method="post">
     {{ form.csrf_token }}
      <div class="form-row">
-        {{ form.agree.label}}
-        {{ form.agree() }}
+        <div class="col"> {{ form.agree.label}}</div>
+        <div class="col">{{ form.agree() }}</div>
     </div>
     <br>
     <button type="submit" class="btn btn-primary">Zrušit registraci</button>

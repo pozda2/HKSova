@@ -1,0 +1,85 @@
+{% extends "_main.jinja" %}
+{% block main%}
+
+<h2>Úprava položky menu</h2>
+<form {{url_for('admin' ~ year.year ~ ".edit_menu_item", idmenu=idmenu)}} method="post">
+  {{ form.csrf_token }}
+  <div class="form-row">
+    <div class="col">
+      <label for="inputOrder">{{ form.order.label }}</label>
+    </div>
+    <div class="col">
+      {{ form.order(class="form-control", id="inputOrder", placeholder="Pořadí položky") }}
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="col">
+      <label for="inputMenu">{{ form.menu.label }}</label>
+    </div>
+    <div class="col">
+      {{ form.menu(class="form-control", id="inputMenu", placeholder="Popis položky") }}
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="col">
+      <label for="inputMenu">{{ form.link.label }}</label>
+    </div>
+    <div class="col">
+      {{ form.link(class="form-control", id="inputLink", placeholder="URL položky") }}
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="col">
+      <label for="inputPageType">{{ form.pagetype.label }}</label>
+    </div>
+    <div class="col">
+      {{ form.pagetype(class="form-control", id="inputPageType") }}
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="col">
+      <label for="inputPage">{{ form.pages.label }}</label>
+    </div>
+    <div class="col">
+      {{ form.pages(class="form-control", id="inputPage") }}
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="col">
+      <label for="inputIsNewPart">{{ form.isnewpart.label }}</label>
+    </div>
+    <div class="col">
+      {{ form.isnewpart(class="form-control", id="inputIsNewPart") }}
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="col">
+      <label for="inputIsVisible">{{ form.isvisible.label }}</label>
+    </div>
+    <div class="col">
+      {{ form.isvisible(class="form-control", id="inputIsVisible") }}
+    </div>
+  </div>  
+  <div class="form-row">
+    <div class="col">
+      <label for="inputAccessRights">{{ form.access_rights.label }}</label>
+    </div>
+    <div class="col">
+      {{ form.access_rights(class="form-control", id="inputAccessRights") }}
+    </div>
+  </div>  
+  <div class="form-row">
+    <div class="col">
+      <label for="inputCurrentYear">{{ form.current_year.label }}</label>
+    </div>
+    <div class="col">
+      {{ form.current_year(class="form-control", id="inputCurrentYear") }}
+    </div>
+  </div>  
+  <p><p>
+  <button type="submit" class="btn btn-primary">Upravit položku menu</button>
+  <button type="button"  class="btn btn-primary" onclick="history.back()">Zpět</button>
+</form>
+
+{% endblock %}

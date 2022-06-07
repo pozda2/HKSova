@@ -54,14 +54,13 @@ Future features
 - Login, reset of forgot password
 - Team, displaying payment detail as QR
 - Teams, display statistics
-- Menu - generate menu according database settings, displaying pages from database
+- Menu - generate menu according database settings
 - Menu - add old years, probably need of manual page changes
 - Forum - add forum to pages
 
 Administration
 - Page mangement - insert new page
 - Page mangement - delete page
-- Menu managent - adding custom menu items
 - Teams management - overview
 - Teams management - edit team data
 - Teams management - switching form org to team perspective

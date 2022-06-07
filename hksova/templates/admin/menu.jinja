@@ -1,0 +1,42 @@
+{% extends "_main.jinja" %}
+{% block main%}
+
+<h2>Správa menu</h2>
+
+<A href=" {{ url_for('admin' ~ year.year ~ ".view_menu_item_add")}}">  <button type="submit" class="btn btn-primary" >Nová položka v menu</button></A>
+<p>
+
+<table class="table table-dark table-striped">
+  <thead>
+    <tr>
+        <th>Pořadí</th>
+        <th>Menu</th>
+        <th>Odkaz</th>
+        <th>Typ</th>
+        <th>Viditelnost</th>
+        <th>Oprávnění</th>
+        <th>Ročník</th>
+        <th>Akce</th>
+    </tr>
+  </thead>
+  <tbody>
+{% if menu %}
+    {% for item in menu %}
+    <tr>
+        <td>{{ item.order}}</td>
+        <td>{{ item.menu}}</td>
+        <td>{{ item.link}}</td>
+        <td>{{ item.menutyp}}</td>
+        <td>{{ item.visibility}}</td>
+        <td>{{ item.access_right}}</td>
+        <td>{{ item.currentyear}}</td>
+        <td>
+            <a href="{{ url_for('admin' ~ year.year ~ '.view_menu_item', idmenu=item.idmenu) }}"><img alt="=Úprava" src={{url_for("static", filename="img/edit.gif")}}></a>
+            <a href="{{ url_for('admin' ~ year.year ~ '.view_menu_item_delete', idmenu=item.idmenu) }}"><img alt="=Smazání" src={{url_for("static", filename="img/delete.gif")}}></a>
+        </td>
+    </tr>
+    {% endfor %}
+{% endif %}
+  </tbody>
+</table>
+{% endblock %}

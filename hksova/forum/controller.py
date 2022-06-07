@@ -52,7 +52,7 @@ def create_post(section_id):
     post_form = PostForm(request.form)
 
     if post_form.validate():
-        status, message=save_post(section_id, post_form.user.data, post_form.post.data, request.remote_addr, socket.getnameinfo((request.remote_addr, 0), 0)[0], request.headers.get('User-Agent'))
+        status, message=insert_post(section_id, post_form.user.data, post_form.post.data, request.remote_addr, socket.getnameinfo((request.remote_addr, 0), 0)[0], request.headers.get('User-Agent'))
         session['forum_name']=post_form.user.data
         if not status:
             flash (message, "error")

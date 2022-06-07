@@ -155,7 +155,7 @@ def register_team():
             flash (f'V týmu musí být minimálně {min_players} hráčů', "error")
         
         if (valid):
-            status, error = create_team(registration_form, year)
+            status, error = insert_team(registration_form, year)
             if not status:
                 flash (f'{error}', "error")
                 return render_template("Team/registration.jinja", form=registration_form, year=year)
@@ -259,7 +259,7 @@ def edit_team():
             flash (f'V týmu musí být minimálně {min_players} hráčů', "error")
         
         if (valid):
-            status, error = save_team(edit_team_form, year, session['login'])
+            status, error = update_team(edit_team_form, year, session['login'])
             if not status:
                 flash (f'{error}', "error")
                 return render_template("Team/edit_team.jinja", form=edit_team_form, year=year)

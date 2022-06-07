@@ -76,7 +76,8 @@ CREATE TABLE `menu` (
   `isPublic` tinyint(1) UNSIGNED NOT NULL COMMENT 'pro verejnost',
   `isPrivate` tinyint(1) UNSIGNED NOT NULL COMMENT '1=reg | 2=hrac | 3=zaplaceno',
   `isVisible` tinyint(1) UNSIGNED NOT NULL COMMENT 'viditelna | jen pro org',
-  `isSystem` tinyint(1) UNSIGNED NOT NULL COMMENT 'systemova poloza - nelze vymazat'
+  `isSystem` tinyint(1) UNSIGNED NOT NULL COMMENT 'systemova poloza - nelze vymazat',
+  `isCurrentYear` tinyint(1) UNSIGNED NOT NULL COMMENT 'zobrazuje se pouze v aktualnim rocniku'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
 
 -- --------------------------------------------------------

@@ -43,7 +43,7 @@ def get_forum_post_count(idForumSection):
         return data[0]['num']
     return 0
 
-def save_post (idforumsection, name, text, ip, dns, browser):
+def insert_post (idforumsection, name, text, ip, dns, browser):
     now=datetime.now()
 
     text = "<br />".join(text.split("\n"))
