@@ -6,9 +6,13 @@ from flask import url_for
 from flask import flash
 
 from ..year.model import *
+from ..menu.model import *
 from .form import *
 from .model import *
 from .utils import org_login_required
+
+import mistune
+from mistune.plugins import plugin_table
 
 admin = Blueprint("admin", __name__)
 
@@ -16,13 +20,15 @@ admin = Blueprint("admin", __name__)
 @org_login_required
 def view_admin_pages():
     year=get_year(request.blueprint)
+    menu=get_menu(year)
     pages=get_admin_pages(year)
-    return render_template("admin/pages.jinja", title="Správa stránek", year=year, pages=pages)
+    return render_template("admin/pages.jinja", title="Správa stránek", year=year, pages=pages, menu=menu)
 
 @admin.route("/admin/page/<int:idpage>", methods=["GET"])
 @org_login_required
 def view_admin_page(idpage):
     year=get_year(request.blueprint)
+    menu=get_menu(year)
     page_form = PageForm()
     page=get_admin_page(idpage)
     page_form.title.data=page['title']
@@ -30,11 +36,12 @@ def view_admin_page(idpage):
     page_form.content.data=page['texy']
     page_form.isvisible.data=page['isvisible']
     page_form.access_rights.process_data(encode_access_rights(page['ispublic'], page['isprivate']))
-    return render_template("admin/page.jinja", title="Editace stránky", year=year, form=page_form, idpage=idpage)
+    return render_template("admin/page.jinja", title="Editace stránky", year=year, form=page_form, idpage=idpage, menu=menu)
 
 @admin.route("/admin/page/<int:idpage>", methods=["POST"])
 def edit_page(idpage):
     year=get_year(request.blueprint)
+    menu=get_menu(year) 
     page_form = PageForm(request.form)
     if page_form.validate():
         markdown = mistune.create_markdown(escape=False, plugins=['table'])
@@ -55,7 +62,7 @@ def edit_page(idpage):
                             flash (f'{error[k][0]}', "error")
                 else:
                     flash (f'{error}', "error")
-                    return render_template("admin/page.jinja", title="Editace stránky", year=year, form=page_form, idpage=idpage) 
+                    return render_template("admin/page.jinja", title="Editace stránky", year=year, form=page_form, idpage=idpage, menu=menu) 
 
     return redirect (url_for("admin"+year['year']+".view_admin_pages"))
 
@@ -64,13 +71,15 @@ def edit_page(idpage):
 def view_admin_menu():
     year=get_year(request.blueprint)
     menu=get_menu(year)
-    return render_template("admin/menu.jinja", title="Správa menu", year=year, menu=menu)
+    admin_menu=get_admin_menu(year)
+    return render_template("admin/menu.jinja", title="Správa menu", year=year, admin_menu=admin_menu, menu=menu)
 
 @admin.route("/admin/menu/<idmenu>", methods=["GET"])
 @org_login_required
 def view_menu_item(idmenu):
     year=get_year(request.blueprint)
-    menuitem=get_menu_item(year, idmenu)
+    menu=get_menu(year)
+    menuitem=get_admin_menu_item(year, idmenu)
     pagetype, link, page, issystem = encode_menu_item(menuitem)
 
     menuitem_form = MenuItemForm()
@@ -89,12 +98,12 @@ def view_menu_item(idmenu):
     menuitem_form.pages.process_data(page)
     menuitem_form.access_rights.process_data(encode_access_rights(menuitem['ispublic'], menuitem['isprivate']))
     
-    return render_template("admin/menu_item.jinja", title="Položka menu", year=year, form=menuitem_form, idmenu=idmenu)
+    return render_template("admin/menu_item.jinja", title="Položka menu", year=year, form=menuitem_form, idmenu=idmenu, menu=menu)
 
 @admin.route("/admin/menu/<int:idmenu>", methods=["POST"])
 def edit_menu_item(idmenu):
     year=get_year(request.blueprint)
-    
+    menu=get_menu(year)
     menuitem_form = MenuItemForm(request.form)
     menuitem_form.pages.choices = [ (p['idpage'], p['title']) for p in get_admin_pages(year) ]
     menuitem_form.pages.choices.insert(0, (0, ''))
@@ -119,7 +128,7 @@ def edit_menu_item(idmenu):
                             flash (f'{error[k][0]}', "error")
                 else:
                     flash (f'{error}', "error")
-                    return render_template("admin/menu_item.jinja", title="Položka menu", year=year, form=menuitem_form, idmenu=idmenu)
+                    return render_template("admin/menu_item.jinja", title="Položka menu", year=year, form=menuitem_form, idmenu=idmenu, menu=menu)
 
     return redirect (url_for("admin"+year['year']+".view_admin_menu"))
     
@@ -128,16 +137,15 @@ def edit_menu_item(idmenu):
 @org_login_required
 def view_menu_item_delete(idmenu):
     year=get_year(request.blueprint)
-    menuitem=get_menu_item(year, idmenu)
+    menu=get_menu(year)
+    menuitem=get_admin_menu_item(year, idmenu)
     menuitem_delete_form = MenuItemDeleteForm()
-    return render_template("admin/menu_item_delete.jinja", title="Smazání položky menu", year=year, form=menuitem_delete_form, menuitem=menuitem)
+    return render_template("admin/menu_item_delete.jinja", title="Smazání položky menu", year=year, form=menuitem_delete_form, menuitem=menuitem, menu=menu)
 
 @admin.route("/admin/menu/delete/<idmenu>", methods=["POST"])
 @org_login_required
 def menu_item_delete(idmenu):
     year=get_year(request.blueprint)
-    print ("abc")
-
     status, message = delete_menu_item(idmenu)
     if not status:
         flash (message, "error")
@@ -149,17 +157,18 @@ def menu_item_delete(idmenu):
 @org_login_required
 def view_menu_item_add():
     year=get_year(request.blueprint)
+    menu=get_menu(year)
     menuitem_form = MenuItemForm()
     
     menuitem_form.pages.choices = [ (p['idpage'], p['title']) for p in get_admin_pages(year) ]
     menuitem_form.pages.choices.insert(0, (0, ''))
     
-    return render_template("admin/menu_item_create.jinja", title="Nová položka menu", year=year, form=menuitem_form)
+    return render_template("admin/menu_item_create.jinja", title="Nová položka menu", year=year, form=menuitem_form, menu=menu)
 
 @admin.route("/admin/menu/add", methods=["POST"])
 def create_menu_item():
     year=get_year(request.blueprint)
-    
+    menu=get_menu(year)
     menuitem_form = MenuItemForm(request.form)
     menuitem_form.pages.choices = [ (p['idpage'], p['title']) for p in get_admin_pages(year) ]
     menuitem_form.pages.choices.insert(0, (0, ''))
@@ -184,7 +193,7 @@ def create_menu_item():
                             flash (f'{error[k][0]}', "error")
                 else:
                     flash (f'{error}', "error")
-                    return render_template("admin/menu_item_create.jinja", title="Nová položka menu", year=year, form=menuitem_form)
+                    return render_template("admin/menu_item_create.jinja", title="Nová položka menu", year=year, form=menuitem_form, menu=menu)
 
     return redirect (url_for("admin"+year['year']+".view_admin_menu"))
     

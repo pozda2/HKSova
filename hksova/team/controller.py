@@ -9,6 +9,7 @@ from flask import flash
 from .form import *
 from .model import *
 from ..year.model import *
+from ..menu.model import *
 from .utils import login_required, current_year_required
 
 team = Blueprint("team", __name__)
@@ -18,12 +19,14 @@ team = Blueprint("team", __name__)
 def view_login():
     login_form = LoginForm()
     year=get_year(request.blueprint)
-    return render_template("team/login.jinja", form=login_form, title="Přihlášení", year=year)
+    menu=get_menu(year)
+    return render_template("team/login.jinja", form=login_form, title="Přihlášení", year=year, menu=menu)
 
 @team.route("/login/", methods=["POST"])
 @current_year_required
 def login_team():
     year=get_year(request.blueprint)
+    menu=get_menu(year)
 
     login_form = LoginForm(request.form)
     if login_form.validate():
@@ -38,7 +41,7 @@ def login_team():
             return redirect (url_for("main.view_index"))
         else:
             flash("Chybné uživatelské jméno nebo heslo.", "error")
-            return render_template("team/login.jinja", form=login_form, year=year)
+            return render_template("team/login.jinja", form=login_form, year=year, menu=menu)
     else:
         for error in login_form.errors:
             flash (f'{error} nezadán', "error")
@@ -55,8 +58,9 @@ def logout_team():
 @team.route("/teams/", methods=["GET"])
 def view_teams():
     year=get_year(request.blueprint)
+    menu=get_menu(year)
     teams=get_teams_not_deleted(year)
-    return render_template("team/teams.jinja", title="Týmy", year=year, teams=teams)
+    return render_template("team/teams.jinja", title="Týmy", year=year, teams=teams, menu=menu)
 
 @team.route("/changepassword/", methods=["GET"])
 @login_required
@@ -64,15 +68,15 @@ def view_teams():
 def view_password_change():
     password_change_form = PasswordChangeForm()
     year=get_year(request.blueprint)
-
-    return render_template("team/password_change.jinja", form=password_change_form, title="Změna hesla", year=year)
+    menu=get_menu(year)
+    return render_template("team/password_change.jinja", form=password_change_form, title="Změna hesla", year=year, menu=menu)
 
 @team.route("/changepassword/", methods=["POST"])
 @login_required
 @current_year_required
 def change_password():
     year=get_year(request.blueprint)
-    
+    menu=get_menu(year)
     valid=True
     password_change_form = PasswordChangeForm(request.form)
 
@@ -87,7 +91,7 @@ def change_password():
             return redirect (url_for("main.view_index"))
         else:
             flash(message, "error")
-            return render_template("team/password_change.jinja", form=password_change_form, year=year)
+            return render_template("team/password_change.jinja", form=password_change_form, year=year, menu=menu)
     else:
         for error in password_change_form.errors:
             flash (f'{error} nezadán', "error")
@@ -98,14 +102,16 @@ def change_password():
 @current_year_required
 def view_team():
     year=get_year(request.blueprint)
+    menu=get_menu(year)
     team=get_team(year, session['login'])
     payment=get_payment_information(year)
-    return render_template("team/team.jinja", title="Údaje o týmu", year=year, team=team, payment=payment)
+    return render_template("team/team.jinja", title="Údaje o týmu", year=year, team=team, payment=payment, menu=menu)
 
 @team.route("/registration/", methods=["GET"])
 @current_year_required
 def view_registration():
     year=get_year(request.blueprint)
+    menu=get_menu(year)
     reg_from=get_registration_from(year)
     reg_to=get_registration_to(year)
     min_players=get_min_players(year)
@@ -115,21 +121,22 @@ def view_registration():
         registration_form.players.append_entry()
 
     if (is_registration_open(year)):
-        return render_template("team/registration.jinja", form=registration_form, title="Registrace", year=year, reg_from=reg_from, reg_to=reg_to, min_players=min_players, max_players=max_players)
+        return render_template("team/registration.jinja", form=registration_form, title="Registrace", year=year, reg_from=reg_from, reg_to=reg_to, min_players=min_players, max_players=max_players, menu=menu)
     else:
-        return (render_template("team/registration_closed.jinja", reg_from=reg_from, reg_to=reg_to, title="Registrace", year=year))
+        return (render_template("team/registration_closed.jinja", reg_from=reg_from, reg_to=reg_to, title="Registrace", year=year, menu=menu))
 
 @team.route("/registration/", methods=["POST"])
 @current_year_required
 def register_team():
     year=get_year(request.blueprint)
+    menu=get_menu(year)
     reg_from=get_registration_from(year)
     reg_to=get_registration_to(year)
     min_players=get_min_players(year)
     registration_form = RegistrationForm(request.form)
 
     if (not is_registration_open(year)):
-        return (render_template("team/registration_close.jinja", reg_from=reg_from, reg_to=reg_to, title="Registrace", year=year))
+        return (render_template("team/registration_close.jinja", reg_from=reg_from, reg_to=reg_to, title="Registrace", year=year, menu=menu))
 
     if registration_form.validate():
         valid=True
@@ -158,13 +165,13 @@ def register_team():
             status, error = insert_team(registration_form, year)
             if not status:
                 flash (f'{error}', "error")
-                return render_template("Team/registration.jinja", form=registration_form, year=year)
+                return render_template("Team/registration.jinja", form=registration_form, year=year, menu=menu)
             else:
                 set_team_session(year, registration_form.name.data, registration_form.loginname.data, False)
                 flash("Tým byl úspěšné registrován", "info")
                 return redirect (url_for("main.view_index"))
         else:
-            return render_template("team/registration.jinja", form=registration_form, year=year)
+            return render_template("team/registration.jinja", form=registration_form, year=year, menu=menu)
     else:
         for _, errors in registration_form.errors.items():
             for error in errors:
@@ -175,7 +182,7 @@ def register_team():
                 else:
                     flash (f'{error}', "error")
             
-        return render_template("team/registration.jinja", form=registration_form, year=year)
+        return render_template("team/registration.jinja", form=registration_form, year=year, menu=menu)
 
 @team.route("/registration_cancel/", methods=["GET"])
 @login_required
@@ -183,14 +190,15 @@ def register_team():
 def view_registration_cancel():
     registration_cancel_form = RegistrationCancelForm()
     year=get_year(request.blueprint)
-    return render_template("team/registration_cancel.jinja", form=registration_cancel_form, title="Zrušení registrace", year=year)
+    menu=get_menu(year)
+    return render_template("team/registration_cancel.jinja", form=registration_cancel_form, title="Zrušení registrace", year=year, menu=menu)
 
 @team.route("/registration_cancel/", methods=["POST"])
 @login_required
 @current_year_required
 def registration_cancel():
     year=get_year(request.blueprint)
-    
+    menu=get_menu(year)
     registration_cancel_form = RegistrationCancelForm(request.form)
 
     if registration_cancel_form.validate() and registration_cancel_form.agree.data:
@@ -201,7 +209,7 @@ def registration_cancel():
             return redirect (url_for("main.view_index"))
         else:
             flash(message, "error")
-            return render_template("team/registration_cancel.jinja", form=registration_cancel_form, year=year)
+            return render_template("team/registration_cancel.jinja", form=registration_cancel_form, year=year, menu=menu)
     else:
         for error in registration_cancel.errors:
             flash (f'{error} nezadán', "error")
@@ -212,7 +220,7 @@ def registration_cancel():
 @current_year_required
 def view_edit_team():
     year=get_year(request.blueprint)
-
+    menu=get_menu(year)
     min_players=get_min_players(year)
     max_players=get_max_players(year)
     edit_team_form = EditTeamForm()
@@ -233,14 +241,14 @@ def view_edit_team():
         edit_team_form['players'][player['order']]['city'].data = player['city']
         edit_team_form['players'][player['order']]['age'].data = player['age']
 
-    return render_template("team/edit_team.jinja", form=edit_team_form, title="Změna údajů", year=year, min_players=min_players, max_players=max_players)
+    return render_template("team/edit_team.jinja", form=edit_team_form, title="Změna údajů", year=year, min_players=min_players, max_players=max_players, menu=menu)
 
 @team.route("/edit_team/", methods=["POST"])
 @login_required
 @current_year_required
 def edit_team():
     year=get_year(request.blueprint)
-
+    menu=get_menu(year)
     min_players=get_min_players(year)
     edit_team_form = EditTeamForm(request.form)
 
@@ -262,12 +270,12 @@ def edit_team():
             status, error = update_team(edit_team_form, year, session['login'])
             if not status:
                 flash (f'{error}', "error")
-                return render_template("Team/edit_team.jinja", form=edit_team_form, year=year)
+                return render_template("Team/edit_team.jinja", form=edit_team_form, year=year, menu=menu)
             else:
                 flash("Údaje o týmu byly úspěšně změněny", "info")
                 return redirect (url_for("main.view_index"))
         else:
-            return render_template("team/edit_team.jinja", form=edit_team_form, year=year)
+            return render_template("team/edit_team.jinja", form=edit_team_form, year=year, menu=menu)
     else:
         for _, errors in edit_team_form.errors.items():
             for error in errors:
@@ -278,4 +286,4 @@ def edit_team():
                 else:
                     flash (f'{error}', "error")
             
-        return render_template("team/edit_team.jinja", form=edit_team_form, year=year)
+        return render_template("team/edit_team.jinja", form=edit_team_form, year=year, menu=menu)

@@ -292,6 +292,7 @@ h1, .h1 {
     display: -webkit-flex;
     display: -ms-flexbox;
     display: flex;
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .dashboard-nav-dropdown-toggle:after {

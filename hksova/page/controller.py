@@ -5,6 +5,7 @@ from flask import request
 from flask import session
 
 from ..year.model import *
+from ..menu.model import *
 from .model import *
 
 main = Blueprint("main", __name__)
@@ -34,8 +35,10 @@ def check_authorization(ispublic, isprivate, isvisible):
 @main.route("/")
 def view_index():
     year=get_year(request.blueprint)
+    menu=get_menu(year)
+    print (menu)
     page=get_page(year, 'index')
-    r = make_response(render_template("page/page.jinja", text=page['html'], title=page['title'], year=year))
+    r = make_response(render_template("page/page.jinja", text=page['html'], title=page['title'], year=year, menu=menu))
     #r.headers.set('Content-Security-Policy', "default-src 'self'")
     r.headers.set('X-Content-Type-Options', 'nosniff')
     r.headers.set('X-Frame-Options', 'SAMEORIGIN')
@@ -44,18 +47,19 @@ def view_index():
 @main.route("/<pageurl>")
 def view_page(pageurl):
     year=get_year(request.blueprint)
+    menu=get_menu(year)
     page=get_page(year, pageurl)
 
     if page:
         if check_authorization(page['ispublic'], page['isprivate'], page['isvisible']):
-            r = make_response(render_template("page/page.jinja", text=page['html'], title=page['title'], year=year))
+            r = make_response(render_template("page/page.jinja", text=page['html'], title=page['title'], year=year, menu=menu))
             #r.headers.set('Content-Security-Policy', "default-src 'self'")
             r.headers.set('X-Content-Type-Options', 'nosniff')
             r.headers.set('X-Frame-Options', 'SAMEORIGIN')
             return r
         else:
-            return render_template("errors/404.jinja",  year=year), 404
+            return render_template("errors/404.jinja",  year=year, menu=menu), 404
     else:
-        return render_template("errors/404.jinja",  year=year), 404
+        return render_template("errors/404.jinja",  year=year, menu=menu), 404
 
 

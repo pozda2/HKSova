@@ -14,30 +14,38 @@
             </div>
         {% endif %}
 
-        <a href="{{ url_for('main' ~ year.year ~ '.view_index') }}" title="Informace o hře" class="dashboard-nav-item">Informace</a>
-        <a href="{{ url_for('team' ~ year.year ~ '.view_teams') }}" title="Týmy" class="dashboard-nav-item">Týmy </a>
-
-        {% if session.logged %}
-            {% if year.is_current_year %}
-            <div class='dashboard-nav-dropdown'><a href="#!" class="dashboard-nav-item dashboard-nav-dropdown-toggle"></i> Můj tým </a>
-                <div class='dashboard-nav-dropdown-menu'>
-                {% if not session.org %}
-                <a href="{{ url_for('team' ~ year.year ~ '.view_team') }}" title="Údaje o týmu" class="dashboard-nav-item">Údaje o týmu</a>
-                <a href="{{ url_for('team' ~ year.year ~ '.view_password_change') }}" title="Změna hesla" class="dashboard-nav-item">Změna hesla</a>
-                <a href="{{ url_for('team' ~ year.year ~ '.view_registration_cancel') }}" title="Zrušení registrace" class="dashboard-nav-item">Zrušení registrace</a>
-                {% endif %}
-                <a href="{{ url_for('team' ~ year.year ~ '.logout_team') }}" title="Odhlášení" class="dashboard-nav-item">Odhlášení</a>
-                </div>
-            </div>
-            {% endif %}
-        {% else %}
-            {% if year.is_current_year %}
-                <a href="{{ url_for('team' ~ year.year ~ '.view_registration') }}" title="Registrace" class="dashboard-nav-item ">Registrace</a>
-                <a href="{{ url_for('team' ~ year.year ~ '.login_team') }}" title="Přihlášení" class="dashboard-nav-item ">Přihlášení</a>
-            {% endif %}
-        {% endif%}
-
-        <a href="{{ url_for('forum' ~ year.year ~ '.view_forum_section') }}" title="=Fórum" class="dashboard-nav-item ">Fórum</a>
+        {% if menu %}
+            {% set ns = namespace(group=false) %}
+            {% for item in menu if not (year.is_current_year==False and item.iscurrentyear == 1) %}
+                {% if (session.org or item.ispublic or (item.isprivate==1 and session.logged) or (item.isprivate==2 and session.logged and session.isbackup==0) or (item.isprivate==3 and session.logged and session.ispaid))  %}
+                    {% if session.org or item.isvisible %}
+                        {% if item.link is none %} 
+                            {% if ns.group %} </div></div> {% endif %}
+                                <div class='dashboard-nav-dropdown'><a hr   ef="#!" class="dashboard-nav-item dashboard-nav-dropdown-toggle">{{item.menu}}</a><div class='dashboard-nav-dropdown-menu'>
+                            {% set ns.group = True %}
+                        {% else %}
+                            {% if item.isnewpart %} 
+                                {% if ns.group %} </div></div>{% set ns.group = False %} {% endif %}
+                            {% endif %}
+                            {% if item.blueprint %}
+                                {% if item.function == "view_page" %}
+                                    <a href={{ url_for(item.blueprint ~ year.year ~ '.' ~ item.function, pageurl=item.link) }} class="dashboard-nav-item">{{item.menu}}</a>
+                                {% else %}
+                                    {% if not session.logged or (session.logged and item.function != 'login_team' and item.function != 'view_registration') %}
+                                        {% if not session.org or (session.logged and item.function != 'view_team' and item.function != 'view_password_change' and item.function != 'view_registration_cancel') %}
+                                            <a href={{ url_for(item.blueprint ~ year.year ~ '.' ~ item.function) }} class="dashboard-nav-item">{{item.menu}}</a>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endif %}
+                            {% else %}
+                                <a href={{item.link}} class="dashboard-nav-item">{{item.menu}}</a>
+                            {% endif %}
+                        {% endif %} 
+                    {% endif %} 
+                {% endif %} 
+            {% endfor %}
+            {% if ns.group %} </div></div>{% endif %}
+        {% endif %}
 
         <div class='dashboard-nav-dropdown'><a href="#!" class="dashboard-nav-item dashboard-nav-dropdown-toggle"></i> Ročníky </a>
         <div class='dashboard-nav-dropdown-menu'>

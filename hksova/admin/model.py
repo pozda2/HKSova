@@ -212,7 +212,7 @@ def update_page (idpage, title, url, texy, html, ispublic, isprivate, isvisible)
     current_app.mysql.connection.commit()
     return True, ""
 
-def get_menu(year):
+def get_admin_menu(year):
     cursor = current_app.mysql.connection.cursor()
     cursor.execute('''select idmenu, idpage, menu, link, `order`, isnewpart, ispublic, isprivate, isvisible, issystem, iscurrentyear from menu where idyear=%s order by `order`''', [year['year']])
     data=cursor.fetchall()
@@ -225,7 +225,7 @@ def get_menu(year):
             menu['menutyp']=translate_menu_typ(menu)
     return data
 
-def get_menu_item(year, idmenu):
+def get_admin_menu_item(year, idmenu):
     cursor = current_app.mysql.connection.cursor()
     cursor.execute('''select idpage, menu, link, `order`, isnewpart, ispublic, isprivate, isvisible, issystem, iscurrentyear from menu where idyear=%s and idmenu=%s''', [year['year'], idmenu])
     data=cursor.fetchone()
