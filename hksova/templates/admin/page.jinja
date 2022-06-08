@@ -13,6 +13,15 @@
     <div class="row">
         {{ form.content(class="form-control", placeholder="Příspěvek") }}
     </div>
+    <div class="form-row">
+        <div class="col">
+            <label for="inputPage">{{ form.forum_section.label }}</label>
+        </div>
+        <div class="col">
+            {{ form.forum_section(class="form-control", id="inputPage") }}
+        </div>
+    </div>
+
     <div class="row">
         <div class="col">
             Stránka je aktivní

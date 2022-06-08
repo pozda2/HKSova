@@ -95,7 +95,8 @@ CREATE TABLE `page` (
   `html` text COLLATE utf8_czech_ci NOT NULL COMMENT 'html stranka',
   `isPublic` tinyint(1) UNSIGNED NOT NULL COMMENT 'pro verejnost',
   `isPrivate` tinyint(1) UNSIGNED NOT NULL COMMENT '1=reg | 2=hrac | 3=zaplaceno',
-  `isVisible` tinyint(1) UNSIGNED NOT NULL COMMENT 'viditelne | pro orgy'
+  `isVisible` tinyint(1) UNSIGNED NOT NULL COMMENT 'viditelne | pro orgy',
+  `idForumSection` int(10) UNSIGNED default null COMMENT 'FK - sekce';
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_czech_ci;
 
 
@@ -197,7 +198,7 @@ INSERT INTO `year` (`idYear`) VALUES
 ALTER TABLE `forum`
   ADD PRIMARY KEY (`idForum`),
   ADD KEY `idForumSection` (`idForumSection`);
-
+  
 --
 -- Indexy pro tabulku `forum_section`
 --
@@ -226,6 +227,7 @@ ALTER TABLE `page`
   ADD PRIMARY KEY (`idPage`),
   ADD UNIQUE KEY `url` (`url`,`idYear`),
   ADD KEY `idYear` (`idYear`);
+  ADD KEY `idForumSection` (`idForumSection`);
 
 --
 -- Indexy pro tabulku `player`

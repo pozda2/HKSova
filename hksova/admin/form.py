@@ -14,6 +14,7 @@ class PageForm (FlaskForm):
     title = StringField("Nadpis", validators=[InputRequired(), length(min=1, max=255, message='Délka názvu stránky musí být v rozsahu 1-255) znaků')])
     url = StringField("URL", validators=[InputRequired(), length(min=1, max=255, message='Délka URL musí být v rozsahu 1-255) znaků')])
     content = MDEditorField('Článek', validators=[DataRequired()])
+    forum_section = SelectField('Sekce fóra')
     isvisible = BooleanField ("Zveřejněno", false_values=(False, 'false', 0, '0'))
     access_rights = SelectField('Přístupová práva', choices=[(0, 'Kdokoliv'), (1, 'Náhradníci a hrající'), (2, 'Hrající'), (3, 'Zaplatili')], coerce=int)
 

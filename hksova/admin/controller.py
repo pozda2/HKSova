@@ -36,6 +36,9 @@ def view_admin_page(idpage):
     page_form.content.data=page['texy']
     page_form.isvisible.data=page['isvisible']
     page_form.access_rights.process_data(encode_access_rights(page['ispublic'], page['isprivate']))
+    page_form.forum_section.choices = [ (p['idforumsection'], p['section']) for p in get_admin_forum_sections(year) ]
+    page_form.forum_section.choices.insert(0, (0, ''))
+    page_form.forum_section.process_data(page['idforumsection'])
     return render_template("admin/page.jinja", title="Editace stránky", year=year, form=page_form, idpage=idpage, menu=menu)
 
 @admin.route("/admin/page/<int:idpage>", methods=["POST"])
@@ -43,12 +46,15 @@ def edit_page(idpage):
     year=get_year(request.blueprint)
     menu=get_menu(year) 
     page_form = PageForm(request.form)
+    page_form.forum_section.choices = [ (p['idforumsection'], p['section']) for p in get_admin_forum_sections(year) ]
+    page_form.forum_section.choices.insert(0, (0, ''))
+
     if page_form.validate():
         markdown = mistune.create_markdown(escape=False, plugins=['table'])
         html=markdown(page_form.content.data)
         is_public, is_private=decode_access_rights(page_form.access_rights.data)
         
-        status, message=update_page(idpage, page_form.title.data, page_form.url.data, page_form.content.data, html, is_public, is_private, page_form.isvisible.data)
+        status, message=update_page(idpage, page_form.title.data, page_form.url.data, page_form.content.data, html, is_public, is_private, page_form.isvisible.data, page_form.forum_section.data)
         if not status:
            flash (message, "error")
         else:

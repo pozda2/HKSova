@@ -199,14 +199,14 @@ def get_admin_pages(year):
 
 def get_admin_page(idpage):
     cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''select idpage, idyear, title, url, texy, html, ispublic, isprivate, isvisible from page where idpage=%s ''', [idpage])
+    cursor.execute('''select idpage, idyear, title, url, texy, html, ispublic, isprivate, isvisible, idforumsection from page where idpage=%s ''', [idpage])
     data=cursor.fetchone()
     return data
 
-def update_page (idpage, title, url, texy, html, ispublic, isprivate, isvisible):
+def update_page (idpage, title, url, texy, html, ispublic, isprivate, isvisible, idforumsection):
     try:
         cursor = current_app.mysql.connection.cursor()
-        cursor.execute('''UPDATE page set title=%s, url=%s, texy=%s, html=%s, ispublic=%s, isprivate=%s, isvisible=%s where idpage=%s''', [title, url,texy, html, ispublic, isprivate, isvisible, idpage])
+        cursor.execute('''UPDATE page set title=%s, url=%s, texy=%s, html=%s, ispublic=%s, isprivate=%s, isvisible=%s, idforumsection=%s where idpage=%s''', [title, url,texy, html, ispublic, isprivate, isvisible, idforumsection, idpage])
     except Exception as e:
         return False, "Problem updating into db: " + str(e)
     current_app.mysql.connection.commit()
