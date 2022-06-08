@@ -4,7 +4,7 @@ from datetime import datetime
 
 def get_forum_sections(year):
     cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''select idforumsection, section, `order`, enabled from forum_section where enabled=1 and idyear=%s order by `order`''', [year['year']])
+    cursor.execute('''select idforumsection, section, `order`, isvisible from forum_section where isvisible=1 and idyear=%s order by `order`''', [year['year']])
     data=cursor.fetchall()
 
     if (data):

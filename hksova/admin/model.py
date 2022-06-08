@@ -248,7 +248,6 @@ def update_menu_item(idmenu, year, idpage, menu, link, order, isnewpart, ispubli
     return True, ""
 
 def delete_menu_item(idmenu):
-    print (idmenu)
     try:
         cursor = current_app.mysql.connection.cursor()
         cursor.execute('''DELETE FROM menu where idmenu=%s''', [idmenu] )
@@ -263,6 +262,59 @@ def insert_menu_item(year, idpage, menu, link, order, isnewpart, ispublic, ispri
         cursor.execute('''INSERT INTO menu (idyear, idpage, menu, link, `order`, isnewpart, ispublic, isprivate, isvisible, issystem, iscurrentyear)
                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)''',
                        [year['year'], idpage, menu, link, order, isnewpart, ispublic, isprivate, isvisible, issystem, iscurrentyear] )
+    except Exception as e:
+        return False, "Problem inserting into db: " + str(e)
+    current_app.mysql.connection.commit()
+    return True, ""
+
+def get_admin_forum_sections(year):
+    cursor = current_app.mysql.connection.cursor()
+    cursor.execute('''select idforumsection, section, `order`, isvisible from forum_section where idyear=%s order by `order`''', [year['year']])
+    data=cursor.fetchall()
+
+    if (data):
+        for section in data:
+            section['visibility']=translate_visibility(section)
+    return data
+
+def get_admin_forum_section(idforumsection):
+    cursor = current_app.mysql.connection.cursor()
+    cursor.execute('''select section, `order`, isvisible from forum_section where idforumsection=%s ''', [idforumsection])
+    data=cursor.fetchone()
+    return data
+
+def update_forum_section(idsection, section, order, isvisible):
+    try:
+        cursor = current_app.mysql.connection.cursor()
+        cursor.execute('''UPDATE forum_section set section=%s, `order`=%s, isvisible=%s where idforumsection=%s''',
+        [ section, order, isvisible, idsection] )
+    except Exception as e:
+        return False, "Problem updating into db: " + str(e)
+    current_app.mysql.connection.commit()
+    return True, ""
+
+def delete_forum_section(idforumsection):
+    try:
+        cursor = current_app.mysql.connection.cursor()
+        cursor.execute('''DELETE FROM forum where idforumsection=%s''', [idforumsection] )
+    except Exception as e:
+        return False, "Problem deleting from db: " + str(e)
+
+    try:
+        cursor = current_app.mysql.connection.cursor()
+        cursor.execute('''DELETE FROM forum_section where idforumsection=%s''', [idforumsection] )
+    except Exception as e:
+        return False, "Problem deleting from db: " + str(e)
+
+    current_app.mysql.connection.commit()
+    return True, ""
+
+def insert_forum_section(year, section, order, isvisible):
+    try:
+        cursor = current_app.mysql.connection.cursor()
+        cursor.execute('''INSERT INTO forum_section (idyear, section, `order`, isvisible)
+                       VALUES (%s, %s, %s, %s)''',
+                       [year['year'], section, order, isvisible] )
     except Exception as e:
         return False, "Problem inserting into db: " + str(e)
     current_app.mysql.connection.commit()

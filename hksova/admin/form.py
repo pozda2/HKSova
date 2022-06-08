@@ -42,3 +42,11 @@ class MenuItemForm (FlaskForm):
 
 class MenuItemDeleteForm(FlaskForm):
     agree = BooleanField ("Opravdu chcete smazat položku v menu?", validators=[InputRequired()] )
+
+class ForumSectionForm (FlaskForm):
+    order = IntegerField("Pořadí", validators=[InputRequired(), InputRequired(), NumberRange(0, 1000, "Pořadí položky musí být v rozmezí 0-1000")])
+    section = StringField("Název sekce", validators=[InputRequired(), length(min=1, max=255, message='Délka názvu položky musí být v rozsahu 1-255) znaků')])
+    isvisible = BooleanField ("Zveřejněno", false_values=(False, 'false', 0, '0'))
+
+class ForumSectionDeleteForm(FlaskForm):
+    agree = BooleanField ("Opravdu chcete smazat sekce ve fóru včetně všech příspěvků?", validators=[InputRequired()] )

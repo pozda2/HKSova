@@ -54,7 +54,6 @@ Future features
 - Login, reset of forgot password
 - Team, displaying payment detail as QR
 - Teams, display statistics
-- Menu - generate menu according database settings
 - Menu - add old years, probably need of manual page changes
 - Forum - add forum to pages
 
@@ -66,8 +65,6 @@ Administration
 - Teams management - switching form org to team perspective
 - Teams management - generating email lists
 - Teams management - export data
-- Forum management - section overview
-- Forum management - adding, editing, removing forum section
 - Settings - overview
 - Settings - adding, editing, removing setting
 - Settings - org password change

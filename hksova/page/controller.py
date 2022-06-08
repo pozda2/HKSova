@@ -36,7 +36,6 @@ def check_authorization(ispublic, isprivate, isvisible):
 def view_index():
     year=get_year(request.blueprint)
     menu=get_menu(year)
-    print (menu)
     page=get_page(year, 'index')
     r = make_response(render_template("page/page.jinja", text=page['html'], title=page['title'], year=year, menu=menu))
     #r.headers.set('Content-Security-Policy', "default-src 'self'")

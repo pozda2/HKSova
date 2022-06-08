@@ -133,7 +133,7 @@ def edit_menu_item(idmenu):
     return redirect (url_for("admin"+year['year']+".view_admin_menu"))
     
 
-@admin.route("/admin/menu/delete/<idmenu>", methods=["GET"])
+@admin.route("/admin/menu/delete/<int:idmenu>", methods=["GET"])
 @org_login_required
 def view_menu_item_delete(idmenu):
     year=get_year(request.blueprint)
@@ -142,7 +142,7 @@ def view_menu_item_delete(idmenu):
     menuitem_delete_form = MenuItemDeleteForm()
     return render_template("admin/menu_item_delete.jinja", title="Smazání položky menu", year=year, form=menuitem_delete_form, menuitem=menuitem, menu=menu)
 
-@admin.route("/admin/menu/delete/<idmenu>", methods=["POST"])
+@admin.route("/admin/menu/delete/<int:idmenu>", methods=["POST"])
 @org_login_required
 def menu_item_delete(idmenu):
     year=get_year(request.blueprint)
@@ -196,4 +196,99 @@ def create_menu_item():
                     return render_template("admin/menu_item_create.jinja", title="Nová položka menu", year=year, form=menuitem_form, menu=menu)
 
     return redirect (url_for("admin"+year['year']+".view_admin_menu"))
-    
+
+@admin.route("/admin/forum/", methods=["GET"])
+@org_login_required
+def view_admin_forum_sections():
+    year=get_year(request.blueprint)
+    menu=get_menu(year)
+    forum_sections=get_admin_forum_sections(year)
+    return render_template("admin/forum_sections.jinja", title="Správa sekcí fóra", year=year, forum_sections=forum_sections, menu=menu)
+
+@admin.route("/admin/forum/<int:idsection>", methods=["GET"])
+@org_login_required
+def view_admin_forum_section(idsection):
+    year=get_year(request.blueprint)
+    menu=get_menu(year)
+    forum_section_form = ForumSectionForm()
+    section=get_admin_forum_section(idsection)
+    forum_section_form.section.data=section['section']
+    forum_section_form.isvisible.data=section['isvisible']
+    forum_section_form.order.data=section['order']
+    return render_template("admin/forum_section.jinja", title="Editace sekce fóra", year=year, form=forum_section_form, idsection=idsection, menu=menu)
+
+@admin.route("/admin/forum/<int:idsection>", methods=["POST"])
+def edit_forum_section(idsection):
+    year=get_year(request.blueprint)
+    menu=get_menu(year) 
+    forum_section_form = ForumSectionForm(request.form)
+    if forum_section_form.validate():
+        status, message=update_forum_section(idsection, forum_section_form.section.data, forum_section_form.order.data, forum_section_form.isvisible.data)
+        if not status:
+           flash (message, "error")
+        else:
+            flash ('Sekce upravena', "info")
+    else:
+        for _, errors in forum_section_form.errors.items():
+            for error in errors:
+                if isinstance(error, dict):
+                    if (len(error)>0):
+                        for k in error.keys():
+                            flash (f'{error[k][0]}', "error")
+                else:
+                    flash (f'{error}', "error")
+                    return render_template("admin/forum_section.jinja", title="Editace stránky", year=year, form=forum_section_form, idsection=idsection, menu=menu) 
+    return redirect (url_for("admin"+year['year']+".view_admin_forum_sections"))
+
+@admin.route("/admin/forum/add", methods=["GET"])
+@org_login_required
+def view_forum_section_add():
+    year=get_year(request.blueprint)
+    menu=get_menu(year)
+    forum_section_form = ForumSectionForm()
+    return render_template("admin/forum_section_create.jinja", title="Nová sekce fóra", year=year, form=forum_section_form, menu=menu)
+
+@admin.route("/admin/forum/add", methods=["POST"])
+def create_forum_section():
+    year=get_year(request.blueprint)
+    menu=get_menu(year)
+    forum_section_form = ForumSectionForm(request.form)
+
+    if forum_section_form.validate():
+        status, message=insert_forum_section(year, forum_section_form.section.data, forum_section_form.order.data, forum_section_form.isvisible.data)
+        if not status:
+           flash (message, "error")
+        else:
+            flash ('Sekce fóra byla přidána', "info")
+    else:
+        for _, errors in forum_section_form.errors.items():
+            for error in errors:
+                if isinstance(error, dict):
+                    if (len(error)>0):
+                        for k in error.keys():
+                            flash (f'{error[k][0]}', "error")
+                else:
+                    flash (f'{error}', "error")
+                    return render_template("admin/forum_section_create.jinja", title="Nová sekce fóra", year=year, form=forum_section_form, menu=menu)
+
+    return redirect (url_for("admin"+year['year']+".view_admin_forum_sections"))
+
+@admin.route("/admin/forum/delete/<int:idsection>", methods=["GET"])
+@org_login_required
+def view_forum_section_delete(idsection):
+    year=get_year(request.blueprint)
+    menu=get_menu(year)
+    forum_section=get_admin_forum_section(idsection)
+    forum_section_delete_form = ForumSectionDeleteForm()
+    return render_template("admin/forum_section_delete.jinja", title="Smazání položky menu", year=year, form=forum_section_delete_form, forum_section=forum_section, menu=menu)
+
+@admin.route("/admin/forum/delete/<int:idsection>", methods=["POST"])
+@org_login_required
+def forum_section_delete(idsection):
+    year=get_year(request.blueprint)
+    status, message = delete_forum_section(idsection)
+    if not status:
+        flash (message, "error")
+    else:
+        flash ('Sekce fóra smazána', "info")
+    return redirect (url_for("admin"+year['year']+".view_admin_forum_sections"))

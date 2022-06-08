@@ -1,0 +1,36 @@
+{% extends "_main.jinja" %}
+{% block main%}
+
+<h2>Nová sekce fóra</h2>
+<form {{url_for('admin' ~ year.year ~ ".create_forum_section")}} method="post">
+  {{ form.csrf_token }}
+  <div class="form-row">
+    <div class="col">
+      <label for="inputOrder">{{ form.order.label }}</label>
+    </div>
+    <div class="col">
+      {{ form.order(class="form-control", id="inputOrder", placeholder="Pořadí sekce") }}
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="col">
+      <label for="inputMenu">{{ form.section.label }}</label>
+    </div>
+    <div class="col">
+      {{ form.section(class="form-control", id="inputMenu", placeholder="Popis sekce") }}
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="col">
+      <label for="inputIsVisible">{{ form.isvisible.label }}</label>
+    </div>
+    <div class="col">
+      {{ form.isvisible(class="form-control", id="inputIsVisible") }}
+    </div>
+  </div>  
+  <p><p>
+  <button type="submit" class="btn btn-primary">Nová sekce</button>
+  <button type="button"  class="btn btn-primary" onclick="history.back()">Zpět</button>
+</form>
+
+{% endblock %}
