@@ -1,7 +1,7 @@
 {% extends "_main.jinja" %}
 {% block main%}
-<h2>Úprava stránky</h2>
-<form  <form  {{url_for('admin' ~ year.year ~ ".edit_page", idpage=idpage)}} method="post">
+<h2>Nová stránka</h2>
+<form  {{url_for('admin' ~ year.year ~ ".create_page")}} method="post">
     {{ form.csrf_token }}
     <div class="row">
         {{ form.title(class="form-control", placeholder="Nadpis") }}
@@ -40,7 +40,7 @@
         </div>
     </div>
   <p>
-  <button type="submit" class="btn btn-primary">Úpravit stránku</button>
+  <button type="submit" class="btn btn-primary">Nová stránka</button>
   <button type="button"  class="btn btn-primary" onclick="history.back()">Zpět</button>
 </form>
 {% endblock %}

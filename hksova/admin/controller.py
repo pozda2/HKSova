@@ -72,6 +72,67 @@ def edit_page(idpage):
 
     return redirect (url_for("admin"+year['year']+".view_admin_pages"))
 
+@admin.route("/admin/page/add", methods=["GET"])
+@org_login_required
+def view_page_add():
+    year=get_year(request.blueprint)
+    menu=get_menu(year)
+    page_form = PageForm()
+    page_form.forum_section.choices = [ (p['idforumsection'], p['section']) for p in get_admin_forum_sections(year) ]
+    page_form.forum_section.choices.insert(0, (0, ''))
+    return render_template("admin/page_create.jinja", title="Vytvoření stránky", year=year, form=page_form, menu=menu)
+
+@admin.route("/admin/page/add", methods=["POST"])
+def create_page():
+    year=get_year(request.blueprint)
+    menu=get_menu(year) 
+    page_form = PageForm(request.form)
+    page_form.forum_section.choices = [ (p['idforumsection'], p['section']) for p in get_admin_forum_sections(year) ]
+    page_form.forum_section.choices.insert(0, (0, ''))
+
+    if page_form.validate():
+        markdown = mistune.create_markdown(escape=False, plugins=['table'])
+        html=markdown(page_form.content.data)
+        is_public, is_private=decode_access_rights(page_form.access_rights.data)
+        
+        status, message=insert_page(year, page_form.title.data, page_form.url.data, page_form.content.data, html, is_public, is_private, page_form.isvisible.data, page_form.forum_section.data)
+        if not status:
+           flash (message, "error")
+        else:
+            flash ('Stránka vytvořena', "info")
+    else:
+        for _, errors in page_form.errors.items():
+            for error in errors:
+                if isinstance(error, dict):
+                    if (len(error)>0):
+                        for k in error.keys():
+                            flash (f'{error[k][0]}', "error")
+                else:
+                    flash (f'{error}', "error")
+                    return render_template("admin/page_create.jinja", title="Nová stránka", year=year, form=page_form, menu=menu) 
+
+    return redirect (url_for("admin"+year['year']+".view_admin_pages"))
+
+@admin.route("/admin/page/delete/<int:idpage>", methods=["GET"])
+@org_login_required
+def view_page_delete(idpage):
+    year=get_year(request.blueprint)
+    menu=get_menu(year)
+    page=get_admin_page(idpage)
+    page_delete_form = PageDeleteForm()
+    return render_template("admin/page_delete.jinja", title="Smazání stránky", year=year, form=page_delete_form, page=page, idpage=idpage, menu=menu)
+
+@admin.route("/admin/page/delete/<int:idpage>", methods=["POST"])
+@org_login_required
+def page_delete(idpage):
+    year=get_year(request.blueprint)
+    status, message = delete_page(idpage)
+    if not status:
+        flash (message, "error")
+    else:
+        flash ('Stránka byla smazána', "info")
+    return redirect (url_for("admin"+year['year']+".view_admin_pages"))
+
 @admin.route("/admin/menu/", methods=["GET"])
 @org_login_required
 def view_admin_menu():

@@ -51,3 +51,6 @@ class ForumSectionForm (FlaskForm):
 
 class ForumSectionDeleteForm(FlaskForm):
     agree = BooleanField ("Opravdu chcete smazat sekce ve fóru včetně všech příspěvků?", validators=[InputRequired()] )
+
+class PageDeleteForm(FlaskForm):
+    agree = BooleanField ("Opravdu chcete smazat stránku?", validators=[InputRequired()] )

@@ -212,6 +212,26 @@ def update_page (idpage, title, url, texy, html, ispublic, isprivate, isvisible,
     current_app.mysql.connection.commit()
     return True, ""
 
+def delete_page(idpage):
+    try:
+        cursor = current_app.mysql.connection.cursor()
+        cursor.execute('''DELETE FROM page where idpage=%s''', [idpage] )
+    except Exception as e:
+        return False, "Problem deleting from db: " + str(e)
+    current_app.mysql.connection.commit()
+    return True, ""
+
+def insert_page(year, title, url, texy, html, ispublic, isprivate, isvisible, idforumsection):
+    try:
+        cursor = current_app.mysql.connection.cursor()
+        cursor.execute('''INSERT INTO page (idyear, title, url, texy, html, ispublic, isprivate, isvisible, idforumsection)
+                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)''',
+                       [year['year'], title, url, texy, html, ispublic, isprivate, isvisible, idforumsection] )
+    except Exception as e:
+        return False, "Problem inserting into db: " + str(e)
+    current_app.mysql.connection.commit()
+    return True, ""
+
 def get_admin_menu(year):
     cursor = current_app.mysql.connection.cursor()
     cursor.execute('''select idmenu, idpage, menu, link, `order`, isnewpart, ispublic, isprivate, isvisible, issystem, iscurrentyear from menu where idyear=%s order by `order`''', [year['year']])
