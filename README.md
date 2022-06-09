@@ -58,8 +58,6 @@ Future features
 - Forum - add forum to pages
 
 Administration
-- Teams management - overview
-- Teams management - edit team data
 - Settings - overview
 - Settings - adding, editing, removing setting
 

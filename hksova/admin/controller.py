@@ -199,7 +199,6 @@ def edit_menu_item(idmenu):
 
     return redirect (url_for("admin"+year['year']+".view_admin_menu"))
     
-
 @admin.route("/admin/menu/delete/<int:idmenu>", methods=["GET"])
 @org_login_required
 def view_menu_item_delete(idmenu):
@@ -392,3 +391,90 @@ def admin_change_password():
         for error in password_change_form.errors:
             flash (f'{error} nezadán', "error")
         return redirect (url_for("admin.view_password_change"))
+
+@admin.route("/admin/teams/", methods=["GET"])
+@org_login_required
+def view_admin_teams():
+    year=get_year(request.blueprint)
+    menu=get_menu(year)
+    teams=get_admin_teams(year)
+    return render_template("admin/teams.jinja", title="Správa týmů", year=year, teams=teams, menu=menu)
+
+@admin.route("/admin/team/<int:idteam>", methods=["GET"])
+@org_login_required
+def view_admin_team(idteam):
+    year=get_year(request.blueprint)
+    menu=get_menu(year)
+    team=get_admin_team(idteam)
+    min_players=get_min_players(year)
+    max_players=get_max_players(year)
+    players=get_team_players(idteam)
+
+    edit_team_form = EditTeamForm()
+    for _ in range(max_players):
+        edit_team_form.players.append_entry()
+
+    edit_team_form.name.data=team['name']
+    edit_team_form.login.data=team['login']
+    edit_team_form.email.data=team['email']
+    edit_team_form.mobil.data=team['mobil']
+    edit_team_form.weburl.data=team['weburl']
+    edit_team_form.reporturl.data=team['reporturl']
+    edit_team_form.ispaid.data=team['ispaid']
+    edit_team_form.isdeleted.data=team['isdeleted']
+    edit_team_form.isbackup.data=team['isbackup']
+
+    for player in players:
+        edit_team_form['players'][player['order']]['name'].data = player['name']
+        edit_team_form['players'][player['order']]['publicname'].data = player['publicname']
+        edit_team_form['players'][player['order']]['city'].data = player['city']
+        edit_team_form['players'][player['order']]['age'].data = player['age']
+
+    return render_template("admin/team.jinja", title="Údaje o týmu", year=year, form=edit_team_form, team=team, menu=menu, min_players=min_players)
+
+@admin.route("/admin/team/<int:idteam>", methods=["POST"])
+@org_login_required
+def edit_admin_team(idteam):
+    year=get_year(request.blueprint)
+    menu=get_menu(year)
+    min_players=get_min_players(year)
+    edit_team_form = EditTeamForm(request.form)
+    team=get_admin_team(idteam)
+
+    if edit_team_form.validate():
+        valid=True
+        if ( not is_unique_name(year, edit_team_form.name.data, edit_team_form.login.data)):
+            valid=False
+            flash (f'Zadané jméno týmu již existuje.', "error")
+
+        if ( not is_unique_email(year, edit_team_form.email.data, edit_team_form.login.data)):
+            valid=False
+            flash (f'Zadaný email je již letos registrován.', "error")
+
+        if ( not is_minimum_players(edit_team_form.players.data, min_players)):
+            valid=False
+            flash (f'V týmu musí být minimálně {min_players} hráčů', "error")
+        
+        if (valid):
+            status, error = update_admin_team(idteam, year, edit_team_form.login.data, edit_team_form.name.data, edit_team_form.email.data, edit_team_form.mobil.data,
+                edit_team_form.weburl.data, edit_team_form.reporturl.data, edit_team_form.ispaid.data, edit_team_form.isdeleted.data, edit_team_form.isbackup.data,
+                edit_team_form.players.data)
+            if not status:
+                flash (f'{error}', "error")
+                return render_template("admin/team.jinja", form=edit_team_form, year=year, menu=menu, team=team)
+            else:
+                flash("Údaje o týmu byly úspěšně změněny", "info")
+                return redirect (url_for("admin"+year['year']+".view_admin_teams"))
+        else:
+            return render_template("admin/team.jinja", form=edit_team_form, year=year, menu=menu, team=team)
+    else:
+        for _, errors in edit_team_form.errors.items():
+            for error in errors:
+                if isinstance(error, dict):
+                    if (len(error)>0):
+                        for k in error.keys():
+                            flash (f'{error[k][0]}', "error")
+                else:
+                    flash (f'{error}', "error")
+            
+        return render_template("admin/team.jinja", form=edit_team_form, year=year, menu=menu, team=team)

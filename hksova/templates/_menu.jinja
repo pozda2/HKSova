@@ -8,6 +8,7 @@
         {% if session.org %}
             <div class='dashboard-nav-dropdown'><a href="#!" class="dashboard-nav-item dashboard-nav-dropdown-toggle"></i> Administrace </a>
             <div class='dashboard-nav-dropdown-menu'>
+                <a href="{{ url_for('admin' ~ year.year ~ '.view_admin_teams') }}" title="Správa týmů" class="dashboard-nav-item">Správa týmů</a>
                 <a href="{{ url_for('admin' ~ year.year ~ '.view_admin_pages') }}" title="Správa stránek" class="dashboard-nav-item">Správa stránek</a>
                 <a href="{{ url_for('admin' ~ year.year ~ '.view_admin_menu') }}" title="Správa menu" class="dashboard-nav-item">Správa menu</a>
                 <a href="{{ url_for('admin' ~ year.year ~ '.view_admin_forum_sections') }}" title="Správa fóra" class="dashboard-nav-item">Správa fóra</a>

@@ -383,3 +383,156 @@ def check_password_org (password):
             return False
     except Exception as e:
         return False
+
+def get_team_players(idteam):
+    cursor = current_app.mysql.connection.cursor()
+    cursor.execute('''SELECT  idteam, name, publicname, city, age, `order` FROM player where idteam=%s order by `order`''', [idteam])
+    return cursor.fetchall()
+
+def players_to_string(players):
+    hraci=''
+    for player in players:
+        if player['name']:
+            name=player['name']
+        else:
+            name='Anonymous'
+        if hraci:
+            hraci+=", "+name
+        else:
+            hraci=name
+    return hraci
+
+def translate_team_paid(team):
+    if (team['ispaid']==1):
+        return 'Zaplaceno'
+    else:
+        return 'Nezaplaceno'
+
+def translate_team_status(team):
+    if (team['isdeleted']==1):
+        return "Smazaní"
+    if (team['isbackup']==1):
+        return 'Náhradníci'
+    else:
+        return 'Hrající'
+
+def is_unique_name(year, name, login):
+    cursor = current_app.mysql.connection.cursor()
+    if login is not None:
+        cursor.execute('''SELECT name FROM team where idYear=%s and name=%s and login<>%s''', [year['year'], name, login])
+    else:
+        cursor.execute('''SELECT name FROM team where idYear=%s and name=%s''', [year['year'], name])
+    data = cursor.fetchall()
+    if (len(data)==0):
+        return True
+    else:
+        return False
+
+def is_unique_loginname(year, name):
+    cursor = current_app.mysql.connection.cursor()
+    cursor.execute('''SELECT name FROM team where idYear=%s and login=%s''', [year['year'], name])
+    data = cursor.fetchall()
+    if (len(data)==0):
+        return True
+    else:
+        return False
+
+def is_unique_email(year, email, login):
+    cursor = current_app.mysql.connection.cursor()
+    if login is not None:
+        cursor.execute('''SELECT email FROM team where idYear=%s and email=%s and login <> %s''', [year['year'], email, login])
+    else:
+        cursor.execute('''SELECT email FROM team where idYear=%s and email=%s''', [year['year'], email])
+    data = cursor.fetchall()
+    if (len(data)==0):
+        return True
+    else:
+        return False
+
+def is_minimum_players(players, min_players):
+    players_count=0
+
+    for player in players:
+        if player['name'] != '':
+            players_count+=1
+
+    if (players_count >= min_players):
+        return True
+    else:
+        return False
+
+def get_admin_teams(year):
+    cursor = current_app.mysql.connection.cursor()
+    cursor.execute('''SELECT  idteam, name, login, mascot, email, mobil, weburl, reporturl, ispaid, isbackup, isdeleted, registeredat FROM team where idYear=%s order by registeredAt''', [year['year']])
+    data=cursor.fetchall()
+
+    # podrobnosti o tymu
+    if (data):
+        i=1
+        for team in data:
+            players=get_team_players(team['idteam'])
+            team['player']=players
+            team['players_private']=players_to_string(players)
+            team['order']=i
+            team['zaplaceno']=translate_team_paid(team)
+            team['stav']=translate_team_status(team)
+            i+=1
+    return data
+
+def get_admin_team(idteam):
+    cursor = current_app.mysql.connection.cursor()
+    cursor.execute('''SELECT  idteam, name, login, mascot, email, mobil, weburl, reporturl, ispaid, isbackup, isdeleted, registeredat FROM team where idteam=%s ''', [idteam])
+    data=cursor.fetchone()
+
+    # podrobnosti o tymu
+    if (data):
+        players=get_team_players(data['idteam'])
+        data['players']=players
+        data['players_private']=players_to_string(players)
+        data['zaplaceno']=translate_team_paid(data)
+        data['stav']=translate_team_status(data)
+    return data
+
+def update_admin_team (idteam, year, login, name, email, mobil, weburl, reporturl, ispaid, isdeleted, isbackup, new_players):
+    team=get_admin_team(idteam)
+    try:
+        cursor = current_app.mysql.connection.cursor()
+        cursor.execute('''UPDATE team set name=%s, email=%s, mobil=%s, weburl=%s, reporturl=%s, isPaid=%s, isDeleted=%s, isBackup=%s where idyear=%s and login=%s''',
+            [name, email, mobil, weburl, reporturl, ispaid, isdeleted, isbackup, year['year'], login])
+    except Exception as e:
+        return False, "Problem updatint db: " + str(e)
+
+    # update players
+    for i, player in enumerate(new_players):
+
+        # check player in form is in database
+        player_in_database=False
+        for saved_player in team['players']:
+            if saved_player['order']==i:
+                player_in_database=True
+        
+        if player['age'].strip() == "":
+            player['age']=None
+
+        if (player['name'].strip()):
+            if player_in_database:
+                try:
+                    cursor.execute('''UPDATE player set name=%s, publicname=%s, city=%s, age=%s where idteam=%s and `order`=%s''',
+                    [player['name'], player['publicname'], player['city'], player['age'], team['idteam'], i])
+                except Exception as e:
+                    return False, "Problem updatint db: " + str(e)
+            else:
+                try:
+                    cursor.execute('''INSERT into player (idteam, name, publicname, city, age, `order`) VALUES (%s, %s, %s, %s, %s, %s)''',
+                    [team['idteam'], player['name'], player['publicname'], player['city'], player['age'], i])
+                except Exception as e:
+                    return False, "Problem updatint db: " + str(e)
+        else:
+            if player_in_database:
+                try:
+                    cursor.execute('''DELETE from player where idteam=%s and `order`=%s''',
+                    [team['idteam'], i])
+                except Exception as e:
+                    return False, "Problem updatint db: " + str(e)
+    current_app.mysql.connection.commit()
+    return True, ""

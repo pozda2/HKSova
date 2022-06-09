@@ -165,7 +165,7 @@ def register_team():
             status, error = insert_team(registration_form, year)
             if not status:
                 flash (f'{error}', "error")
-                return render_template("Team/registration.jinja", form=registration_form, year=year, menu=menu)
+                return render_template("team/registration.jinja", form=registration_form, year=year, menu=menu)
             else:
                 set_team_session(year, registration_form.name.data, registration_form.loginname.data, False)
                 flash("Tým byl úspěšné registrován", "info")
@@ -270,7 +270,7 @@ def edit_team():
             status, error = update_team(edit_team_form, year, session['login'])
             if not status:
                 flash (f'{error}', "error")
-                return render_template("Team/edit_team.jinja", form=edit_team_form, year=year, menu=menu)
+                return render_template("team/edit_team.jinja", form=edit_team_form, year=year, menu=menu)
             else:
                 flash("Údaje o týmu byly úspěšně změněny", "info")
                 return redirect (url_for("main.view_index"))

@@ -1,0 +1,79 @@
+{% extends "_main.jinja" %}
+{% block main%}
+
+<h2>Změna údajů o týmu</h2>
+
+<form {{url_for('admin' ~ year.year ~ ".edit_admin_team", idteam=team.idteam)}} method="post">
+    {{ form.csrf_token }}
+    <div class="row">
+      <div class="col"><label for="inputOrder">{{ form.name.label }}</label></div>
+      <div class="col">{{ form.name(class="form-control", id="inputName", placeholder= "Název týmu (povinné)" ) }}</div>
+    </div>
+    <div class="row">
+      <div class="col">Maskot</div>
+      <div class="col">{{team.mascot}}</div>
+    </div>
+    <div class="row">
+      <div class="col"><label for="inputLogin">{{ form.login.label }}</label></div>
+      <div class="col">{{ form.login(class="form-control", id="inputLogin", placeholder= "Přihlašovací jméno (povinné)" ) }}</div>
+    </div>
+    <div class="row">
+      <div class="col"><label for="inputEmail">{{ form.email.label }}</label></div>
+      <div class="col">{{ form.email(class="form-control", id="inputEmail", placeholder= "Email (povinné)" ) }}</div>
+    </div>
+    <div class="row">
+      <div class="col"><label for="inputMobil">{{ form.mobil.label }}</label></div>
+      <div class="col">{{ form.mobil(class="form-control", id="inputMobil", placeholder= "Mobilní telefonní číslo (povinné)" ) }}</div>
+    </div>
+    <div class="row">
+      <div class="col"><label for="inputWebURL">{{ form.weburl.label }}</label></div>
+      <div class="col">{{ form.weburl(class="form-control", id="inputWebURL", placeholder= "URL stránky týmu" ) }}</div>
+    </div>
+    <div class="row">
+      <div class="col"><label for="inputWebURL">{{ form.reporturl.label }}</label></div>
+      <div class="col">{{ form.reporturl(class="form-control", id="inputWebURL", placeholder= "URL stránky s reportáží" ) }}</div>
+    </div>
+    <div class="row">
+      <div class="col"><label for="inputIsPaid">{{ form.ispaid.label }}</label></div>
+      <div class="col">{{ form.ispaid(class="form-control", id="inputIsPaid", placeholder= "Zaplaceno" ) }}</div>
+    </div>
+    <div class="row">
+      <div class="col"><label for="inputIsBackup">{{ form.isbackup.label }}</label></div>
+      <div class="col">{{ form.isbackup(class="form-control", id="inputIsBackup", placeholder= "N8hradník" ) }}</div>
+    </div>
+    <div class="row">
+      <div class="col"><label for="inputIsDeleted">{{ form.isdeleted.label }}</label> <font color="FF0000">!!! Pozor při změně dojde k přepočtu náhradníků !!!</font> </div>
+      <div class="col">{{ form.isdeleted(class="form-control", id="inputIsDeleted", placeholder= "Smazán" ) }}</div>
+    </div>
+    {% for player in form.players %}
+        <div class="row">
+            <div class="form-group col-md-3">
+                {{ player.form.name(class="form-control", placeholder= "Jméno hráče" ) }}
+            </div>
+            <div class="form-group col-md-3">
+                {{ player.form.publicname(size=10, class="form-control", placeholder= "Veřejné jméno na webu" ) }}
+            </div>
+            <div class="form-group col-md-3">
+                {{ player.form.city(size=10, class="form-control", placeholder= "Město" ) }}
+            </div>
+            <div class="form-group col-md-3">
+                {{ player.form.age(size=10, class="form-control", placeholder= "Věk" ) }}
+            </div>
+
+        </div>
+    {% endfor %}
+    <br />
+    <small>V týmu musí být minimálně {{min_players}} hráč.</small>
+    <br />
+    <small>Do města u hráče uveďte město v plném názvu s diakritikou, odkud hráč přijede. Pomůže nám to při plánování.</small>
+    <br />
+    <small>Veřejně na webu bude zobrazeno jméno hráče z políčka "Jméno hráče veřejně na webu". Pokud nechcete jméno zobrazit ponechte toto políčko prázdné.</small>
+    <br />
+    <small>Věk a město nejsou povinné údaje. Pokud je nechcete sdělit ponechte je prázdné.</small>
+    <br />
+    <br />
+    <button type="submit" class="btn btn-primary">Změnit údaje</button>
+    <button type="button"  class="btn btn-primary" onclick="history.back()">Zpět</button>
+</form>
+
+{% endblock %}
