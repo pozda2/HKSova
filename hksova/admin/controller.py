@@ -359,3 +359,36 @@ def forum_section_delete(idsection):
     else:
         flash ('Sekce fóra smazána', "info")
     return redirect (url_for("admin"+year['year']+".view_admin_forum_sections"))
+
+@admin.route("/admin/changepassword/", methods=["GET"])
+@org_login_required
+def view_admin_password_change():
+    year=get_year(request.blueprint)
+    menu=get_menu(year)
+    password_change_form = PasswordChangeForm()
+    return render_template("admin/password_change.jinja", form=password_change_form, title="Změna hesla", year=year, menu=menu)
+
+@admin.route("/admin/changepassword/", methods=["POST"])
+@org_login_required
+def admin_change_password():
+    year=get_year(request.blueprint)
+    menu=get_menu(year)
+    valid=True
+    password_change_form = PasswordChangeForm(request.form)
+
+    if (password_change_form.password1.data != password_change_form.password2.data):
+        valid=False
+        flash (f'Zadaná hesla nejsou stejná.', "error")
+
+    if password_change_form.validate() and valid:
+        status, message= change_admin_pass(password_change_form.password_old.data, password_change_form.password1.data)
+        if (status):
+            flash("Změna hesla orga proběhla přihlášení", "info")
+            return redirect (url_for("main.view_index"))
+        else:
+            flash(message, "error")
+            return render_template("admin/password_change.jinja", form=password_change_form, year=year, menu=menu)
+    else:
+        for error in password_change_form.errors:
+            flash (f'{error} nezadán', "error")
+        return redirect (url_for("admin.view_password_change"))

@@ -1,4 +1,6 @@
 from flask import current_app
+import secrets
+from passlib.hash import sha256_crypt
 
 def translate_visibility(page):
     if (page['isvisible']==1):
@@ -339,3 +341,45 @@ def insert_forum_section(year, section, order, isvisible):
         return False, "Problem inserting into db: " + str(e)
     current_app.mysql.connection.commit()
     return True, ""
+
+def change_admin_pass (password_old, password_new):
+    if (check_password_org (password_old)):
+        salt=secrets.token_hex(20)
+        hash_new = sha256_crypt.hash(current_app.config['SECRET_PEPPER'] + password_new + salt)
+        try:
+            cursor = current_app.mysql.connection.cursor()
+            cursor.execute('''UPDATE setting set `value`=%s where idyear is null and param=%s ''', [hash_new, 'org-pass'])
+        except Exception as e:
+            return False, "Problem updating db: " + str(e)
+
+        try:
+            cursor = current_app.mysql.connection.cursor()
+            cursor.execute('''UPDATE setting set `value`=%s where idyear is null and param=%s ''', [salt, 'org-salt'])
+        except Exception as e:
+            return False, "Problem updating db: " + str(e)
+
+        current_app.mysql.connection.commit()
+        return True, ""
+    else:
+        return False, "Nesprávné staré heslo"
+
+def check_password_org (password):
+    try:
+        cursor = current_app.mysql.connection.cursor()
+        cursor.execute('''select param, value from setting where idyear is null''')
+        data = cursor.fetchall()
+        hash_in_setting=None
+        salt_in_setting=None
+
+        for param in data:
+            if param['param']=='org-pass':
+                hash_in_setting=param['value']
+            elif param['param']=='org-salt':
+                salt_in_setting=param['value']
+
+        if hash_in_setting and salt_in_setting:
+            return sha256_crypt.verify(current_app.config['SECRET_PEPPER'] + password + salt_in_setting, hash_in_setting)
+        else:
+            return False
+    except Exception as e:
+        return False

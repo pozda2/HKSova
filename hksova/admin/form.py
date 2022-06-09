@@ -3,11 +3,13 @@ from wtforms import StringField
 from wtforms import IntegerField
 from wtforms import BooleanField
 from wtforms import SelectField
+from wtforms import PasswordField
 from wtforms.validators import InputRequired
 from wtforms.validators import DataRequired
 from wtforms.validators import length
 from wtforms.validators import InputRequired
 from wtforms.validators import NumberRange
+from wtforms.validators import Email, ValidationError
 from flask_mdeditor import  MDEditorField
 
 class PageForm (FlaskForm):
@@ -54,3 +56,8 @@ class ForumSectionDeleteForm(FlaskForm):
 
 class PageDeleteForm(FlaskForm):
     agree = BooleanField ("Opravdu chcete smazat stránku?", validators=[InputRequired()] )
+
+class PasswordChangeForm (FlaskForm):
+    password_old = PasswordField("Staré heslo", validators=[InputRequired(), length(min=6, max=100)])
+    password1 = PasswordField("Nové heslo", validators=[InputRequired(), length(min=6, max=100)])
+    password2 = PasswordField("Nové heslo znovu", validators=[InputRequired(), length(min=6, max=100)])

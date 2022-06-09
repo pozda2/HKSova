@@ -54,19 +54,17 @@ Future features
 - Login, reset of forgot password
 - Team, displaying payment detail as QR
 - Teams, display statistics
-- Menu - add old years, probably need of manual page changes
+- Menu - add old years, need of manual page changes and menu changes
 - Forum - add forum to pages
 
 Administration
-- Page mangement - insert new page
-- Page mangement - delete page
 - Teams management - overview
 - Teams management - edit team data
+- Settings - overview
+- Settings - adding, editing, removing setting
+
 - Teams management - switching form org to team perspective
 - Teams management - generating email lists
 - Teams management - export data
-- Settings - overview
-- Settings - adding, editing, removing setting
-- Settings - org password change
 - Settings - create new year by copying current year
 - Mascot - overview, adding, deleting 
