@@ -104,3 +104,10 @@ class EditTeamForm (FlaskForm):
     isbackup = BooleanField ("Náhradník", false_values=(False, 'false', 0, '0'))
     isdeleted = BooleanField ("Smazáno", false_values=(False, 'false', 0, '0'))
     players = FieldList(FormField(PlayerForm))
+
+class SettingForm (FlaskForm):
+    param = StringField("Parametr", validators=[InputRequired(), length(min=1, max=255, message='Název parametru')])
+    value = StringField("Hodnota", validators=[InputRequired(), length(min=1, max=255, message='Hodnota parametru')])
+
+class SettingDeleteForm(FlaskForm):
+    agree = BooleanField ("Opravdu chcete smazat parametr z nastavení?", validators=[InputRequired()] )

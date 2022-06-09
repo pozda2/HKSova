@@ -1,0 +1,31 @@
+{% extends "_main.jinja" %}
+{% block main%}
+
+<h2>Správa nastavení</h2>
+
+<A href=" {{ url_for('admin' ~ year.year ~ ".view_setting_add")}}">  <button type="submit" class="btn btn-primary" >Nové nastavení</button></A>
+<p>
+<table class="table table-dark table-striped">
+  <thead>
+    <tr>
+        <th>Parametr</th>
+        <th>Hodnota</th>
+        <th>Akce</th>
+    </tr>
+  </thead>
+  <tbody>
+{% if settings %}
+    {% for item in settings %}
+    <tr>
+        <td>{{ item.param}}</td>
+        <td>{{ item.value}}</td>
+        <td>
+          <a href="{{ url_for('admin' ~ year.year ~ '.view_setting', idsetting=item.idsetting) }}"><img alt="=Úprava" src={{url_for("static", filename="img/edit.gif")}}></a>
+          <a href="{{ url_for('admin' ~ year.year ~ '.view_setting_delete', idsetting=item.idsetting) }}"><img alt="=Smazání" src={{url_for("static", filename="img/delete.gif")}}></a>
+        </td>
+    </tr>
+    {% endfor %}
+{% endif %}
+  </tbody>
+</table>
+{% endblock %}

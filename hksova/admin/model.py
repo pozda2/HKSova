@@ -536,3 +536,45 @@ def update_admin_team (idteam, year, login, name, email, mobil, weburl, reportur
                     return False, "Problem updatint db: " + str(e)
     current_app.mysql.connection.commit()
     return True, ""
+
+def get_settings(year):
+    cursor = current_app.mysql.connection.cursor()
+    cursor.execute('''select idsetting, idyear, param, value from setting where idyear=%s order by param''', [year['year']])
+    data=cursor.fetchall()
+    return data
+
+def get_setting(idsetting):
+    cursor = current_app.mysql.connection.cursor()
+    cursor.execute('''select idsetting, idyear, param, value from setting where idsetting=%s order by param''', [idsetting])
+    data=cursor.fetchone()
+    return data
+
+def insert_setting(year, param, value):
+    try:
+        cursor = current_app.mysql.connection.cursor()
+        cursor.execute('''INSERT INTO setting (idyear, param, `value`)
+                       VALUES (%s, %s, %s)''',
+                       [year['year'], param, value] )
+    except Exception as e:
+        return False, "Problem inserting into db: " + str(e)
+    current_app.mysql.connection.commit()
+    return True, ""
+
+def update_setting(idsetting, param, value):
+    try:
+        cursor = current_app.mysql.connection.cursor()
+        cursor.execute('''UPDATE setting set param=%s, `value`=%s where idsetting=%s''',
+        [ param, value, idsetting] )
+    except Exception as e:
+        return False, "Problem updating into db: " + str(e)
+    current_app.mysql.connection.commit()
+    return True, ""
+
+def delete_setting(idsetting):
+    try:
+        cursor = current_app.mysql.connection.cursor()
+        cursor.execute('''DELETE FROM setting where idsetting=%s''', [idsetting] )
+    except Exception as e:
+        return False, "Problem deleting from db: " + str(e)
+    current_app.mysql.connection.commit()
+    return True, ""

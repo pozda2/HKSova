@@ -1,0 +1,15 @@
+{% extends "_main.jinja" %}
+{% block main%}
+
+<h2>Zrušení parametru: {{ setting.param }}</h2>
+<form  {{url_for('admin' ~ year.year ~ ".setting_delete", idsetting=setting.idsetting)}} method="POST">
+    {{ form.csrf_token }}
+     <div class="form-row">
+        <div class="col">{{ form.agree.label}}</div>
+        <div class="col">{{ form.agree() }}</div>
+    </div>
+    <br>
+    <button type="submit" class="btn btn-primary">Smazat parametr z nastavení</button>
+    <button type="button"  class="btn btn-primary" onclick="history.back()">Zpět</button>
+</form>
+{% endblock %}

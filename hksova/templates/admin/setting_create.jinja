@@ -1,0 +1,19 @@
+{% extends "_main.jinja" %}
+{% block main%}
+
+<h2>Nový parametr</h2>
+<form  {{url_for('admin' ~ year.year ~ ".create_setting")}} method="post">
+  {{ form.csrf_token }}
+  <div class="form-row">
+    <div class="col"><label for="inputParam">{{ form.param.label }}</label></div>
+    <div class="col">{{ form.param(class="form-control", id="inputParam", placeholder="Parametr") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col"><label for="inputValue">{{ form.value.label }}</label> </div>
+    <div class="col">{{ form.value(class="form-control", id="inputValue", placeholder="Hodnota") }}</div>
+  </div>  
+  <p><p>
+  <button type="submit" class="btn btn-primary">Nový parametr</button>
+  <button type="button"  class="btn btn-primary" onclick="history.back()">Zpět</button>
+</form>
+{% endblock %}

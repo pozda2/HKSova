@@ -42,6 +42,7 @@ def view_admin_page(idpage):
     return render_template("admin/page.jinja", title="Editace stránky", year=year, form=page_form, idpage=idpage, menu=menu)
 
 @admin.route("/admin/page/<int:idpage>", methods=["POST"])
+@org_login_required
 def edit_page(idpage):
     year=get_year(request.blueprint)
     menu=get_menu(year) 
@@ -83,6 +84,7 @@ def view_page_add():
     return render_template("admin/page_create.jinja", title="Vytvoření stránky", year=year, form=page_form, menu=menu)
 
 @admin.route("/admin/page/add", methods=["POST"])
+@org_login_required
 def create_page():
     year=get_year(request.blueprint)
     menu=get_menu(year) 
@@ -168,6 +170,7 @@ def view_menu_item(idmenu):
     return render_template("admin/menu_item.jinja", title="Položka menu", year=year, form=menuitem_form, idmenu=idmenu, menu=menu)
 
 @admin.route("/admin/menu/<int:idmenu>", methods=["POST"])
+@org_login_required
 def edit_menu_item(idmenu):
     year=get_year(request.blueprint)
     menu=get_menu(year)
@@ -232,6 +235,7 @@ def view_menu_item_add():
     return render_template("admin/menu_item_create.jinja", title="Nová položka menu", year=year, form=menuitem_form, menu=menu)
 
 @admin.route("/admin/menu/add", methods=["POST"])
+@org_login_required
 def create_menu_item():
     year=get_year(request.blueprint)
     menu=get_menu(year)
@@ -284,6 +288,7 @@ def view_admin_forum_section(idsection):
     return render_template("admin/forum_section.jinja", title="Editace sekce fóra", year=year, form=forum_section_form, idsection=idsection, menu=menu)
 
 @admin.route("/admin/forum/<int:idsection>", methods=["POST"])
+@org_login_required
 def edit_forum_section(idsection):
     year=get_year(request.blueprint)
     menu=get_menu(year) 
@@ -315,6 +320,7 @@ def view_forum_section_add():
     return render_template("admin/forum_section_create.jinja", title="Nová sekce fóra", year=year, form=forum_section_form, menu=menu)
 
 @admin.route("/admin/forum/add", methods=["POST"])
+@org_login_required
 def create_forum_section():
     year=get_year(request.blueprint)
     menu=get_menu(year)
@@ -478,3 +484,100 @@ def edit_admin_team(idteam):
                     flash (f'{error}', "error")
             
         return render_template("admin/team.jinja", form=edit_team_form, year=year, menu=menu, team=team)
+
+@admin.route("/admin/settings/", methods=["GET"])
+@org_login_required
+def view_settings():
+    year=get_year(request.blueprint)
+    menu=get_menu(year)
+    settings=get_settings(year)
+    return render_template("admin/settings.jinja", title="Správa nastavení", year=year, settings=settings, menu=menu)
+
+@admin.route("/admin/settings/add", methods=["GET"])
+@org_login_required
+def view_setting_add():
+    year=get_year(request.blueprint)
+    menu=get_menu(year)
+    settings_form = SettingForm()
+    return render_template("admin/setting_create.jinja", title="Nové nastavení", year=year, form=settings_form, menu=menu)
+
+@admin.route("/admin/settings/add", methods=["POST"])
+@org_login_required
+def create_setting():
+    year=get_year(request.blueprint)
+    menu=get_menu(year)
+    settings_form = SettingForm(request.form)
+
+    if settings_form.validate():
+        status, message=insert_setting(year, settings_form.param.data, settings_form.value.data)
+        if not status:
+           flash (message, "error")
+        else:
+            flash ('Nastavení bylo přidáno', "info")
+    else:
+        for _, errors in settings_form.errors.items():
+            for error in errors:
+                if isinstance(error, dict):
+                    if (len(error)>0):
+                        for k in error.keys():
+                            flash (f'{error[k][0]}', "error")
+                else:
+                    flash (f'{error}', "error")
+                    return render_template("admin/setting_create.jinja", title="Nové nastavení", year=year, form=settings_form, menu=menu)
+
+    return redirect (url_for("admin"+year['year']+".view_settings"))
+
+@admin.route("/admin/settings/<int:idsetting>", methods=["GET"])
+@org_login_required
+def view_setting(idsetting):
+    year=get_year(request.blueprint)
+    menu=get_menu(year)
+    setting=get_setting(idsetting)
+    setting_form = SettingForm()
+    setting_form.param.data=setting['param']
+    setting_form.value.data=setting['value']
+    return render_template("admin/setting.jinja", title="Editace nastavení", year=year, form=setting_form, idsetting=idsetting, menu=menu)
+
+@admin.route("/admin/settings/<int:idsetting>", methods=["POST"])
+@org_login_required
+def edit_setting(idsetting):
+    year=get_year(request.blueprint)
+    menu=get_menu(year) 
+    setting_form = SettingForm(request.form)
+    if setting_form.validate():
+        status, message=update_setting(idsetting, setting_form.param.data, setting_form.value.data)
+        if not status:
+           flash (message, "error")
+        else:
+            flash ('Nastavení upraveno', "info")
+    else:
+        for _, errors in setting_form.errors.items():
+            for error in errors:
+                if isinstance(error, dict):
+                    if (len(error)>0):
+                        for k in error.keys():
+                            flash (f'{error[k][0]}', "error")
+                else:
+                    flash (f'{error}', "error")
+                    return render_template("admin/setting.jinja", title="Editace nastavení", year=year, form=setting_form, idsetting=idsetting, menu=menu) 
+    return redirect (url_for("admin"+year['year']+".view_settings"))
+
+@admin.route("/admin/settings/delete/<int:idsetting>", methods=["GET"])
+@org_login_required
+def view_setting_delete(idsetting):
+    year=get_year(request.blueprint)
+    menu=get_menu(year)
+    setting=get_setting(idsetting)
+    setting_delete_form = SettingDeleteForm()
+    return render_template("admin/setting_delete.jinja", title="Smazání parametru", year=year, form=setting_delete_form, setting=setting, menu=menu)
+
+@admin.route("/admin/settings/delete/<int:idsetting>", methods=["POST"])
+@org_login_required
+def setting_delete(idsetting):
+    year=get_year(request.blueprint)
+    status, message = delete_setting(idsetting)
+    if not status:
+        flash (message, "error")
+    else:
+        flash ('Parametr z nastavení smazán', "info")
+    return redirect (url_for("admin"+year['year']+".view_settings"))

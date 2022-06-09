@@ -52,17 +52,14 @@ Side notices
 Future features 
 ---------------
 - Login, reset of forgot password
-- Team, displaying payment detail as QR
-- Teams, display statistics
-- Menu - add old years, need of manual page changes and menu changes
 - Forum - add forum to pages
+- Teams, display statistics
+- Team, displaying payment detail as QR
+- Menu - add old years, need of manual page changes and menu changes
 
 Administration
-- Settings - overview
-- Settings - adding, editing, removing setting
-
-- Teams management - switching form org to team perspective
 - Teams management - generating email lists
 - Teams management - export data
+- Teams management - switching form org to team perspective
 - Settings - create new year by copying current year
 - Mascot - overview, adding, deleting 

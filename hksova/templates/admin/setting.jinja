@@ -1,0 +1,21 @@
+{% extends "_main.jinja" %}
+{% block main%}
+
+<h2>Úprava nastavení</h2>
+<form {{url_for('admin' ~ year.year ~ ".edit_setting", idsetting=idsetting)}} method="post">
+  {{ form.csrf_token }}
+  <div class="form-row">
+    <div class="col"><label for="inputParam">{{ form.param.label }}</label></div>
+    <div class="col">{{ form.param(class="form-control", id="inputParam", placeholder="Parametr") }}
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="col"><label for="inputValue">{{ form.value.label }}</label></div>
+    <div class="col">{{ form.value(class="form-control", id="inputValue") }}</div>
+  </div>  
+  <p><p>
+  <button type="submit" class="btn btn-primary">Upravit nastavení</button>
+  <button type="button"  class="btn btn-primary" onclick="history.back()">Zpět</button>
+</form>
+
+{% endblock %}
