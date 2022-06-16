@@ -2,6 +2,8 @@ version: "3"
 services:
     website_sova:
         build: .
+        networks:
+            - sovanet
 
     nginx:
         image: nginx:mainline-alpine
@@ -11,3 +13,9 @@ services:
             - 23456:80
         depends_on:
             - website_sova
+        networks:
+            - sovanet
+
+networks:
+    sovanet:
+        driver: bridge
