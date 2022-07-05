@@ -62,4 +62,9 @@ Administration
 - Teams management - export data
 - Teams management - switching form org to team perspective
 - Settings - create new year by copying current year
-- Mascot - overview, adding, deleting 
+- Mascot - overview, adding, deleting
+
+Bug
+ - Edit team old years - bug
+ - Recaulculation after disable team in admin menu
+ - Add link to team page on seslost web site

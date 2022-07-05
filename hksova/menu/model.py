@@ -2,7 +2,7 @@ from flask import current_app
 
 def get_menu(year):
     cursor = current_app.mysql.connection.cursor()  
-    cursor.execute('''SELECT idpage, menu, link, isnewpart, ispublic, isprivate, isvisible, issystem,iscurrentyear FROM menu where idyear=%s order by `order`''',[year['year']])
+    cursor.execute('''SELECT idmenu, idpage, menu, link, isnewpart, ispublic, isprivate, isvisible, issystem,iscurrentyear FROM menu where idyear=%s order by `order`''',[year['year']])
     data = cursor.fetchall()
 
     if (data):

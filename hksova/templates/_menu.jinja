@@ -6,7 +6,7 @@
 
     <nav class="dashboard-nav-list">
         {% if session.org %}
-            <div class='dashboard-nav-dropdown'><a href="#!" class="dashboard-nav-item dashboard-nav-dropdown-toggle"></i> Administrace </a>
+            <div id="1" class='dashboard-nav-dropdown'><a href="#!" class="dashboard-nav-item dashboard-nav-dropdown-toggle"></i> Administrace </a>
             <div class='dashboard-nav-dropdown-menu'>
                 <a href="{{ url_for('admin' ~ year.year ~ '.view_admin_teams') }}" title="Správa týmů" class="dashboard-nav-item">Správa týmů</a>
                 <a href="{{ url_for('admin' ~ year.year ~ '.view_admin_pages') }}" title="Správa stránek" class="dashboard-nav-item">Správa stránek</a>
@@ -25,7 +25,8 @@
                     {% if session.org or item.isvisible %}
                         {% if item.link is none %} 
                             {% if ns.group %} </div></div> {% endif %}
-                                <div class='dashboard-nav-dropdown'><a hr   ef="#!" class="dashboard-nav-item dashboard-nav-dropdown-toggle">{{item.menu}}</a><div class='dashboard-nav-dropdown-menu'>
+                                <div id="{{item.idmenu}}" class='dashboard-nav-dropdown'><a href="#!" class="dashboard-nav-item dashboard-nav-dropdown-toggle">{{item.menu}}</a>
+                                    <div id="{{item.idmenu}}" class='dashboard-nav-dropdown-menu'>
                             {% set ns.group = True %}
                         {% else %}
                             {% if item.isnewpart %} 
@@ -37,7 +38,7 @@
                                 {% else %}
                                     {% if not session.logged or (session.logged and item.function != 'login_team' and item.function != 'view_registration') %}
                                         {% if not session.org or (session.logged and item.function != 'view_team' and item.function != 'view_password_change' and item.function != 'view_registration_cancel') %}
-                                            <a href={{ url_for(item.blueprint ~ year.year ~ '.' ~ item.function) }} class="dashboard-nav-item">{{item.menu}}</a>
+                                            <a href={{ url_for(item.blueprint ~ year.year ~ '.' ~ item.function) }} class="dashboard-nav-item-alone">{{item.menu}}</a>
                                         {% endif %}
                                     {% endif %}
                                 {% endif %}
@@ -51,7 +52,7 @@
             {% if ns.group %} </div></div>{% endif %}
         {% endif %}
 
-        <div class='dashboard-nav-dropdown'><a href="#!" class="dashboard-nav-item dashboard-nav-dropdown-toggle"></i> Ročníky </a>
+        <div id="200000000" class='dashboard-nav-dropdown'><a href="#!" class="dashboard-nav-item dashboard-nav-dropdown-toggle"></i> Ročníky </a>
         <div class='dashboard-nav-dropdown-menu'>
           <a href="{{ url_for('main2022.view_index') }}" title="informace o hře" class="dashboard-nav-item">Ročník 2022 </a>
           <a href="{{ url_for('main2021.view_index') }}" title="informace o hře" class="dashboard-nav-item">Ročník 2021 </a>

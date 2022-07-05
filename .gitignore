@@ -13,5 +13,7 @@ hksova/configs/default.py
 docker-compose.yml
 configs/docker.py
 configs/setevars.sh
-
-todo.txt
+hksova/static/data/
+database/osjak_cz3.sql
+hksova/static/img/hklogo.jpg
+hksova/static/img/logo_jak.png
