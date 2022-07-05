@@ -55,7 +55,6 @@ Future features
 - Forum - add forum to pages
 - Teams, display statistics
 - Team, displaying payment detail as QR
-- Menu - add old years, need of manual page changes and menu changes
 
 Administration
 - Teams management - generating email lists

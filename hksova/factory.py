@@ -9,7 +9,7 @@ from .page import main
 from .team import team
 from .forum import forum
 from .admin import admin
-# from .settings import settings
+from .year.model import *
 
 def create_flask_app():
     flask_app = Flask(__name__)
@@ -30,22 +30,19 @@ def create_flask_app():
     mdeditor = MDEditor(flask_app)
     csrf = CSRFProtect(flask_app)
 
-    # blueprinty budou v cyklu podle select * from year
     flask_app.register_blueprint (main)
-    flask_app.register_blueprint (main, name="main2022", url_prefix="/2022")
-    flask_app.register_blueprint (main, name="main2021", url_prefix="/2021")
-
     flask_app.register_blueprint (team)
-    flask_app.register_blueprint (team, name="team2022", url_prefix="/2022")
-    flask_app.register_blueprint (team, name="team2021", url_prefix="/2021")
-
     flask_app.register_blueprint (forum)
-    flask_app.register_blueprint (forum, name="forum2022", url_prefix="/2022")
-    flask_app.register_blueprint (forum, name="forum2021", url_prefix="/2021")
-
     flask_app.register_blueprint (admin)
-    flask_app.register_blueprint (admin, name="admin2022", url_prefix="/2022")
-    flask_app.register_blueprint (admin, name="admin2021", url_prefix="/2021")
+
+    with flask_app.app_context():
+        years=get_years()
+        for yy in years:
+            y=str(yy['idyear'])
+            flask_app.register_blueprint (main, name="main"+y, url_prefix="/"+y)
+            flask_app.register_blueprint (team, name="team"+y, url_prefix="/"+y)
+            flask_app.register_blueprint (forum, name="forum"+y, url_prefix="/"+y)
+            flask_app.register_blueprint (admin, name="admin"+y, url_prefix="/"+y)
 
     @flask_app.errorhandler(500)
     def internal_server_error(error):

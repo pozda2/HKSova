@@ -54,8 +54,14 @@
 
         <div id="200000000" class='dashboard-nav-dropdown'><a href="#!" class="dashboard-nav-item dashboard-nav-dropdown-toggle"></i> Ročníky </a>
         <div class='dashboard-nav-dropdown-menu'>
-          <a href="{{ url_for('main2022.view_index') }}" title="informace o hře" class="dashboard-nav-item">Ročník 2022 </a>
-          <a href="{{ url_for('main2021.view_index') }}" title="informace o hře" class="dashboard-nav-item">Ročník 2021 </a>
+            {% for y in years %}
+                <a href="{{ url_for('main' ~ y.idyear ~'.view_index') }}" title="informace o hře" class="dashboard-nav-item">Ročník {{y.idyear}} </a>
+            {% endfor%}
+            <a href="/static/data/2009/index.html" title="informace o hře" class="dashboard-nav-item">Ročník 2009</a>
+            <a href="/static/data/2008/index.html" title="informace o hře" class="dashboard-nav-item">Ročník 2008</a>
+            <a href="/static/data/2007/index.html" title="informace o hře" class="dashboard-nav-item">Ročník 2007</a>
+            <a href="/static/data/2006/index.html" title="informace o hře" class="dashboard-nav-item">Ročník 2006</a>
+            <a href="/static/data/2005/index.html" title="informace o hře" class="dashboard-nav-item">Ročník 2005</a>
         </div>
         </div>
     </nav>

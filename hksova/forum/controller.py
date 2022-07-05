@@ -20,13 +20,15 @@ forum = Blueprint("forum", __name__)
 @forum.route("/forum/")
 def view_forum_section():
     year=get_year(request.blueprint)
+    years=get_years()
     menu=get_menu(year)
     sections=get_forum_sections(year)
-    return render_template("forum/forums.jinja", title="Fórum", year=year, sections=sections, menu=menu)
+    return render_template("forum/forums.jinja", title="Fórum", year=year, sections=sections, menu=menu, years=years)
 
 @forum.route("/forum/<int:section_id>")
 def view_forum(section_id):
     year=get_year(request.blueprint)
+    years=get_years()
     menu=get_menu(year)
     post_count=get_forum_post_count(section_id)
     post_form = PostForm()
@@ -46,7 +48,7 @@ def view_forum(section_id):
     pagination = Pagination(page=page, total=post_count, per_page=10, search=search, record_name='sections')
     section=get_forum(section_id, pagination.skip, 10)
 
-    return render_template("forum/forum_section.jinja", title="Fórum", year=year, section=section, pagination=pagination, form=post_form, section_id=section_id, menu=menu)
+    return render_template("forum/forum_section.jinja", title="Fórum", year=year, section=section, pagination=pagination, form=post_form, section_id=section_id, menu=menu,  years=years)
 
 @forum.route("/forum/<int:section_id>", methods=["POST"])
 @current_year_required

@@ -10,6 +10,12 @@ def get_current_year():
     data = cursor.fetchall()
     return str(data[0]['idYear'])
 
+def get_years():
+    cursor = current_app.mysql.connection.cursor()  
+    cursor.execute('''SELECT idyear FROM year order by idyear desc''')
+    data = cursor.fetchall()
+    return data
+
 def get_year(blueprint_year):
     pattern = re.compile(r'.+?(\d+)$')
     year={}

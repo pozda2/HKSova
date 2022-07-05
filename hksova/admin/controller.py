@@ -20,14 +20,16 @@ admin = Blueprint("admin", __name__)
 @org_login_required
 def view_admin_pages():
     year=get_year(request.blueprint)
+    years=get_years()
     menu=get_menu(year)
     pages=get_admin_pages(year)
-    return render_template("admin/pages.jinja", title="Správa stránek", year=year, pages=pages, menu=menu)
+    return render_template("admin/pages.jinja", title="Správa stránek", year=year, pages=pages, menu=menu, years=years)
 
 @admin.route("/admin/page/<int:idpage>", methods=["GET"])
 @org_login_required
 def view_admin_page(idpage):
     year=get_year(request.blueprint)
+    years=get_years()
     menu=get_menu(year)
     page_form = PageForm()
     page=get_admin_page(idpage)
@@ -39,12 +41,13 @@ def view_admin_page(idpage):
     page_form.forum_section.choices = [ (p['idforumsection'], p['section']) for p in get_admin_forum_sections(year) ]
     page_form.forum_section.choices.insert(0, (0, ''))
     page_form.forum_section.process_data(page['idforumsection'])
-    return render_template("admin/page.jinja", title="Editace stránky", year=year, form=page_form, idpage=idpage, menu=menu)
+    return render_template("admin/page.jinja", title="Editace stránky", year=year, form=page_form, idpage=idpage, menu=menu, years=years)
 
 @admin.route("/admin/page/<int:idpage>", methods=["POST"])
 @org_login_required
 def edit_page(idpage):
     year=get_year(request.blueprint)
+    years=get_years()
     menu=get_menu(year) 
     page_form = PageForm(request.form)
     page_form.forum_section.choices = [ (p['idforumsection'], p['section']) for p in get_admin_forum_sections(year) ]
@@ -69,7 +72,7 @@ def edit_page(idpage):
                             flash (f'{error[k][0]}', "error")
                 else:
                     flash (f'{error}', "error")
-                    return render_template("admin/page.jinja", title="Editace stránky", year=year, form=page_form, idpage=idpage, menu=menu) 
+                    return render_template("admin/page.jinja", title="Editace stránky", year=year, form=page_form, idpage=idpage, menu=menu, years=years) 
 
     return redirect (url_for("admin"+year['year']+".view_admin_pages"))
 
@@ -77,16 +80,18 @@ def edit_page(idpage):
 @org_login_required
 def view_page_add():
     year=get_year(request.blueprint)
+    years=get_years()
     menu=get_menu(year)
     page_form = PageForm()
     page_form.forum_section.choices = [ (p['idforumsection'], p['section']) for p in get_admin_forum_sections(year) ]
     page_form.forum_section.choices.insert(0, (0, ''))
-    return render_template("admin/page_create.jinja", title="Vytvoření stránky", year=year, form=page_form, menu=menu)
+    return render_template("admin/page_create.jinja", title="Vytvoření stránky", year=year, form=page_form, menu=menu, years=years)
 
 @admin.route("/admin/page/add", methods=["POST"])
 @org_login_required
 def create_page():
     year=get_year(request.blueprint)
+    years=get_years()
     menu=get_menu(year) 
     page_form = PageForm(request.form)
     page_form.forum_section.choices = [ (p['idforumsection'], p['section']) for p in get_admin_forum_sections(year) ]
@@ -111,7 +116,7 @@ def create_page():
                             flash (f'{error[k][0]}', "error")
                 else:
                     flash (f'{error}', "error")
-                    return render_template("admin/page_create.jinja", title="Nová stránka", year=year, form=page_form, menu=menu) 
+                    return render_template("admin/page_create.jinja", title="Nová stránka", year=year, form=page_form, menu=menu, years=years) 
 
     return redirect (url_for("admin"+year['year']+".view_admin_pages"))
 
@@ -119,15 +124,17 @@ def create_page():
 @org_login_required
 def view_page_delete(idpage):
     year=get_year(request.blueprint)
+    years=get_years()
     menu=get_menu(year)
     page=get_admin_page(idpage)
     page_delete_form = PageDeleteForm()
-    return render_template("admin/page_delete.jinja", title="Smazání stránky", year=year, form=page_delete_form, page=page, idpage=idpage, menu=menu)
+    return render_template("admin/page_delete.jinja", title="Smazání stránky", year=year, form=page_delete_form, page=page, idpage=idpage, menu=menu, years=years)
 
 @admin.route("/admin/page/delete/<int:idpage>", methods=["POST"])
 @org_login_required
 def page_delete(idpage):
     year=get_year(request.blueprint)
+    years=get_years()
     status, message = delete_page(idpage)
     if not status:
         flash (message, "error")
@@ -139,14 +146,16 @@ def page_delete(idpage):
 @org_login_required
 def view_admin_menu():
     year=get_year(request.blueprint)
+    years=get_years()
     menu=get_menu(year)
     admin_menu=get_admin_menu(year)
-    return render_template("admin/menu.jinja", title="Správa menu", year=year, admin_menu=admin_menu, menu=menu)
+    return render_template("admin/menu.jinja", title="Správa menu", year=year, admin_menu=admin_menu, menu=menu, years=years)
 
 @admin.route("/admin/menu/<idmenu>", methods=["GET"])
 @org_login_required
 def view_menu_item(idmenu):
     year=get_year(request.blueprint)
+    years=get_years()
     menu=get_menu(year)
     menuitem=get_admin_menu_item(year, idmenu)
     pagetype, link, page, issystem = encode_menu_item(menuitem)
@@ -167,12 +176,13 @@ def view_menu_item(idmenu):
     menuitem_form.pages.process_data(page)
     menuitem_form.access_rights.process_data(encode_access_rights(menuitem['ispublic'], menuitem['isprivate']))
     
-    return render_template("admin/menu_item.jinja", title="Položka menu", year=year, form=menuitem_form, idmenu=idmenu, menu=menu)
+    return render_template("admin/menu_item.jinja", title="Položka menu", year=year, form=menuitem_form, idmenu=idmenu, menu=menu, years=years)
 
 @admin.route("/admin/menu/<int:idmenu>", methods=["POST"])
 @org_login_required
 def edit_menu_item(idmenu):
     year=get_year(request.blueprint)
+    years=get_years()
     menu=get_menu(year)
     menuitem_form = MenuItemForm(request.form)
     menuitem_form.pages.choices = [ (p['idpage'], p['title']) for p in get_admin_pages(year) ]
@@ -198,7 +208,7 @@ def edit_menu_item(idmenu):
                             flash (f'{error[k][0]}', "error")
                 else:
                     flash (f'{error}', "error")
-                    return render_template("admin/menu_item.jinja", title="Položka menu", year=year, form=menuitem_form, idmenu=idmenu, menu=menu)
+                    return render_template("admin/menu_item.jinja", title="Položka menu", year=year, form=menuitem_form, idmenu=idmenu, menu=menu, years=years)
 
     return redirect (url_for("admin"+year['year']+".view_admin_menu"))
     
@@ -206,15 +216,17 @@ def edit_menu_item(idmenu):
 @org_login_required
 def view_menu_item_delete(idmenu):
     year=get_year(request.blueprint)
+    years=get_years()
     menu=get_menu(year)
     menuitem=get_admin_menu_item(year, idmenu)
     menuitem_delete_form = MenuItemDeleteForm()
-    return render_template("admin/menu_item_delete.jinja", title="Smazání položky menu", year=year, form=menuitem_delete_form, menuitem=menuitem, menu=menu)
+    return render_template("admin/menu_item_delete.jinja", title="Smazání položky menu", year=year, form=menuitem_delete_form, menuitem=menuitem, menu=menu, years=years)
 
 @admin.route("/admin/menu/delete/<int:idmenu>", methods=["POST"])
 @org_login_required
 def menu_item_delete(idmenu):
     year=get_year(request.blueprint)
+    years=get_years()
     status, message = delete_menu_item(idmenu)
     if not status:
         flash (message, "error")
@@ -226,18 +238,20 @@ def menu_item_delete(idmenu):
 @org_login_required
 def view_menu_item_add():
     year=get_year(request.blueprint)
+    years=get_years()
     menu=get_menu(year)
     menuitem_form = MenuItemForm()
     
     menuitem_form.pages.choices = [ (p['idpage'], p['title']) for p in get_admin_pages(year) ]
     menuitem_form.pages.choices.insert(0, (0, ''))
     
-    return render_template("admin/menu_item_create.jinja", title="Nová položka menu", year=year, form=menuitem_form, menu=menu)
+    return render_template("admin/menu_item_create.jinja", title="Nová položka menu", year=year, form=menuitem_form, menu=menu, years=years)
 
 @admin.route("/admin/menu/add", methods=["POST"])
 @org_login_required
 def create_menu_item():
     year=get_year(request.blueprint)
+    years=get_years()
     menu=get_menu(year)
     menuitem_form = MenuItemForm(request.form)
     menuitem_form.pages.choices = [ (p['idpage'], p['title']) for p in get_admin_pages(year) ]
@@ -263,7 +277,7 @@ def create_menu_item():
                             flash (f'{error[k][0]}', "error")
                 else:
                     flash (f'{error}', "error")
-                    return render_template("admin/menu_item_create.jinja", title="Nová položka menu", year=year, form=menuitem_form, menu=menu)
+                    return render_template("admin/menu_item_create.jinja", title="Nová položka menu", year=year, form=menuitem_form, menu=menu, years=years)
 
     return redirect (url_for("admin"+year['year']+".view_admin_menu"))
 
@@ -271,26 +285,29 @@ def create_menu_item():
 @org_login_required
 def view_admin_forum_sections():
     year=get_year(request.blueprint)
+    years=get_years()
     menu=get_menu(year)
     forum_sections=get_admin_forum_sections(year)
-    return render_template("admin/forum_sections.jinja", title="Správa sekcí fóra", year=year, forum_sections=forum_sections, menu=menu)
+    return render_template("admin/forum_sections.jinja", title="Správa sekcí fóra", year=year, forum_sections=forum_sections, menu=menu, years=years)
 
 @admin.route("/admin/forum/<int:idsection>", methods=["GET"])
 @org_login_required
 def view_admin_forum_section(idsection):
     year=get_year(request.blueprint)
+    years=get_years()
     menu=get_menu(year)
     forum_section_form = ForumSectionForm()
     section=get_admin_forum_section(idsection)
     forum_section_form.section.data=section['section']
     forum_section_form.isvisible.data=section['isvisible']
     forum_section_form.order.data=section['order']
-    return render_template("admin/forum_section.jinja", title="Editace sekce fóra", year=year, form=forum_section_form, idsection=idsection, menu=menu)
+    return render_template("admin/forum_section.jinja", title="Editace sekce fóra", year=year, form=forum_section_form, idsection=idsection, menu=menu, years=years)
 
 @admin.route("/admin/forum/<int:idsection>", methods=["POST"])
 @org_login_required
 def edit_forum_section(idsection):
     year=get_year(request.blueprint)
+    years=get_years()
     menu=get_menu(year) 
     forum_section_form = ForumSectionForm(request.form)
     if forum_section_form.validate():
@@ -308,21 +325,23 @@ def edit_forum_section(idsection):
                             flash (f'{error[k][0]}', "error")
                 else:
                     flash (f'{error}', "error")
-                    return render_template("admin/forum_section.jinja", title="Editace stránky", year=year, form=forum_section_form, idsection=idsection, menu=menu) 
+                    return render_template("admin/forum_section.jinja", title="Editace stránky", year=year, form=forum_section_form, idsection=idsection, menu=menu, years=years) 
     return redirect (url_for("admin"+year['year']+".view_admin_forum_sections"))
 
 @admin.route("/admin/forum/add", methods=["GET"])
 @org_login_required
 def view_forum_section_add():
     year=get_year(request.blueprint)
+    years=get_years()
     menu=get_menu(year)
     forum_section_form = ForumSectionForm()
-    return render_template("admin/forum_section_create.jinja", title="Nová sekce fóra", year=year, form=forum_section_form, menu=menu)
+    return render_template("admin/forum_section_create.jinja", title="Nová sekce fóra", year=year, form=forum_section_form, menu=menu, years=years)
 
 @admin.route("/admin/forum/add", methods=["POST"])
 @org_login_required
 def create_forum_section():
     year=get_year(request.blueprint)
+    years=get_years()
     menu=get_menu(year)
     forum_section_form = ForumSectionForm(request.form)
 
@@ -349,15 +368,17 @@ def create_forum_section():
 @org_login_required
 def view_forum_section_delete(idsection):
     year=get_year(request.blueprint)
+    years=get_years()
     menu=get_menu(year)
     forum_section=get_admin_forum_section(idsection)
     forum_section_delete_form = ForumSectionDeleteForm()
-    return render_template("admin/forum_section_delete.jinja", title="Smazání položky menu", year=year, form=forum_section_delete_form, forum_section=forum_section, menu=menu)
+    return render_template("admin/forum_section_delete.jinja", title="Smazání položky menu", year=year, form=forum_section_delete_form, forum_section=forum_section, menu=menu, years=years)
 
 @admin.route("/admin/forum/delete/<int:idsection>", methods=["POST"])
 @org_login_required
 def forum_section_delete(idsection):
     year=get_year(request.blueprint)
+    years=get_years()
     status, message = delete_forum_section(idsection)
     if not status:
         flash (message, "error")
@@ -369,14 +390,16 @@ def forum_section_delete(idsection):
 @org_login_required
 def view_admin_password_change():
     year=get_year(request.blueprint)
+    years=get_years()
     menu=get_menu(year)
     password_change_form = PasswordChangeForm()
-    return render_template("admin/password_change.jinja", form=password_change_form, title="Změna hesla", year=year, menu=menu)
+    return render_template("admin/password_change.jinja", form=password_change_form, title="Změna hesla", year=year, menu=menu, years=years)
 
 @admin.route("/admin/changepassword/", methods=["POST"])
 @org_login_required
 def admin_change_password():
     year=get_year(request.blueprint)
+    years=get_years()
     menu=get_menu(year)
     valid=True
     password_change_form = PasswordChangeForm(request.form)
@@ -392,7 +415,7 @@ def admin_change_password():
             return redirect (url_for("main.view_index"))
         else:
             flash(message, "error")
-            return render_template("admin/password_change.jinja", form=password_change_form, year=year, menu=menu)
+            return render_template("admin/password_change.jinja", form=password_change_form, year=year, menu=menu, years=years)
     else:
         for error in password_change_form.errors:
             flash (f'{error} nezadán', "error")
@@ -402,14 +425,16 @@ def admin_change_password():
 @org_login_required
 def view_admin_teams():
     year=get_year(request.blueprint)
+    years=get_years()
     menu=get_menu(year)
     teams=get_admin_teams(year)
-    return render_template("admin/teams.jinja", title="Správa týmů", year=year, teams=teams, menu=menu)
+    return render_template("admin/teams.jinja", title="Správa týmů", year=year, teams=teams, menu=menu, years=years)
 
 @admin.route("/admin/team/<int:idteam>", methods=["GET"])
 @org_login_required
 def view_admin_team(idteam):
     year=get_year(request.blueprint)
+    years=get_years()
     menu=get_menu(year)
     team=get_admin_team(idteam)
     min_players=get_min_players(year)
@@ -436,12 +461,13 @@ def view_admin_team(idteam):
         edit_team_form['players'][player['order']]['city'].data = player['city']
         edit_team_form['players'][player['order']]['age'].data = player['age']
 
-    return render_template("admin/team.jinja", title="Údaje o týmu", year=year, form=edit_team_form, team=team, menu=menu, min_players=min_players)
+    return render_template("admin/team.jinja", title="Údaje o týmu", year=year, form=edit_team_form, team=team, menu=menu, min_players=min_players, years=years)
 
 @admin.route("/admin/team/<int:idteam>", methods=["POST"])
 @org_login_required
 def edit_admin_team(idteam):
     year=get_year(request.blueprint)
+    years=get_years()
     menu=get_menu(year)
     min_players=get_min_players(year)
     edit_team_form = EditTeamForm(request.form)
@@ -467,12 +493,12 @@ def edit_admin_team(idteam):
                 edit_team_form.players.data)
             if not status:
                 flash (f'{error}', "error")
-                return render_template("admin/team.jinja", form=edit_team_form, year=year, menu=menu, team=team)
+                return render_template("admin/team.jinja", form=edit_team_form, year=year, menu=menu, team=team, years=years)
             else:
                 flash("Údaje o týmu byly úspěšně změněny", "info")
                 return redirect (url_for("admin"+year['year']+".view_admin_teams"))
         else:
-            return render_template("admin/team.jinja", form=edit_team_form, year=year, menu=menu, team=team)
+            return render_template("admin/team.jinja", form=edit_team_form, year=year, menu=menu, team=team, years=years)
     else:
         for _, errors in edit_team_form.errors.items():
             for error in errors:
@@ -483,28 +509,31 @@ def edit_admin_team(idteam):
                 else:
                     flash (f'{error}', "error")
             
-        return render_template("admin/team.jinja", form=edit_team_form, year=year, menu=menu, team=team)
+        return render_template("admin/team.jinja", form=edit_team_form, year=year, menu=menu, team=team, years=years)
 
 @admin.route("/admin/settings/", methods=["GET"])
 @org_login_required
 def view_settings():
     year=get_year(request.blueprint)
+    years=get_years()
     menu=get_menu(year)
     settings=get_settings(year)
-    return render_template("admin/settings.jinja", title="Správa nastavení", year=year, settings=settings, menu=menu)
+    return render_template("admin/settings.jinja", title="Správa nastavení", year=year, settings=settings, menu=menu, years=years)
 
 @admin.route("/admin/settings/add", methods=["GET"])
 @org_login_required
 def view_setting_add():
     year=get_year(request.blueprint)
+    years=get_years()
     menu=get_menu(year)
     settings_form = SettingForm()
-    return render_template("admin/setting_create.jinja", title="Nové nastavení", year=year, form=settings_form, menu=menu)
+    return render_template("admin/setting_create.jinja", title="Nové nastavení", year=year, form=settings_form, menu=menu, years=years)
 
 @admin.route("/admin/settings/add", methods=["POST"])
 @org_login_required
 def create_setting():
     year=get_year(request.blueprint)
+    years=get_years()
     menu=get_menu(year)
     settings_form = SettingForm(request.form)
 
@@ -523,7 +552,7 @@ def create_setting():
                             flash (f'{error[k][0]}', "error")
                 else:
                     flash (f'{error}', "error")
-                    return render_template("admin/setting_create.jinja", title="Nové nastavení", year=year, form=settings_form, menu=menu)
+                    return render_template("admin/setting_create.jinja", title="Nové nastavení", year=year, form=settings_form, menu=menu, years=years)
 
     return redirect (url_for("admin"+year['year']+".view_settings"))
 
@@ -531,17 +560,19 @@ def create_setting():
 @org_login_required
 def view_setting(idsetting):
     year=get_year(request.blueprint)
+    years=get_years()
     menu=get_menu(year)
     setting=get_setting(idsetting)
     setting_form = SettingForm()
     setting_form.param.data=setting['param']
     setting_form.value.data=setting['value']
-    return render_template("admin/setting.jinja", title="Editace nastavení", year=year, form=setting_form, idsetting=idsetting, menu=menu)
+    return render_template("admin/setting.jinja", title="Editace nastavení", year=year, form=setting_form, idsetting=idsetting, menu=menu, years=years)
 
 @admin.route("/admin/settings/<int:idsetting>", methods=["POST"])
 @org_login_required
 def edit_setting(idsetting):
     year=get_year(request.blueprint)
+    years=get_years()
     menu=get_menu(year) 
     setting_form = SettingForm(request.form)
     if setting_form.validate():
@@ -559,22 +590,24 @@ def edit_setting(idsetting):
                             flash (f'{error[k][0]}', "error")
                 else:
                     flash (f'{error}', "error")
-                    return render_template("admin/setting.jinja", title="Editace nastavení", year=year, form=setting_form, idsetting=idsetting, menu=menu) 
+                    return render_template("admin/setting.jinja", title="Editace nastavení", year=year, form=setting_form, idsetting=idsetting, menu=menu, years=years) 
     return redirect (url_for("admin"+year['year']+".view_settings"))
 
 @admin.route("/admin/settings/delete/<int:idsetting>", methods=["GET"])
 @org_login_required
 def view_setting_delete(idsetting):
     year=get_year(request.blueprint)
+    years=get_years()
     menu=get_menu(year)
     setting=get_setting(idsetting)
     setting_delete_form = SettingDeleteForm()
-    return render_template("admin/setting_delete.jinja", title="Smazání parametru", year=year, form=setting_delete_form, setting=setting, menu=menu)
+    return render_template("admin/setting_delete.jinja", title="Smazání parametru", year=year, form=setting_delete_form, setting=setting, menu=menu, years=years)
 
 @admin.route("/admin/settings/delete/<int:idsetting>", methods=["POST"])
 @org_login_required
 def setting_delete(idsetting):
     year=get_year(request.blueprint)
+    years=get_years()
     status, message = delete_setting(idsetting)
     if not status:
         flash (message, "error")
