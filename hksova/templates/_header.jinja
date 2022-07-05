@@ -5,15 +5,22 @@
     <meta name='description' content='Noční šifrovací hra Hradecká sova' />
 
     <link rel="shortcut icon" href={{url_for("static", filename="img/favicon.ico")}} type="image/x-icon" />
-
+    
+    <link href={{url_for("static", filename="css/bootstrap-editable.css")}} type='text/css' rel='stylesheet' />
+    <link href={{url_for("static", filename="css/bootstrap-table.min.css")}} type='text/css' rel='stylesheet' />
     <link href={{url_for("static", filename="css/bootstrap.min.css")}} type='text/css' rel='stylesheet' />
     <link href={{url_for("static", filename="css/style.css")}} type='text/css' rel='stylesheet'/>
+    
 
     <script type="text/javascript" src={{url_for("static", filename="js/popper.js")}}></script>
     <script type="text/javascript" src={{url_for("static", filename="js/jquery-3.6.0.min.js")}}></script>
     <script type="text/javascript" src={{url_for("static", filename="js/bootstrap.min.js")}}></script>
+    <script type="text/javascript" src={{url_for("static", filename="js/bootstrap-table.js")}}></script>
+    <script type="text/javascript" src={{url_for("static", filename="js/bootstrap-table-editable.js")}}></script>
+    <script type="text/javascript" src={{url_for("static", filename="js/bootstrap-table-filter-control.js")}}></script>
     <script type="text/javascript" src={{url_for("static", filename="js/style.js")}}></script>
     <script type="text/javascript" src={{url_for("static", filename="js/js.cookie.min.js")}}></script>
+    <script type="text/javascript" src={{url_for("static", filename="js/formatter.js")}}></script>
 
     <title>{% block title %} {{title}} | Hradecká sova{% endblock %}</title>
 </head>

@@ -252,7 +252,7 @@ def get_team_status_paid(team):
     if (team['isPaid']==1):
         return 'Zaplaceno'
     else:
-        return 'Nezaplaceno'
+        return 'Neplaceno'
 
 def get_team_status(team):
     if (team['isBackup']==1):

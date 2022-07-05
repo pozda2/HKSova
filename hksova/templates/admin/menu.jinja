@@ -6,17 +6,17 @@
 <A href=" {{ url_for('admin' ~ year.year ~ ".view_menu_item_add")}}">  <button type="submit" class="btn btn-primary" >Nová položka v menu</button></A>
 <p>
 
-<table class="table table-dark table-striped">
+<table id="table" class="table-dark table-striped" data-toggle="table" data-filter-control="true" data-click-to-select="true">
   <thead>
     <tr>
-        <th>Pořadí</th>
-        <th>Menu</th>
-        <th>Odkaz</th>
-        <th>Typ</th>
-        <th>Viditelnost</th>
-        <th>Oprávnění</th>
-        <th>Ročník</th>
-        <th>Akce</th>
+        <th data-field="menu-irder" data-sortable="true">Pořadí</th>
+        <th data-field="menu-menu" data-sortable="true" data-filter-control="input">Menu</th>
+        <th data-field="menu-url" data-sortable="true" data-filter-control="input">Odkaz</th>
+        <th data-field="menu-tyoe" data-sortable="true" data-filter-control="select">Typ</th>
+        <th data-field="menu-visibility" data-sortable="true" data-filter-control="select">Viditelnost</th>
+        <th data-field="menu-access-rights" data-sortable="true" data-filter-control="select">Oprávnění</th>
+        <th data-field="menu-year" data-sortable="true" data-filter-control="select">Ročník</th>
+        <th data-field="menu-action" data-formatter="menuActionFormatter">Akce</th>
     </tr>
   </thead>
   <tbody>

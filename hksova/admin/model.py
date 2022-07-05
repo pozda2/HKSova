@@ -406,7 +406,7 @@ def translate_team_paid(team):
     if (team['ispaid']==1):
         return 'Zaplaceno'
     else:
-        return 'Nezaplaceno'
+        return 'Neplaceno'
 
 def translate_team_status(team):
     if (team['isdeleted']==1):

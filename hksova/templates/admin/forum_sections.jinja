@@ -5,13 +5,13 @@
 
 <A href=" {{ url_for('admin' ~ year.year ~ ".view_forum_section_add")}}">  <button type="submit" class="btn btn-primary" >Nová sekce fóra</button></A>
 <p>
-<table class="table table-dark table-striped">
+<table id="table" class="table-dark table-striped" data-toggle="table" data-filter-control="true" data-click-to-select="true">
   <thead>
     <tr>
-        <th>Pořadí</th>
-        <th>Název</th>
-        <th>Viditelnost</th>
-        <th>Akce</th>
+        <th data-field="forum-order" data-sortable="true" >Pořadí</th>
+        <th data-field="forum-name" data-sortable="true" data-filter-control="input">Název</th>
+        <th data-field="forum-visibility" data-sortable="true" data-filter-control="select">Viditelnost</th>
+        <th data-field="forum-action" data-formatter="forumsActionFormatter">Akce</th>
     </tr>
   </thead>
   <tbody>
