@@ -1,4 +1,7 @@
 {% extends "_main.jinja" %}
 {% block main%}
-{{ text }}
+{% if (session.org) %}
+<p class="float-right"><a href="{{ url_for('admin' ~ year.year ~ '.view_admin_page', idpage=page.idpage) }}"><button type="submit" class="btn btn-primary">Upravit</button></a></p>
+{% endif %}
+{{ page['html'] }}
 {% endblock %}

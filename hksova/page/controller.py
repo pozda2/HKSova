@@ -38,7 +38,7 @@ def view_index():
     years=get_years()
     menu=get_menu(year)
     page=get_page(year, 'index')
-    r = make_response(render_template("page/page.jinja", text=page['html'], title=page['title'], year=year, menu=menu, years=years))
+    r = make_response(render_template("page/page.jinja", title=page['title'], page=page, year=year, menu=menu, years=years))
     #r.headers.set('Content-Security-Policy', "default-src 'self'")
     r.headers.set('X-Content-Type-Options', 'nosniff')
     r.headers.set('X-Frame-Options', 'SAMEORIGIN')
@@ -53,7 +53,7 @@ def view_page(pageurl):
 
     if page:
         if check_authorization(page['ispublic'], page['isprivate'], page['isvisible']):
-            r = make_response(render_template("page/page.jinja", text=page['html'], title=page['title'], year=year, years=years, menu=menu))
+            r = make_response(render_template("page/page.jinja", title=page['title'], page=page, year=year, years=years, menu=menu))
             #r.headers.set('Content-Security-Policy', "default-src 'self'")
             r.headers.set('X-Content-Type-Options', 'nosniff')
             r.headers.set('X-Frame-Options', 'SAMEORIGIN')

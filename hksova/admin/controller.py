@@ -74,7 +74,10 @@ def edit_page(idpage):
                     flash (f'{error}', "error")
                     return render_template("admin/page.jinja", title="Editace stránky", year=year, form=page_form, idpage=idpage, menu=menu, years=years) 
 
-    return redirect (url_for("admin"+year['year']+".view_admin_pages"))
+    if (request.form['action'] == "save_and_page"):
+        return redirect (url_for("main"+year['year']+".view_page", pageurl=page_form.url.data))
+    else:
+        return redirect (url_for("admin"+year['year']+".view_admin_pages"))
 
 @admin.route("/admin/page/add", methods=["GET"])
 @org_login_required
