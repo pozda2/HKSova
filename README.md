@@ -64,5 +64,4 @@ Administration
 - Mascot - overview, adding, deleting
 
 Bug
- - Edit team old years - bug CI5HK
  - Recaulculation after disable team in admin menu

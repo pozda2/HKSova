@@ -458,11 +458,16 @@ def view_admin_team(idteam):
     edit_team_form.isdeleted.data=team['isdeleted']
     edit_team_form.isbackup.data=team['isbackup']
 
+    # patch for old years
+    shift=0
     for player in players:
-        edit_team_form['players'][player['order']]['name'].data = player['name']
-        edit_team_form['players'][player['order']]['publicname'].data = player['publicname']
-        edit_team_form['players'][player['order']]['city'].data = player['city']
-        edit_team_form['players'][player['order']]['age'].data = player['age']
+        if player['order']==5: shift=1
+
+    for player in players:
+        edit_team_form['players'][player['order'] - shift]['name'].data = player['name']
+        edit_team_form['players'][player['order'] - shift]['publicname'].data = player['publicname']
+        edit_team_form['players'][player['order'] - shift]['city'].data = player['city']
+        edit_team_form['players'][player['order'] - shift]['age'].data = player['age']
 
     return render_template("admin/team.jinja", title="Údaje o týmu", year=year, form=edit_team_form, team=team, menu=menu, min_players=min_players, years=years)
 
