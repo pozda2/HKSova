@@ -63,7 +63,10 @@ def view_teams():
     years=get_years()
     menu=get_menu(year)
     teams=get_teams_not_deleted(year)
-    return render_template("team/teams.jinja", title="Týmy", year=year, teams=teams, menu=menu, years=years)
+    city_stats=get_city_statistics(year)
+    teams_stats=get_teams_statistics(year)
+    players_stats=get_players_statistics(year)
+    return render_template("team/teams.jinja", title="Týmy", year=year, menu=menu, years=years, teams=teams, city_stats=city_stats, teams_stats=teams_stats, players_stats=players_stats)
 
 @team.route("/changepassword/", methods=["GET"])
 @login_required

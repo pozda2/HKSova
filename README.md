@@ -51,9 +51,9 @@ Side notices
 
 Future features 
 ---------------
-- Login, reset of forgot password
+- Add link to team page on seslost web site
 - Forum - add forum to pages
-- Teams, display statistics
+- Login, reset of forgot password
 - Team, displaying payment detail as QR
 
 Administration
@@ -64,6 +64,5 @@ Administration
 - Mascot - overview, adding, deleting
 
 Bug
- - Edit team old years - bug
+ - Edit team old years - bug CI5HK
  - Recaulculation after disable team in admin menu
- - Add link to team page on seslost web site

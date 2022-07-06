@@ -262,7 +262,7 @@ def get_team_status(team):
     
 def get_teams_not_deleted(year):
     cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''SELECT  idteam, name, login, mascot, email, mobil, weburl, reporturl, isPaid, isBackup, isDeleted, registeredAt FROM team where idYear=%s and isdeleted=0 order by isBackup, registeredAt''', [year['year']])
+    cursor.execute('''SELECT  idteam, name, login, mascot, email, mobil, COALESCE(weburl, '') weburl, reporturl, isPaid, isBackup, isDeleted, registeredAt FROM team where idYear=%s and isdeleted=0 order by isBackup, registeredAt''', [year['year']])
     data=cursor.fetchall()
 
     # podrobnosti o tymu
@@ -296,6 +296,142 @@ def get_team(year, login):
         return team
     else:
         return None
+
+def get_city_statistics (year):
+    cursor = current_app.mysql.connection.cursor()
+    cursor.execute('''select city, count(*) as count from player p, team t where t.idteam = p.idteam and idyear=%s and city is not null and isdeleted =0 group by city order by 2 desc''', [year['year']])
+    data=cursor.fetchall()
+    return data
+
+def get_teams_statistics (year):
+    total_team=0
+    paid_team=0
+    backup_team=0
+    not_paid_team=0
+    total_players=0
+    paid_players=0
+    backup_players=0
+    not_paid_players=0
+
+    cursor = current_app.mysql.connection.cursor()
+    cursor.execute('''select ispaid, isbackup from team t where idyear=%s and isdeleted=0;''', [year['year']])
+    data=cursor.fetchall()
+
+    if (data):
+        for team in data:
+            total_team+=1
+            if team['ispaid']==1: 
+                paid_team+=1
+            else:
+                not_paid_team+=1
+            if team['isbackup']:
+                backup_team+=1
+
+    cursor.execute('''select ispaid, isbackup from player p, team t where t.idteam = p.idteam and idyear=%s and isdeleted=0;''', [year['year']])
+    data=cursor.fetchall()
+    if (data):
+        for team in data:
+            total_players+=1
+            if team['ispaid']==1: 
+                paid_players+=1
+            else:
+                not_paid_players+=1
+            if team['isbackup']:
+                backup_players+=1
+
+    stat={}
+    stat['total_team']=total_team
+    stat['paid_team']=paid_team
+    stat['notpaid_team']=not_paid_team
+    stat['backup_team']=backup_team
+    stat['total_players']=total_players
+    stat['paid_players']=paid_players
+    stat['notpaid_players']=not_paid_players
+    stat['backup_players']=backup_players
+
+    return stat
+
+def get_players_statistics (year):
+    cursor = current_app.mysql.connection.cursor()
+    cursor.execute('''select age, ispaid, isbackup from player p, team t where t.idteam = p.idteam and idyear=%s and age is not null and isdeleted=0''', [year['year']])
+    data=cursor.fetchall()
+
+    stat={}
+    stat['total_count']=0
+    stat['total_sum']=0
+    stat['total_avg']=0
+    stat['total_min']=150
+    stat['total_max']=0
+    stat['paid_count']=0
+    stat['paid_sum']=0
+    stat['paid_avg']=0
+    stat['paid_min']=150
+    stat['paid_max']=0
+    stat['notpaid_count']=0
+    stat['notpaid_sum']=0
+    stat['notpaid_avg']=0
+    stat['notpaid_min']=150
+    stat['notpaid_max']=0
+    stat['backup_count']=0
+    stat['backup_sum']=0
+    stat['backup_avg']=0
+    stat['backup_min']=150
+    stat['backup_max']=0
+
+    if (data):
+        for player in data:
+            stat['total_count']+=1
+            stat['total_sum']+=player['age']
+            if (player['age'] < stat['total_min']): stat['total_min']=player['age']
+            if (player['age'] > stat['total_max']): stat['total_max']=player['age']
+
+            if player['ispaid']==1: 
+                stat['paid_count']+=1
+                stat['paid_sum']+=player['age']
+                if (player['age'] < stat['paid_min']): stat['paid_min']=player['age']
+                if (player['age'] > stat['paid_max']): stat['paid_max']=player['age']
+
+            else:
+                stat['notpaid_count']+=1
+                stat['notpaid_sum']+=player['age']
+                if (player['age'] < stat['notpaid_min']): stat['notpaid_min']=player['age']
+                if (player['age'] > stat['notpaid_max']): stat['notpaid_max']=player['age']
+
+            if player['isbackup']:
+                stat['backup_count']+=1
+                stat['backup_sum']+=player['age']
+                if (player['age'] < stat['backup_min']): stat['backup_min']=player['age']
+                if (player['age'] > stat['backup_max']): stat['backup_max']=player['age']
+
+    if stat['total_count']>0:
+        stat['total_avg']=f"{stat['total_sum'] / stat['total_count']:.2f}"
+    else:
+        stat['total_avg']="-"
+    if stat['total_min']==150: stat['total_min']="-"
+    if stat['total_max']==0: stat['total_max']="-"
+
+    if stat['paid_count']>0:
+        stat['paid_avg']=f"{stat['paid_sum'] / stat['paid_count']:.2f}"
+    else:
+        stat['paid_avg']="-"
+    if stat['paid_min']==150: stat['paid_min']="-"
+    if stat['paid_max']==0: stat['paid_max']="-"
+
+    if stat['notpaid_count']>0:
+        stat['notpaid_avg']=f"{stat['notpaid_sum'] / stat['notpaid_count']:.2f}"
+    else:
+        stat['notpaid_avg']="-"
+    if stat['notpaid_min']==150: stat['notpaid_min']="-"
+    if stat['notpaid_max']==0: stat['notpaid_max']="-"
+
+    if stat['backup_count']>0:
+        stat['backup_avg']=f"{stat['backup_sum'] / stat['backup_count']:.2f}"
+    else:
+        stat['backup_avg']="-"
+    if stat['backup_min']==150: stat['backup_min']="-"
+    if stat['backup_max']==0: stat['backup_max']="-"
+
+    return stat
 
 def change_team_pass (year, login, password_old, password_new):
     if (check_password_team (year, login, password_old)):

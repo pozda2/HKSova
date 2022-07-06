@@ -30,4 +30,64 @@
   </tbody>
 </table>
 
+<p>
+<h2>Statistika týmů</h2>
+<table id="table" class="table-dark table-striped" data-toggle="table" data-filter-control="true" data-click-to-select="true">
+  <thead>
+  <tr><th></th>
+      <th  data-sortable="true">Týmy</th>
+      <th  data-sortable="true">Hráči</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr><td>Zaplaceno</td><td>{{teams_stats.paid_team}}</td><td>{{teams_stats.paid_players}}</td></tr>
+  <tr><td>Neplaceno</td><td>{{teams_stats.notpaid_team}}</td><td>{{teams_stats.notpaid_players}}</td></tr>
+  <tr><td>Náhradníci</td><td>{{teams_stats.backup_team}}</td><td>{{teams_stats.backup_players}}</td></tr>
+  <tr><td>Celkově</td><td>{{teams_stats.total_team}}</td><td>{{teams_stats.total_players}}</td></tr>
+  </tbody>
+</table>
+
+<p>
+<h2>Statistika hráčů</h2>
+<table id="table" class="table-dark table-striped" data-toggle="table" data-filter-control="true" data-click-to-select="true">
+  <thead>
+  <tr><th></th>
+      <th  data-sortable="true">Průměrný věk</th>
+      <th  data-sortable="true">Minimální věk</th>
+      <th  data-sortable="true">Maximální věk</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr><td>Zaplaceno</td><td>{{players_stats.paid_avg}}</td><td>{{players_stats.paid_min}}</td><td>{{players_stats.paid_max}}</td></tr>
+  <tr><td>Neplaceno</td><td>{{players_stats.notpaid_avg}}</td><td>{{players_stats.notpaid_min}}</td><td>{{players_stats.notpaid_max}}</td></tr>
+  <tr><td>Náhradníci</td><td>{{players_stats.backup_avg}}</td><td>{{players_stats.backup_min}}</td><td>{{players_stats.backup_max}}</td></tr>
+  <tr><td>Celkově</td><td>{{players_stats.total_avg}}</td><td>{{players_stats.total_min}}</td><td>{{players_stats.total_max}}</td></tr>
+  </tbody>
+</table>
+
+<p>
+<h2>Statistika měst</h2>
+<table id="table" class="table-dark table-striped" data-toggle="table" data-filter-control="true" data-click-to-select="true">
+  <thead>
+    <tr>
+        <th data-field="city" data-sortable="true" data-filter-control="select">Město</th>
+        <th data-field="team-name" data-sortable="true" >Počet</th>
+    </tr>
+  </thead>
+  <tbody>
+{% if city_stats %}
+  {% for city in city_stats %}
+    {% if city.city %}
+    <tr>
+    <td>{{city.city}}</td>
+    <td>{{city.count}}</td>
+    </tr>
+    {% endif %}
+  {% endfor %}
+
+{% endif %}
+  </tbody>
+</table>
+
+
 {% endblock %}
