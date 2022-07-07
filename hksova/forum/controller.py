@@ -32,6 +32,7 @@ def view_forum(section_id):
     menu=get_menu(year)
     post_count=get_forum_post_count(section_id)
     post_form = PostForm()
+    post_form.source_url="forum"
 
     search = False
     q = request.args.get('q')
@@ -71,4 +72,7 @@ def create_post(section_id):
                 else:
                     flash (f'{error}', "error")
 
-    return redirect (url_for("forum"+year['year']+".view_forum", section_id=section_id))
+    if (post_form.source_url.data =="forum"):
+        return redirect (url_for("forum"+year['year']+".view_forum", section_id=section_id))
+    else:
+        return redirect (url_for("main"+year['year']+".view_page", pageurl=post_form.source_url.data))

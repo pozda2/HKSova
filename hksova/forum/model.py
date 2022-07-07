@@ -23,10 +23,11 @@ def get_forum_section_last_post (idforumsection):
         else:
             return ""
 
-def get_forum(idForumSection, startat,perpage):
+def get_forum(idForumSection, startat, perpage):
     cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''select idforumsection, name, text, insertedAt, ip, dns, browser from forum where idforumsection = %s order by insertedAt desc limit %s, %s''', [idForumSection, startat,perpage])
+    cursor.execute('''select idforumsection, name, text, insertedAt, ip, dns, browser from forum where idforumsection = %s order by insertedAt desc limit %s, %s''', [idForumSection, startat, perpage])
     data=cursor.fetchall()
+    
     for section in data:
         if section['insertedAt'] is not None:
             section['insertedAt']=section['insertedAt'].strftime("%-d. %-m. %Y %-H:%M:%S")

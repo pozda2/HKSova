@@ -1,5 +1,10 @@
 {% extends "_main.jinja" %}
 {% block main%}
+{%- if (session.org) -%}
+<p class="float-right"><a href="{{ url_for('admin' ~ year.year ~ '.view_admin_page', idpage=page.idpage) }}"><button type="submit" class="btn btn-primary">Upravit</button></a></p>
+{% endif %}
+{{ page['html'] }}
+
 {% if year.is_current_year %}
 <form action="{{url_for('forum' ~ year.year ~ ".create_post", section_id=section_id)}}" method="post">
     {{ form.csrf_token }}
@@ -16,7 +21,6 @@
 </form>
 
 {% endif %}
-
 {% if section %}
     {% for post in section %}
     <table class="table table-dark table-striped">

@@ -51,7 +51,6 @@ Side notices
 
 Future features 
 ---------------
-- Forum - add forum to pages
 - Reports
 - Login, reset of forgot password
 - Team, displaying payment detail as QR
