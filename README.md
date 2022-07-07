@@ -51,7 +51,6 @@ Side notices
 
 Future features 
 ---------------
-- Add link to team page on seslost web site
 - Forum - add forum to pages
 - Reports
 - Login, reset of forgot password
