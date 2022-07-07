@@ -1,8 +1,8 @@
-{% extends "_main.jinja" %}
-{% block main%}
+{%- extends "_main.jinja" -%}
+{%- block main -%}
 
 <h2>Zrušení stránky: {{ page.title }}</h2>
-<form {{url_for('admin' ~ year.year ~ ".page_delete", idpage=page.idpage)}} method="POST" >
+<form action="{{url_for('admin' ~ year.year ~ ".page_delete", idpage=page.idpage)}}" method="POST" >
     {{ form.csrf_token }}
      <div class="form-row">
         <div class="col">{{ form.agree.label}}</div>
@@ -12,4 +12,4 @@
     <button type="submit" class="btn btn-primary">Smazat stránku</button>
     <button type="button"  class="btn btn-primary" onclick="history.back()">Zpět</button>
 </form>
-{% endblock %}
+{%- endblock -%}

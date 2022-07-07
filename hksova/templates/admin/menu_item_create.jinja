@@ -1,8 +1,8 @@
-{% extends "_main.jinja" %}
-{% block main%}
+{%- extends "_main.jinja" -%}
+{%- block main -%}
 
 <h2>Nová položka menu</h2>
-<form {{url_for('admin' ~ year.year ~ ".create_menu_item")}} method="post">
+<form action="{{url_for('admin' ~ year.year ~ ".create_menu_item")}}" method="post">
   {{ form.csrf_token }}
   <div class="form-row">
     <div class="col">
@@ -82,4 +82,4 @@
   <button type="button"  class="btn btn-primary" onclick="history.back()">Zpět</button>
 </form>
 
-{% endblock %}
+{%- endblock -%}

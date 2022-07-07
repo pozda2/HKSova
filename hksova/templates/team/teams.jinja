@@ -1,8 +1,7 @@
-{% extends "_main.jinja" %}
-{% block main%}
+{%- extends "_main.jinja" -%}
+{%- block main -%}
 
 <h2>Registrované týmy</h2>
-
 <table id="table" class="table-dark table-striped" data-toggle="table" data-filter-control="true" data-click-to-select="true">
   <thead>
     <tr>
@@ -15,8 +14,8 @@
     </tr>
   </thead>
   <tbody>
-{% if teams %}
-    {% for team in teams %}
+{%- if teams -%}
+    {%- for team in teams -%}
     <tr>
         <td >{{ team.order}}</td>
         <td>{{ team.name}}</A></td>
@@ -25,8 +24,8 @@
         <td>{{ team.zaplaceno}}</td>
         <td>{{ team.stav}}</td>
     </tr>
-    {% endfor %}
-{% endif %}
+    {%- endfor -%}
+{%- endif -%}
   </tbody>
 </table>
 
@@ -75,19 +74,16 @@
     </tr>
   </thead>
   <tbody>
-{% if city_stats %}
-  {% for city in city_stats %}
-    {% if city.city %}
+{%- if city_stats -%}
+  {%- for city in city_stats -%}
+    {%- if city.city -%}
     <tr>
     <td>{{city.city}}</td>
     <td>{{city.count}}</td>
     </tr>
-    {% endif %}
-  {% endfor %}
-
-{% endif %}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endif -%}
   </tbody>
 </table>
-
-
-{% endblock %}
+{%- endblock -%}

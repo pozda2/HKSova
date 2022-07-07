@@ -1,5 +1,5 @@
-{% extends "_main.jinja" %}
-{% block main%}
+{%- extends "_main.jinja" -%}
+{%- block main -%}
 
 <h2>Správa týmů</h2>
 
@@ -16,8 +16,8 @@
     </tr>
   </thead>
   <tbody>
-{% if teams %}
-    {% for team in teams %}
+{%- if teams -%}
+    {%- for team in teams -%}
     <tr>
         <td>{{ team.idteam}}</td>
         <td>{{ team.name}}</td>
@@ -29,9 +29,9 @@
             <a href="{{ url_for('admin' ~ year.year ~ '.view_admin_team', idteam=team.idteam) }}"><img alt="=Úprava" src={{url_for("static", filename="img/edit.gif")}}></a>
         </td>
     </tr>
-    {% endfor %}
-{% endif %}
+    {%- endfor -%}
+{%- endif -%}
   </tbody>
 </table>
 
-{% endblock %}
+{%- endblock -%}

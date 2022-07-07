@@ -1,8 +1,8 @@
-{% extends "_main.jinja" %}
-{% block main%}
+{%- extends "_main.jinja" -%}
+{%- block main -%}
 
 <h2>Nový parametr</h2>
-<form  {{url_for('admin' ~ year.year ~ ".create_setting")}} method="post">
+<form action="{{url_for('admin' ~ year.year ~ ".create_setting")}}" method="post">
   {{ form.csrf_token }}
   <div class="form-row">
     <div class="col"><label for="inputParam">{{ form.param.label }}</label></div>
@@ -16,4 +16,4 @@
   <button type="submit" class="btn btn-primary">Nový parametr</button>
   <button type="button"  class="btn btn-primary" onclick="history.back()">Zpět</button>
 </form>
-{% endblock %}
+{%- endblock -%}

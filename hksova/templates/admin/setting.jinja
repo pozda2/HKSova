@@ -1,8 +1,8 @@
-{% extends "_main.jinja" %}
-{% block main%}
+{%- extends "_main.jinja" -%}
+{%- block main -%}
 
 <h2>Úprava nastavení</h2>
-<form {{url_for('admin' ~ year.year ~ ".edit_setting", idsetting=idsetting)}} method="post">
+<form action="{{url_for('admin' ~ year.year ~ ".edit_setting", idsetting=idsetting)}}" method="post">
   {{ form.csrf_token }}
   <div class="form-row">
     <div class="col"><label for="inputParam">{{ form.param.label }}</label></div>
@@ -18,4 +18,4 @@
   <button type="button"  class="btn btn-primary" onclick="history.back()">Zpět</button>
 </form>
 
-{% endblock %}
+{%- endblock -%}

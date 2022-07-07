@@ -1,9 +1,9 @@
-{% extends "_main.jinja" %}
-{% block main%}
+{%- extends "_main.jinja" -%}
+{%- block main -%}
 
 <h2>Změna údajů o týmu</h2>
 
-<form {{url_for('admin' ~ year.year ~ ".edit_admin_team", idteam=team.idteam)}} method="post">
+<form action="{{url_for('admin' ~ year.year ~ ".edit_admin_team", idteam=team.idteam)}}" method="post">
     {{ form.csrf_token }}
     <div class="row">
       <div class="col"><label for="inputOrder">{{ form.name.label }}</label></div>
@@ -45,7 +45,7 @@
       <div class="col"><label for="inputIsDeleted">{{ form.isdeleted.label }}</label> <font color="FF0000">!!! Pozor při změně dojde k přepočtu náhradníků !!!</font> </div>
       <div class="col">{{ form.isdeleted(class="form-control", id="inputIsDeleted", placeholder= "Smazán" ) }}</div>
     </div>
-    {% for player in form.players %}
+    {%- for player in form.players -%}
         <div class="row">
             <div class="form-group col-md-3">
                 {{ player.form.name(class="form-control", placeholder= "Jméno hráče" ) }}
@@ -61,7 +61,7 @@
             </div>
 
         </div>
-    {% endfor %}
+    {%- endfor -%}
     <br />
     <small>V týmu musí být minimálně {{min_players}} hráč.</small>
     <br />
@@ -76,4 +76,4 @@
     <button type="button"  class="btn btn-primary" onclick="history.back()">Zpět</button>
 </form>
 
-{% endblock %}
+{%- endblock -%}

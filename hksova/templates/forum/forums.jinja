@@ -1,5 +1,5 @@
-{% extends "_main.jinja" %}
-{% block main%}
+{%- extends "_main.jinja" -%}
+{%- block main -%}
 
 <h2>Fórum</h2>
 <table id="table" class="table-dark table-striped" data-toggle="table" data-filter-control="true" data-click-to-select="true">
@@ -11,15 +11,15 @@
     </tr>
   </thead>
   <tbody>
-{% if sections %}
-    {% for section in sections %}
+{%- if sections -%}
+    {%- for section in sections -%}
     <tr>
         <td>{{ section.section}}</td>
         <td>{{ url_for('forum' ~ year.year ~ '.view_forum', section_id= section.idforumsection) }}</td>
         <td>{{ section.last_post}}</td>
     </tr>
-    {% endfor %}
-{% endif %}
+    {%- endfor -%}
+{%- endif -%}
   </tbody>
 </table>
-{% endblock %}
+{%- endblock -%}

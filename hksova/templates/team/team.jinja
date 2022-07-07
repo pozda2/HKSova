@@ -1,5 +1,5 @@
-{% extends "_main.jinja" %}
-{% block main%}
+{%- extends "_main.jinja" -%}
+{%- block main -%}
 
 <h2>Informace o týmu</h2>
 
@@ -52,7 +52,7 @@
   <br>
   <br>
 
-  {% if not team.isPaid and not team.isBackup and not team.isDeleted %}
+  {%- if not team.isPaid and not team.isBackup and not team.isDeleted -%}
   <h2>Platební údaje</h2>
   <table class="table table-dark table-striped">
   <tbody>
@@ -79,5 +79,5 @@
     </tr>
 
 
-  {% endif %}
-{% endblock %}
+  {%- endif -%}
+{%- endblock -%}

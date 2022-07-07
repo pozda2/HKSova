@@ -1,5 +1,5 @@
-{% extends "_main.jinja" %}
-{% block main%}
+{%- extends "_main.jinja" -%}
+{%- block main -%}
 
 <h2>Správa nastavení</h2>
 
@@ -14,8 +14,8 @@
     </tr>
   </thead>
   <tbody>
-{% if settings %}
-    {% for item in settings %}
+{%- if settings -%}
+    {%- for item in settings -%}
     <tr>
         <td>{{ item.param}}</td>
         <td>{{ item.value}}</td>
@@ -24,8 +24,8 @@
           <a href="{{ url_for('admin' ~ year.year ~ '.view_setting_delete', idsetting=item.idsetting) }}"><img alt="=Smazání" src={{url_for("static", filename="img/delete.gif")}}></a>
         </td>
     </tr>
-    {% endfor %}
-{% endif %}
+    {%- endfor -%}
+{%- endif -%}
   </tbody>
 </table>
-{% endblock %}
+{%- endblock -%}

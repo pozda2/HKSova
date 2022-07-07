@@ -1,7 +1,7 @@
-{% extends "_main.jinja" %}
-{% block main%}
+{%- extends "_main.jinja" -%}
+{%- block main -%}
 <h2>Úprava stránky</h2>
-<form  <form  {{url_for('admin' ~ year.year ~ ".edit_page", idpage=idpage)}} method="post">
+<form action="{{url_for('admin' ~ year.year ~ ".edit_page", idpage=idpage)}}" method="post">
     {{ form.csrf_token }}
     <div class="row">
         {{ form.title(class="form-control", placeholder="Nadpis") }}
@@ -44,4 +44,4 @@
   <button type="submit" name="action" value="save_and_list" class="btn btn-primary">Uložit a zpět do seznamu</button>
   <button type="button"  class="btn btn-primary" onclick="history.back()">Zpět</button>
 </form>
-{% endblock %}
+{%- endblock -%}

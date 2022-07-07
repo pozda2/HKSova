@@ -1,5 +1,5 @@
-{% extends "_main.jinja" %}
-{% block main%}
+{%- extends "_main.jinja" -%}
+{%- block main -%}
 
 <h2>Správa stránek</h2>
 <A href=" {{ url_for('admin' ~ year.year ~ ".view_page_add")}}">  <button type="submit" class="btn btn-primary" >Nová stránka</button></A>
@@ -16,8 +16,8 @@
     </tr>
   </thead>
   <tbody>
-{% if pages %}
-    {% for page in pages %}
+{%- if pages -%}
+    {%- for page in pages -%}
     <tr>
         <td>{{ page.title}}</td>
         <td>{{ page.url}}</td>
@@ -28,8 +28,8 @@
           <a href="{{ url_for('admin' ~ year.year ~ '.view_page_delete', idpage=page.idpage) }}"><img alt="=Smazání" src={{url_for("static", filename="img/delete.gif")}}></a>
         </td>
     </tr>
-    {% endfor %}
-{% endif %}
+    {%- endfor -%}
+{%- endif -%}
   </tbody>
 </table>
-{% endblock %}
+{%- endblock -%}
