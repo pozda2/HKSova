@@ -12,6 +12,7 @@ from wtforms.validators import InputRequired
 from wtforms.validators import NumberRange
 from wtforms.validators import Email, ValidationError
 from flask_mdeditor import  MDEditorField
+import re
 
 def validate_url(form, field):
     if field.data:

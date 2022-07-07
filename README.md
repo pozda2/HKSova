@@ -53,6 +53,7 @@ Future features
 ---------------
 - Add link to team page on seslost web site
 - Forum - add forum to pages
+- Reports
 - Login, reset of forgot password
 - Team, displaying payment detail as QR
 
@@ -62,6 +63,3 @@ Administration
 - Teams management - switching form org to team perspective
 - Settings - create new year by copying current year
 - Mascot - overview, adding, deleting
-
-Bug
- - Recaulculation after disable team in admin menu

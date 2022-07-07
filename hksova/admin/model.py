@@ -1,6 +1,7 @@
 from flask import current_app
 import secrets
 from passlib.hash import sha256_crypt
+from ..team.model import *
 
 def translate_visibility(page):
     if (page['isvisible']==1):
@@ -501,6 +502,9 @@ def update_admin_team (idteam, year, login, name, email, mobil, weburl, reportur
             [name, email, mobil, weburl, reporturl, ispaid, isdeleted, isbackup, year['year'], login])
     except Exception as e:
         return False, "Problem updatint db: " + str(e)
+
+    # recalculate normal and backup teams
+    status, message = recalculate_teams(year)
 
     # update players
     for i, player in enumerate(new_players):
