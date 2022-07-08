@@ -433,6 +433,12 @@ def get_players_statistics (year):
 
     return stat
 
+def get_reports(year):
+    cursor = current_app.mysql.connection.cursor()
+    cursor.execute('''SELECT  name, reporturl FROM team where idYear=%s and isdeleted=0 and reporturl is not null and reporturl <> "" ''', [year['year']])
+    data=cursor.fetchall()
+    return data
+
 def change_team_pass (year, login, password_old, password_new):
     if (check_password_team (year, login, password_old)):
         salt=secrets.token_hex(20)

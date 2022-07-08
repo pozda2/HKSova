@@ -5,11 +5,12 @@ from flask import request
 from flask import session
 from flask_paginate import Pagination, get_page_parameter
 
+from .model import *
 from ..year.model import *
 from ..menu.model import *
-from .model import *
 from ..forum.model import *
 from ..forum.form import *
+from ..team.model import *
 
 main = Blueprint("main", __name__)
 
@@ -81,6 +82,21 @@ def view_page(pageurl):
             r.headers.set('X-Content-Type-Options', 'nosniff')
             r.headers.set('X-Frame-Options', 'SAMEORIGIN')
             return r
+        else:
+            return render_template("errors/404.jinja",  year=year, menu=menu, years=years), 404
+
+    # reports on page
+    if (pageurl == "reportaze"):
+        reports=get_reports(year)
+        if page:
+            if check_authorization(page['ispublic'], page['isprivate'], page['isvisible']):
+                r = make_response(render_template("page/page_reports.jinja", title=page['title'], page=page, year=year, years=years, menu=menu, reports=reports))
+                #r.headers.set('Content-Security-Policy', "default-src 'self'")
+                r.headers.set('X-Content-Type-Options', 'nosniff')
+                r.headers.set('X-Frame-Options', 'SAMEORIGIN')
+                return r
+            else:
+                return render_template("errors/404.jinja",  year=year, menu=menu, years=years), 404
         else:
             return render_template("errors/404.jinja",  year=year, menu=menu, years=years), 404
 
