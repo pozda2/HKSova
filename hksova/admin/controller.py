@@ -690,3 +690,111 @@ def export_csv():
 
     output.seek(0)
     return Response(output, mimetype="text/csv", headers={"Content-Disposition":"attachment;filename=sova.csv"})
+
+@admin.route("/admin/mascots/", methods=["GET"])
+@org_login_required
+def view_admin_mascots():
+    year=get_year(request.blueprint)
+    years=get_years()
+    menu=get_menu(year)
+    mascots=get_mascots()
+    return render_template("admin/mascots.jinja", title="Správa maskotů", year=year, menu=menu, years=years, mascots=mascots)
+
+@admin.route("/admin/mascot/add", methods=["GET"])
+@org_login_required
+def view_mascot_add():
+    year=get_year(request.blueprint)
+    years=get_years()
+    menu=get_menu(year)
+    mascot_form = MascotForm()
+    return render_template("admin/mascot_create.jinja", title="Nový maskot", year=year, form=mascot_form, menu=menu, years=years)
+
+@admin.route("/admin/mascot/add", methods=["POST"])
+@org_login_required
+def create_mascot():
+    year=get_year(request.blueprint)
+    years=get_years()
+    menu=get_menu(year)
+    mascot_form = MascotForm(request.form)
+
+    if mascot_form.validate():
+        status, message=insert_mascot(mascot_form.mascot.data)
+        if not status:
+           flash (message, "error")
+        else:
+            flash ('Maskot byl přidán', "info")
+    else:
+        for _, errors in mascot_form.errors.items():
+            for error in errors:
+                if isinstance(error, dict):
+                    if (len(error)>0):
+                        for k in error.keys():
+                            flash (f'{error[k][0]}', "error")
+                else:
+                    flash (f'{error}', "error")
+                    return render_template("admin/mascot_create.jinja", title="Nový maskot", year=year, form=mascot_form, menu=menu, years=years)
+
+    return redirect (url_for("admin"+year['year']+".view_admin_mascots"))
+
+@admin.route("/admin/mascots/<mascot>", methods=["GET"])
+@org_login_required
+def view_mascot(mascot):
+    year=get_year(request.blueprint)
+    years=get_years()
+    menu=get_menu(year)
+    mascot=get_mascot(mascot)
+    if not mascot:
+        return render_template("errors/404.jinja",  year=year, menu=menu, years=years), 404
+    mascot_form = MascotForm()
+    mascot_form.mascot.data=mascot['mascot']
+    return render_template("admin/mascot.jinja", title="Editace maskota", year=year, form=mascot_form, oldmascot=mascot, menu=menu, years=years)
+
+@admin.route("/admin/mascots/<oldmascot>", methods=["POST"])
+@org_login_required
+def edit_mascot(oldmascot):
+    year=get_year(request.blueprint)
+    years=get_years()
+    menu=get_menu(year) 
+    mascot_form = MascotForm(request.form)
+    if mascot_form.validate():
+        status, message=update_mascot(oldmascot, mascot_form.mascot.data)
+        if not status:
+           flash (message, "error")
+        else:
+            flash ('Maskot upraven', "info")
+    else:
+        for _, errors in mascot_form.errors.items():
+            for error in errors:
+                if isinstance(error, dict):
+                    if (len(error)>0):
+                        for k in error.keys():
+                            flash (f'{error[k][0]}', "error")
+                else:
+                    flash (f'{error}', "error")
+                    return render_template("admin/mascot.jinja", title="Editace maskota", year=year, form=mascot_form, oldmascot=oldmascot, menu=menu, years=years) 
+    return redirect (url_for("admin"+year['year']+".view_admin_mascots"))
+
+@admin.route("/admin/mascots/delete/<mascot>", methods=["GET"])
+@org_login_required
+def view_mascot_delete(mascot):
+    year=get_year(request.blueprint)
+    years=get_years()
+    menu=get_menu(year)
+    mascot=get_mascot(mascot)
+    if not mascot:
+        return render_template("errors/404.jinja",  year=year, menu=menu, years=years), 404
+
+    mascot_delete_form = MascotDeleteForm()
+    return render_template("admin/mascot_delete.jinja", title="Smazání maskota", year=year, form=mascot_delete_form, mascot=mascot, menu=menu, years=years)
+
+@admin.route("/admin/mascots/delete/<mascot>", methods=["POST"])
+@org_login_required
+def mascot_delete(mascot):
+    year=get_year(request.blueprint)
+    years=get_years()
+    status, message = delete_mascot(mascot)
+    if not status:
+        flash (message, "error")
+    else:
+        flash ('Maskot smazán', "info")
+    return redirect (url_for("admin"+year['year']+".view_admin_mascots"))

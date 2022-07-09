@@ -1,0 +1,15 @@
+{%- extends "_main.jinja" -%}
+{%- block main -%}
+
+<h2>Smazání maskota: {{ mascot.mascot }}</h2>
+<form action="{{url_for('admin' ~ year.year ~ ".mascot_delete", mascot=mascot.mascot)}}" method="POST">
+    {{ form.csrf_token }}
+     <div class="form-row">
+        <div class="col">{{ form.agree.label}}</div>
+        <div class="col">{{ form.agree() }}</div>
+    </div>
+    <br>
+    <button type="submit" class="btn btn-primary">Smazat maskota</button>
+    <button type="button"  class="btn btn-primary" onclick="history.back()">Zpět</button>
+</form>
+{%- endblock -%}

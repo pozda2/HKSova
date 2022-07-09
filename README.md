@@ -55,7 +55,5 @@ Future features
 - Team, displaying payment detail as QR
 
 Administration
-- Teams management - export data
-- Teams management - switching form org to team perspective
 - Settings - create new year by copying current year
-- Mascot - overview, adding, deleting
+- Teams management - switching form org to team perspective

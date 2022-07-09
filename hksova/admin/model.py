@@ -598,3 +598,44 @@ def delete_setting(idsetting):
         return False, "Problem deleting from db: " + str(e)
     current_app.mysql.connection.commit()
     return True, ""
+
+def get_mascots():
+    cursor = current_app.mysql.connection.cursor()
+    cursor.execute('''select mascot from mascot order by mascot''')
+    data=cursor.fetchall()
+    return data
+
+def get_mascot(mascot):
+    cursor = current_app.mysql.connection.cursor()
+    cursor.execute('''select mascot from mascot where mascot=%s''', [mascot])
+    data=cursor.fetchone()
+    return data
+
+def insert_mascot(mascot):
+    try:
+        cursor = current_app.mysql.connection.cursor()
+        cursor.execute('''INSERT INTO mascot (mascot)
+                       VALUES (%s)''',
+                       [mascot] )
+    except Exception as e:
+        return False, "Problem inserting into db: " + str(e)
+    current_app.mysql.connection.commit()
+    return True, ""
+
+def update_mascot(oldmascot, newmascot):
+    try:
+        cursor = current_app.mysql.connection.cursor()
+        cursor.execute('''UPDATE mascot set mascot=%s where mascot=%s''', [ newmascot, oldmascot] )
+    except Exception as e:
+        return False, "Problem updating into db: " + str(e)
+    current_app.mysql.connection.commit()
+    return True, ""
+
+def delete_mascot(mascot):
+    try:
+        cursor = current_app.mysql.connection.cursor()
+        cursor.execute('''DELETE FROM mascot where mascot=%s''', [mascot] )
+    except Exception as e:
+        return False, "Problem deleting from db: " + str(e)
+    current_app.mysql.connection.commit()
+    return True, ""

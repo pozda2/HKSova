@@ -116,3 +116,9 @@ class SettingDeleteForm(FlaskForm):
 
 class GeneratingEmailsForm(FlaskForm):
     filter = RadioField('Filtr', choices=[(0,'Všechny týmy'), (1,'Zaplatili'), (2, 'Nezaplatili'), (3, 'Náhradníci')], validators=[InputRequired()])
+
+class MascotForm (FlaskForm):
+    mascot = StringField("Maskot", validators=[InputRequired(), length(min=1, max=255, message='Maskot')])
+
+class MascotDeleteForm(FlaskForm):
+    agree = BooleanField ("Opravdu chcete smazat maskota?", validators=[InputRequired()])
