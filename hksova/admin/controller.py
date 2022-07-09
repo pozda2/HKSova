@@ -1,9 +1,13 @@
+from inspect import isdatadescriptor
 from flask import Blueprint
+from flask import Response
 from flask import render_template
 from flask import request
 from flask import redirect
 from flask import url_for
 from flask import flash
+import csv
+import io
 
 from ..year.model import *
 from ..menu.model import *
@@ -668,3 +672,21 @@ def generating_emails():
                     flash (f'{error}', "error")
                     return render_template("admin/emails_filter.jinja", title="Generování seznamu emailů", year=year, form=email_form, menu=menu, years=years)
     return render_template("admin/emails_filter.jinja", title="Generování seznamu emailů", year=year, form=email_form, menu=menu, years=years)
+
+@admin.route("/admin/export/csv", methods=["GET"])
+@org_login_required
+def export_csv():
+    year=get_year(request.blueprint)
+    teams=get_admin_teams(year)
+    output = io.StringIO()
+    writer = csv.writer(output)
+    line = ['Jméno; Maskot; Mobil; Email; Zaplaceno; Stav; Hráči ']
+    print ((teams))
+    writer.writerow(line)
+    for team in teams:
+        if team['isdeleted']==1: continue
+        line = [team['name']+"; "+ team['mascot']+"; "+ team['mobil']+"; "+ team['email']+"; "+ team['zaplaceno']+"; "+ team['stav']+"; "+ team['players_private'].replace(",", ":")]
+        writer.writerow(line)
+
+    output.seek(0)
+    return Response(output, mimetype="text/csv", headers={"Content-Disposition":"attachment;filename=sova.csv"})
