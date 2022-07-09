@@ -1,0 +1,11 @@
+{%- extends "_main.jinja" -%}
+{%- block main -%}
+
+<h2>Seznamu emailů</h2>
+
+{%- if email_list -%}
+    {%- for list in email_list -%}
+    <p>{{ list }}
+    {%- endfor -%}
+{%- endif -%}
+{%- endblock -%}

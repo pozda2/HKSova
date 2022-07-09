@@ -622,3 +622,49 @@ def setting_delete(idsetting):
     else:
         flash ('Parametr z nastavení smazán', "info")
     return redirect (url_for("admin"+year['year']+".view_settings"))
+
+@admin.route("/admin/emails/", methods=["GET"])
+@org_login_required
+def view_generating_emails():
+    year=get_year(request.blueprint)
+    years=get_years()
+    menu=get_menu(year)
+    email_form = GeneratingEmailsForm()
+    return render_template("admin/emails_filter.jinja", title="Generování seznamu emailů", year=year, form=email_form, menu=menu, years=years)
+
+@admin.route("/admin/emails/", methods=["POST"])
+@org_login_required
+def generating_emails():
+    year=get_year(request.blueprint)
+    years=get_years()
+    menu=get_menu(year)
+    email_form = GeneratingEmailsForm()
+
+    if email_form.validate():
+        email_list, status, message = get_emails_list(year, email_form.filter.data)
+        if not status:
+           flash (message, "error")
+        else:
+            lists=[]
+            list=""
+            for i, email in enumerate(email_list):
+                if (i % 40 == 0):
+                    lists.append(list)
+                    list=""
+                    list+=email['email']
+                else:
+                    list+=", "+email['email']
+            lists.append(list)
+
+            return render_template("admin/emails.jinja", title="Seznamu emailů", year=year, menu=menu, years=years, email_list=lists)
+    else:
+        for _, errors in email_form.errors.items():
+            for error in errors:
+                if isinstance(error, dict):
+                    if (len(error)>0):
+                        for k in error.keys():
+                            flash (f'{error[k][0]}', "error")
+                else:
+                    flash (f'{error}', "error")
+                    return render_template("admin/emails_filter.jinja", title="Generování seznamu emailů", year=year, form=email_form, menu=menu, years=years)
+    return render_template("admin/emails_filter.jinja", title="Generování seznamu emailů", year=year, form=email_form, menu=menu, years=years)

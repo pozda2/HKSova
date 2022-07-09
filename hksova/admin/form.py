@@ -5,6 +5,7 @@ from wtforms import BooleanField
 from wtforms import SelectField
 from wtforms import PasswordField
 from wtforms import FieldList, FormField
+from wtforms import RadioField
 from wtforms.validators import InputRequired
 from wtforms.validators import DataRequired
 from wtforms.validators import length
@@ -111,4 +112,7 @@ class SettingForm (FlaskForm):
     value = StringField("Hodnota", validators=[InputRequired(), length(min=1, max=255, message='Hodnota parametru')])
 
 class SettingDeleteForm(FlaskForm):
-    agree = BooleanField ("Opravdu chcete smazat parametr z nastavení?", validators=[InputRequired()] )
+    agree = BooleanField ("Opravdu chcete smazat parametr z nastavení?", validators=[InputRequired()])
+
+class GeneratingEmailsForm(FlaskForm):
+    filter = RadioField('Filtr', choices=[(0,'Všechny týmy'), (1,'Zaplatili'), (2, 'Nezaplatili'), (3, 'Náhradníci')], validators=[InputRequired()])

@@ -541,6 +541,22 @@ def update_admin_team (idteam, year, login, name, email, mobil, weburl, reportur
     current_app.mysql.connection.commit()
     return True, ""
 
+def get_emails_list(year, filter):
+    try:
+        cursor = current_app.mysql.connection.cursor()
+        if (filter=="1"):
+            cursor.execute('''SELECT  email FROM team where idYear=%s and isdeleted=0 and ispaid=1''', [year['year']])
+        elif (filter=="2"):
+            cursor.execute('''SELECT  email FROM team where idYear=%s and isdeleted=0 and ispaid=0''', [year['year']])
+        elif (filter=="3"):
+            cursor.execute('''SELECT  email FROM team where idYear=%s and isdeleted=0 and isbackup=1''', [year['year']])
+        else:
+            cursor.execute('''SELECT  email FROM team where idYear=%s and isdeleted=0 ''', [year['year']])
+        data=cursor.fetchall()
+    except Exception as e:
+        return None, False, "Problem reading from db: " + str(e)
+    return data, True, ""
+
 def get_settings(year):
     cursor = current_app.mysql.connection.cursor()
     cursor.execute('''select idsetting, idyear, param, value from setting where idyear=%s order by param''', [year['year']])

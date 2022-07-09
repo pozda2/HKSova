@@ -55,7 +55,6 @@ Future features
 - Team, displaying payment detail as QR
 
 Administration
-- Teams management - generating email lists
 - Teams management - export data
 - Teams management - switching form org to team perspective
 - Settings - create new year by copying current year
