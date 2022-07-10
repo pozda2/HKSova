@@ -122,3 +122,6 @@ class MascotForm (FlaskForm):
 
 class MascotDeleteForm(FlaskForm):
     agree = BooleanField ("Opravdu chcete smazat maskota?", validators=[InputRequired()])
+
+class NextYearForm(FlaskForm):
+    agree = BooleanField ("Opravdu chcete založit nový ročník?", validators=[InputRequired()])

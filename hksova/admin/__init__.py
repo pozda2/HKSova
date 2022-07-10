@@ -1,1 +1,1 @@
-from .controller import admin
+from .controller import admin_blueprint

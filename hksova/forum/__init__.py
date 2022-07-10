@@ -1,1 +1,1 @@
-from .controller import forum
+from .controller import forum_blueprint

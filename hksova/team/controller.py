@@ -12,9 +12,9 @@ from ..year.model import *
 from ..menu.model import *
 from .utils import login_required, current_year_required
 
-team = Blueprint("team", __name__)
+team_blueprint = Blueprint("team", __name__)
 
-@team.route("/login/", methods=["GET"])
+@team_blueprint.route("/login/", methods=["GET"])
 @current_year_required
 def view_login():
     login_form = LoginForm()
@@ -23,7 +23,7 @@ def view_login():
     menu=get_menu(year)
     return render_template("team/login.jinja", form=login_form, title="Přihlášení", year=year, menu=menu, years=years)
 
-@team.route("/login/", methods=["POST"])
+@team_blueprint.route("/login/", methods=["POST"])
 @current_year_required
 def login_team():
     year=get_year(request.blueprint)
@@ -49,7 +49,7 @@ def login_team():
             flash (f'{error} nezadán', "error")
         return redirect (url_for("team.view_login"))
 
-@team.route("/logout/", methods=["GET"])
+@team_blueprint.route("/logout/", methods=["GET"])
 @login_required
 @current_year_required
 def logout_team():
@@ -57,7 +57,7 @@ def logout_team():
     flash("Úspěšné odhlášení", "info")
     return redirect (url_for("main.view_index"))
 
-@team.route("/teams/", methods=["GET"])
+@team_blueprint.route("/teams/", methods=["GET"])
 def view_teams():
     year=get_year(request.blueprint)
     years=get_years()
@@ -68,7 +68,7 @@ def view_teams():
     players_stats=get_players_statistics(year)
     return render_template("team/teams.jinja", title="Týmy", year=year, menu=menu, years=years, teams=teams, city_stats=city_stats, teams_stats=teams_stats, players_stats=players_stats)
 
-@team.route("/changepassword/", methods=["GET"])
+@team_blueprint.route("/changepassword/", methods=["GET"])
 @login_required
 @current_year_required
 def view_password_change():
@@ -78,7 +78,7 @@ def view_password_change():
     menu=get_menu(year)
     return render_template("team/password_change.jinja", form=password_change_form, title="Změna hesla", year=year, menu=menu, years=years)
 
-@team.route("/changepassword/", methods=["POST"])
+@team_blueprint.route("/changepassword/", methods=["POST"])
 @login_required
 @current_year_required
 def change_password():
@@ -105,7 +105,7 @@ def change_password():
             flash (f'{error} nezadán', "error")
         return redirect (url_for("team.view_password_change"))
 
-@team.route("/team", methods=["GET"])
+@team_blueprint.route("/team", methods=["GET"])
 @login_required
 @current_year_required
 def view_team():
@@ -116,7 +116,7 @@ def view_team():
     payment=get_payment_information(year)
     return render_template("team/team.jinja", title="Údaje o týmu", year=year, team=team, payment=payment, menu=menu, years=years)
 
-@team.route("/registration/", methods=["GET"])
+@team_blueprint.route("/registration/", methods=["GET"])
 @current_year_required
 def view_registration():
     year=get_year(request.blueprint)
@@ -135,7 +135,7 @@ def view_registration():
     else:
         return (render_template("team/registration_closed.jinja", reg_from=reg_from, reg_to=reg_to, title="Registrace", year=year, menu=menu, years=years))
 
-@team.route("/registration/", methods=["POST"])
+@team_blueprint.route("/registration/", methods=["POST"])
 @current_year_required
 def register_team():
     year=get_year(request.blueprint)
@@ -195,7 +195,7 @@ def register_team():
             
         return render_template("team/registration.jinja", form=registration_form, year=year, menu=menu, years=years)
 
-@team.route("/registration_cancel/", methods=["GET"])
+@team_blueprint.route("/registration_cancel/", methods=["GET"])
 @login_required
 @current_year_required
 def view_registration_cancel():
@@ -205,7 +205,7 @@ def view_registration_cancel():
     menu=get_menu(year)
     return render_template("team/registration_cancel.jinja", form=registration_cancel_form, title="Zrušení registrace", year=year, menu=menu, years=years)
 
-@team.route("/registration_cancel/", methods=["POST"])
+@team_blueprint.route("/registration_cancel/", methods=["POST"])
 @login_required
 @current_year_required
 def registration_cancel():
@@ -228,7 +228,7 @@ def registration_cancel():
             flash (f'{error} nezadán', "error")
         return redirect (url_for("team.view_registration_cancel"))
 
-@team.route("/edit_team/", methods=["GET"])
+@team_blueprint.route("/edit_team/", methods=["GET"])
 @login_required
 @current_year_required
 def view_edit_team():
@@ -257,7 +257,7 @@ def view_edit_team():
 
     return render_template("team/edit_team.jinja", form=edit_team_form, title="Změna údajů", year=year, min_players=min_players, max_players=max_players, menu=menu, years=years)
 
-@team.route("/edit_team/", methods=["POST"])
+@team_blueprint.route("/edit_team/", methods=["POST"])
 @login_required
 @current_year_required
 def edit_team():

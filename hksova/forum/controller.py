@@ -15,9 +15,9 @@ from ..menu.model import *
 from .form import *
 from .model import *
 
-forum = Blueprint("forum", __name__)
+forum_blueprint = Blueprint("forum", __name__)
 
-@forum.route("/forum/")
+@forum_blueprint.route("/forum/")
 def view_forum_section():
     year=get_year(request.blueprint)
     years=get_years()
@@ -25,7 +25,7 @@ def view_forum_section():
     sections=get_forum_sections(year)
     return render_template("forum/forums.jinja", title="Fórum", year=year, sections=sections, menu=menu, years=years)
 
-@forum.route("/forum/<int:section_id>")
+@forum_blueprint.route("/forum/<int:section_id>")
 def view_forum(section_id):
     year=get_year(request.blueprint)
     years=get_years()
@@ -51,7 +51,7 @@ def view_forum(section_id):
 
     return render_template("forum/forum_section.jinja", title="Fórum", year=year, section=section, pagination=pagination, form=post_form, section_id=section_id, menu=menu,  years=years)
 
-@forum.route("/forum/<int:section_id>", methods=["POST"])
+@forum_blueprint.route("/forum/<int:section_id>", methods=["POST"])
 @current_year_required
 def create_post(section_id):
     year=get_year(request.blueprint)

@@ -1,4 +1,3 @@
-from inspect import isdatadescriptor
 from flask import Blueprint
 from flask import Response
 from flask import render_template
@@ -18,9 +17,9 @@ from .utils import org_login_required
 import mistune
 from mistune.plugins import plugin_table
 
-admin = Blueprint("admin", __name__)
+admin_blueprint = Blueprint("admin", __name__)
 
-@admin.route("/admin/pages/", methods=["GET"])
+@admin_blueprint.route("/admin/pages/", methods=["GET"])
 @org_login_required
 def view_admin_pages():
     year=get_year(request.blueprint)
@@ -29,7 +28,7 @@ def view_admin_pages():
     pages=get_admin_pages(year)
     return render_template("admin/pages.jinja", title="Správa stránek", year=year, pages=pages, menu=menu, years=years)
 
-@admin.route("/admin/page/<int:idpage>", methods=["GET"])
+@admin_blueprint.route("/admin/page/<int:idpage>", methods=["GET"])
 @org_login_required
 def view_admin_page(idpage):
     year=get_year(request.blueprint)
@@ -47,7 +46,7 @@ def view_admin_page(idpage):
     page_form.forum_section.process_data(page['idforumsection'])
     return render_template("admin/page.jinja", title="Editace stránky", year=year, form=page_form, idpage=idpage, menu=menu, years=years)
 
-@admin.route("/admin/page/<int:idpage>", methods=["POST"])
+@admin_blueprint.route("/admin/page/<int:idpage>", methods=["POST"])
 @org_login_required
 def edit_page(idpage):
     year=get_year(request.blueprint)
@@ -83,7 +82,7 @@ def edit_page(idpage):
     else:
         return redirect (url_for("admin"+year['year']+".view_admin_pages"))
 
-@admin.route("/admin/page/add", methods=["GET"])
+@admin_blueprint.route("/admin/page/add", methods=["GET"])
 @org_login_required
 def view_page_add():
     year=get_year(request.blueprint)
@@ -94,7 +93,7 @@ def view_page_add():
     page_form.forum_section.choices.insert(0, (0, ''))
     return render_template("admin/page_create.jinja", title="Vytvoření stránky", year=year, form=page_form, menu=menu, years=years)
 
-@admin.route("/admin/page/add", methods=["POST"])
+@admin_blueprint.route("/admin/page/add", methods=["POST"])
 @org_login_required
 def create_page():
     year=get_year(request.blueprint)
@@ -127,7 +126,7 @@ def create_page():
 
     return redirect (url_for("admin"+year['year']+".view_admin_pages"))
 
-@admin.route("/admin/page/delete/<int:idpage>", methods=["GET"])
+@admin_blueprint.route("/admin/page/delete/<int:idpage>", methods=["GET"])
 @org_login_required
 def view_page_delete(idpage):
     year=get_year(request.blueprint)
@@ -137,7 +136,7 @@ def view_page_delete(idpage):
     page_delete_form = PageDeleteForm()
     return render_template("admin/page_delete.jinja", title="Smazání stránky", year=year, form=page_delete_form, page=page, idpage=idpage, menu=menu, years=years)
 
-@admin.route("/admin/page/delete/<int:idpage>", methods=["POST"])
+@admin_blueprint.route("/admin/page/delete/<int:idpage>", methods=["POST"])
 @org_login_required
 def page_delete(idpage):
     year=get_year(request.blueprint)
@@ -149,7 +148,7 @@ def page_delete(idpage):
         flash ('Stránka byla smazána', "info")
     return redirect (url_for("admin"+year['year']+".view_admin_pages"))
 
-@admin.route("/admin/menu/", methods=["GET"])
+@admin_blueprint.route("/admin/menu/", methods=["GET"])
 @org_login_required
 def view_admin_menu():
     year=get_year(request.blueprint)
@@ -158,7 +157,7 @@ def view_admin_menu():
     admin_menu=get_admin_menu(year)
     return render_template("admin/menu.jinja", title="Správa menu", year=year, admin_menu=admin_menu, menu=menu, years=years)
 
-@admin.route("/admin/menu/<idmenu>", methods=["GET"])
+@admin_blueprint.route("/admin/menu/<idmenu>", methods=["GET"])
 @org_login_required
 def view_menu_item(idmenu):
     year=get_year(request.blueprint)
@@ -185,7 +184,7 @@ def view_menu_item(idmenu):
     
     return render_template("admin/menu_item.jinja", title="Položka menu", year=year, form=menuitem_form, idmenu=idmenu, menu=menu, years=years)
 
-@admin.route("/admin/menu/<int:idmenu>", methods=["POST"])
+@admin_blueprint.route("/admin/menu/<int:idmenu>", methods=["POST"])
 @org_login_required
 def edit_menu_item(idmenu):
     year=get_year(request.blueprint)
@@ -219,7 +218,7 @@ def edit_menu_item(idmenu):
 
     return redirect (url_for("admin"+year['year']+".view_admin_menu"))
     
-@admin.route("/admin/menu/delete/<int:idmenu>", methods=["GET"])
+@admin_blueprint.route("/admin/menu/delete/<int:idmenu>", methods=["GET"])
 @org_login_required
 def view_menu_item_delete(idmenu):
     year=get_year(request.blueprint)
@@ -229,7 +228,7 @@ def view_menu_item_delete(idmenu):
     menuitem_delete_form = MenuItemDeleteForm()
     return render_template("admin/menu_item_delete.jinja", title="Smazání položky menu", year=year, form=menuitem_delete_form, menuitem=menuitem, menu=menu, years=years)
 
-@admin.route("/admin/menu/delete/<int:idmenu>", methods=["POST"])
+@admin_blueprint.route("/admin/menu/delete/<int:idmenu>", methods=["POST"])
 @org_login_required
 def menu_item_delete(idmenu):
     year=get_year(request.blueprint)
@@ -241,7 +240,7 @@ def menu_item_delete(idmenu):
         flash ('Položka menu smazána', "info")
     return redirect (url_for("admin"+year['year']+".view_admin_menu"))
     
-@admin.route("/admin/menu/add", methods=["GET"])
+@admin_blueprint.route("/admin/menu/add", methods=["GET"])
 @org_login_required
 def view_menu_item_add():
     year=get_year(request.blueprint)
@@ -254,7 +253,7 @@ def view_menu_item_add():
     
     return render_template("admin/menu_item_create.jinja", title="Nová položka menu", year=year, form=menuitem_form, menu=menu, years=years)
 
-@admin.route("/admin/menu/add", methods=["POST"])
+@admin_blueprint.route("/admin/menu/add", methods=["POST"])
 @org_login_required
 def create_menu_item():
     year=get_year(request.blueprint)
@@ -288,7 +287,7 @@ def create_menu_item():
 
     return redirect (url_for("admin"+year['year']+".view_admin_menu"))
 
-@admin.route("/admin/forum/", methods=["GET"])
+@admin_blueprint.route("/admin/forum/", methods=["GET"])
 @org_login_required
 def view_admin_forum_sections():
     year=get_year(request.blueprint)
@@ -297,7 +296,7 @@ def view_admin_forum_sections():
     forum_sections=get_admin_forum_sections(year)
     return render_template("admin/forum_sections.jinja", title="Správa sekcí fóra", year=year, forum_sections=forum_sections, menu=menu, years=years)
 
-@admin.route("/admin/forum/<int:idsection>", methods=["GET"])
+@admin_blueprint.route("/admin/forum/<int:idsection>", methods=["GET"])
 @org_login_required
 def view_admin_forum_section(idsection):
     year=get_year(request.blueprint)
@@ -310,7 +309,7 @@ def view_admin_forum_section(idsection):
     forum_section_form.order.data=section['order']
     return render_template("admin/forum_section.jinja", title="Editace sekce fóra", year=year, form=forum_section_form, idsection=idsection, menu=menu, years=years)
 
-@admin.route("/admin/forum/<int:idsection>", methods=["POST"])
+@admin_blueprint.route("/admin/forum/<int:idsection>", methods=["POST"])
 @org_login_required
 def edit_forum_section(idsection):
     year=get_year(request.blueprint)
@@ -335,7 +334,7 @@ def edit_forum_section(idsection):
                     return render_template("admin/forum_section.jinja", title="Editace stránky", year=year, form=forum_section_form, idsection=idsection, menu=menu, years=years) 
     return redirect (url_for("admin"+year['year']+".view_admin_forum_sections"))
 
-@admin.route("/admin/forum/add", methods=["GET"])
+@admin_blueprint.route("/admin/forum/add", methods=["GET"])
 @org_login_required
 def view_forum_section_add():
     year=get_year(request.blueprint)
@@ -344,7 +343,7 @@ def view_forum_section_add():
     forum_section_form = ForumSectionForm()
     return render_template("admin/forum_section_create.jinja", title="Nová sekce fóra", year=year, form=forum_section_form, menu=menu, years=years)
 
-@admin.route("/admin/forum/add", methods=["POST"])
+@admin_blueprint.route("/admin/forum/add", methods=["POST"])
 @org_login_required
 def create_forum_section():
     year=get_year(request.blueprint)
@@ -371,7 +370,7 @@ def create_forum_section():
 
     return redirect (url_for("admin"+year['year']+".view_admin_forum_sections"))
 
-@admin.route("/admin/forum/delete/<int:idsection>", methods=["GET"])
+@admin_blueprint.route("/admin/forum/delete/<int:idsection>", methods=["GET"])
 @org_login_required
 def view_forum_section_delete(idsection):
     year=get_year(request.blueprint)
@@ -381,7 +380,7 @@ def view_forum_section_delete(idsection):
     forum_section_delete_form = ForumSectionDeleteForm()
     return render_template("admin/forum_section_delete.jinja", title="Smazání položky menu", year=year, form=forum_section_delete_form, forum_section=forum_section, menu=menu, years=years)
 
-@admin.route("/admin/forum/delete/<int:idsection>", methods=["POST"])
+@admin_blueprint.route("/admin/forum/delete/<int:idsection>", methods=["POST"])
 @org_login_required
 def forum_section_delete(idsection):
     year=get_year(request.blueprint)
@@ -393,7 +392,7 @@ def forum_section_delete(idsection):
         flash ('Sekce fóra smazána', "info")
     return redirect (url_for("admin"+year['year']+".view_admin_forum_sections"))
 
-@admin.route("/admin/changepassword/", methods=["GET"])
+@admin_blueprint.route("/admin/changepassword/", methods=["GET"])
 @org_login_required
 def view_admin_password_change():
     year=get_year(request.blueprint)
@@ -402,7 +401,7 @@ def view_admin_password_change():
     password_change_form = PasswordChangeForm()
     return render_template("admin/password_change.jinja", form=password_change_form, title="Změna hesla", year=year, menu=menu, years=years)
 
-@admin.route("/admin/changepassword/", methods=["POST"])
+@admin_blueprint.route("/admin/changepassword/", methods=["POST"])
 @org_login_required
 def admin_change_password():
     year=get_year(request.blueprint)
@@ -428,7 +427,7 @@ def admin_change_password():
             flash (f'{error} nezadán', "error")
         return redirect (url_for("admin.view_password_change"))
 
-@admin.route("/admin/teams/", methods=["GET"])
+@admin_blueprint.route("/admin/teams/", methods=["GET"])
 @org_login_required
 def view_admin_teams():
     year=get_year(request.blueprint)
@@ -437,7 +436,7 @@ def view_admin_teams():
     teams=get_admin_teams(year)
     return render_template("admin/teams.jinja", title="Správa týmů", year=year, teams=teams, menu=menu, years=years)
 
-@admin.route("/admin/team/<int:idteam>", methods=["GET"])
+@admin_blueprint.route("/admin/team/<int:idteam>", methods=["GET"])
 @org_login_required
 def view_admin_team(idteam):
     year=get_year(request.blueprint)
@@ -475,7 +474,7 @@ def view_admin_team(idteam):
 
     return render_template("admin/team.jinja", title="Údaje o týmu", year=year, form=edit_team_form, team=team, menu=menu, min_players=min_players, years=years)
 
-@admin.route("/admin/team/<int:idteam>", methods=["POST"])
+@admin_blueprint.route("/admin/team/<int:idteam>", methods=["POST"])
 @org_login_required
 def edit_admin_team(idteam):
     year=get_year(request.blueprint)
@@ -523,7 +522,7 @@ def edit_admin_team(idteam):
             
         return render_template("admin/team.jinja", form=edit_team_form, year=year, menu=menu, team=team, years=years)
 
-@admin.route("/admin/settings/", methods=["GET"])
+@admin_blueprint.route("/admin/settings/", methods=["GET"])
 @org_login_required
 def view_settings():
     year=get_year(request.blueprint)
@@ -532,7 +531,7 @@ def view_settings():
     settings=get_settings(year)
     return render_template("admin/settings.jinja", title="Správa nastavení", year=year, settings=settings, menu=menu, years=years)
 
-@admin.route("/admin/settings/add", methods=["GET"])
+@admin_blueprint.route("/admin/settings/add", methods=["GET"])
 @org_login_required
 def view_setting_add():
     year=get_year(request.blueprint)
@@ -541,7 +540,7 @@ def view_setting_add():
     settings_form = SettingForm()
     return render_template("admin/setting_create.jinja", title="Nové nastavení", year=year, form=settings_form, menu=menu, years=years)
 
-@admin.route("/admin/settings/add", methods=["POST"])
+@admin_blueprint.route("/admin/settings/add", methods=["POST"])
 @org_login_required
 def create_setting():
     year=get_year(request.blueprint)
@@ -568,7 +567,7 @@ def create_setting():
 
     return redirect (url_for("admin"+year['year']+".view_settings"))
 
-@admin.route("/admin/settings/<int:idsetting>", methods=["GET"])
+@admin_blueprint.route("/admin/settings/<int:idsetting>", methods=["GET"])
 @org_login_required
 def view_setting(idsetting):
     year=get_year(request.blueprint)
@@ -580,7 +579,7 @@ def view_setting(idsetting):
     setting_form.value.data=setting['value']
     return render_template("admin/setting.jinja", title="Editace nastavení", year=year, form=setting_form, idsetting=idsetting, menu=menu, years=years)
 
-@admin.route("/admin/settings/<int:idsetting>", methods=["POST"])
+@admin_blueprint.route("/admin/settings/<int:idsetting>", methods=["POST"])
 @org_login_required
 def edit_setting(idsetting):
     year=get_year(request.blueprint)
@@ -605,7 +604,7 @@ def edit_setting(idsetting):
                     return render_template("admin/setting.jinja", title="Editace nastavení", year=year, form=setting_form, idsetting=idsetting, menu=menu, years=years) 
     return redirect (url_for("admin"+year['year']+".view_settings"))
 
-@admin.route("/admin/settings/delete/<int:idsetting>", methods=["GET"])
+@admin_blueprint.route("/admin/settings/delete/<int:idsetting>", methods=["GET"])
 @org_login_required
 def view_setting_delete(idsetting):
     year=get_year(request.blueprint)
@@ -615,7 +614,7 @@ def view_setting_delete(idsetting):
     setting_delete_form = SettingDeleteForm()
     return render_template("admin/setting_delete.jinja", title="Smazání parametru", year=year, form=setting_delete_form, setting=setting, menu=menu, years=years)
 
-@admin.route("/admin/settings/delete/<int:idsetting>", methods=["POST"])
+@admin_blueprint.route("/admin/settings/delete/<int:idsetting>", methods=["POST"])
 @org_login_required
 def setting_delete(idsetting):
     year=get_year(request.blueprint)
@@ -627,7 +626,7 @@ def setting_delete(idsetting):
         flash ('Parametr z nastavení smazán', "info")
     return redirect (url_for("admin"+year['year']+".view_settings"))
 
-@admin.route("/admin/emails/", methods=["GET"])
+@admin_blueprint.route("/admin/emails/", methods=["GET"])
 @org_login_required
 def view_generating_emails():
     year=get_year(request.blueprint)
@@ -636,7 +635,7 @@ def view_generating_emails():
     email_form = GeneratingEmailsForm()
     return render_template("admin/emails_filter.jinja", title="Generování seznamu emailů", year=year, form=email_form, menu=menu, years=years)
 
-@admin.route("/admin/emails/", methods=["POST"])
+@admin_blueprint.route("/admin/emails/", methods=["POST"])
 @org_login_required
 def generating_emails():
     year=get_year(request.blueprint)
@@ -673,7 +672,7 @@ def generating_emails():
                     return render_template("admin/emails_filter.jinja", title="Generování seznamu emailů", year=year, form=email_form, menu=menu, years=years)
     return render_template("admin/emails_filter.jinja", title="Generování seznamu emailů", year=year, form=email_form, menu=menu, years=years)
 
-@admin.route("/admin/export/csv", methods=["GET"])
+@admin_blueprint.route("/admin/export/csv", methods=["GET"])
 @org_login_required
 def export_csv():
     year=get_year(request.blueprint)
@@ -691,7 +690,7 @@ def export_csv():
     output.seek(0)
     return Response(output, mimetype="text/csv", headers={"Content-Disposition":"attachment;filename=sova.csv"})
 
-@admin.route("/admin/mascots/", methods=["GET"])
+@admin_blueprint.route("/admin/mascots/", methods=["GET"])
 @org_login_required
 def view_admin_mascots():
     year=get_year(request.blueprint)
@@ -700,7 +699,7 @@ def view_admin_mascots():
     mascots=get_mascots()
     return render_template("admin/mascots.jinja", title="Správa maskotů", year=year, menu=menu, years=years, mascots=mascots)
 
-@admin.route("/admin/mascot/add", methods=["GET"])
+@admin_blueprint.route("/admin/mascot/add", methods=["GET"])
 @org_login_required
 def view_mascot_add():
     year=get_year(request.blueprint)
@@ -709,7 +708,7 @@ def view_mascot_add():
     mascot_form = MascotForm()
     return render_template("admin/mascot_create.jinja", title="Nový maskot", year=year, form=mascot_form, menu=menu, years=years)
 
-@admin.route("/admin/mascot/add", methods=["POST"])
+@admin_blueprint.route("/admin/mascot/add", methods=["POST"])
 @org_login_required
 def create_mascot():
     year=get_year(request.blueprint)
@@ -736,7 +735,7 @@ def create_mascot():
 
     return redirect (url_for("admin"+year['year']+".view_admin_mascots"))
 
-@admin.route("/admin/mascots/<mascot>", methods=["GET"])
+@admin_blueprint.route("/admin/mascots/<mascot>", methods=["GET"])
 @org_login_required
 def view_mascot(mascot):
     year=get_year(request.blueprint)
@@ -749,7 +748,7 @@ def view_mascot(mascot):
     mascot_form.mascot.data=mascot['mascot']
     return render_template("admin/mascot.jinja", title="Editace maskota", year=year, form=mascot_form, oldmascot=mascot, menu=menu, years=years)
 
-@admin.route("/admin/mascots/<oldmascot>", methods=["POST"])
+@admin_blueprint.route("/admin/mascots/<oldmascot>", methods=["POST"])
 @org_login_required
 def edit_mascot(oldmascot):
     year=get_year(request.blueprint)
@@ -774,7 +773,7 @@ def edit_mascot(oldmascot):
                     return render_template("admin/mascot.jinja", title="Editace maskota", year=year, form=mascot_form, oldmascot=oldmascot, menu=menu, years=years) 
     return redirect (url_for("admin"+year['year']+".view_admin_mascots"))
 
-@admin.route("/admin/mascots/delete/<mascot>", methods=["GET"])
+@admin_blueprint.route("/admin/mascots/delete/<mascot>", methods=["GET"])
 @org_login_required
 def view_mascot_delete(mascot):
     year=get_year(request.blueprint)
@@ -787,7 +786,7 @@ def view_mascot_delete(mascot):
     mascot_delete_form = MascotDeleteForm()
     return render_template("admin/mascot_delete.jinja", title="Smazání maskota", year=year, form=mascot_delete_form, mascot=mascot, menu=menu, years=years)
 
-@admin.route("/admin/mascots/delete/<mascot>", methods=["POST"])
+@admin_blueprint.route("/admin/mascots/delete/<mascot>", methods=["POST"])
 @org_login_required
 def mascot_delete(mascot):
     year=get_year(request.blueprint)
@@ -798,3 +797,41 @@ def mascot_delete(mascot):
     else:
         flash ('Maskot smazán', "info")
     return redirect (url_for("admin"+year['year']+".view_admin_mascots"))
+
+@admin_blueprint.route("/admin/next_year/", methods=["GET"])
+@org_login_required
+def view_admin_next_year():
+    year=get_year(request.blueprint)
+    years=get_years()
+    menu=get_menu(year)
+    next_year=int(year['year'])+1
+    next_year_form = NextYearForm()
+    return render_template("admin/next_year.jinja", title="Nový ročník", year=year, menu=menu, years=years, next_year=next_year, form=next_year_form)
+
+@admin_blueprint.route("/admin/next_year", methods=["POST"])
+@org_login_required
+def next_year():
+    year=get_year(request.blueprint)
+    years=get_years()
+    menu=get_menu(year)
+    next_year_form = NextYearForm(request.form)
+    next_year=int(year['year'])+1
+
+    if next_year_form.validate():
+        status, message=copy_year(year, next_year)
+        if not status:
+           flash (message, "error")
+        else:
+            flash ('Založen nový ročník. Restartuj aplikaci', "info")
+    else:
+        for _, errors in next_year_form.errors.items():
+            for error in errors:
+                if isinstance(error, dict):
+                    if (len(error)>0):
+                        for k in error.keys():
+                            flash (f'{error[k][0]}', "error")
+                else:
+                    flash (f'{error}', "error")
+                    return render_template("admin/next_year.jinja", title="Nový ročník", year=year, form=next_year_form, menu=menu, years=years, next_year=next_year)
+
+    return redirect (url_for("main"+str(next_year)+".view_page", pageurl='/'))

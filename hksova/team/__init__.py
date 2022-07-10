@@ -1,1 +1,1 @@
-from .controller import team
+from .controller import team_blueprint

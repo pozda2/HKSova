@@ -191,7 +191,7 @@ def decode_menu_item(pagetype, page, link):
 
 def get_admin_pages(year):
     cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''select idpage, title, url, texy, html, ispublic, isprivate, isvisible from page where idyear=%s order by idpage''', [year['year']])
+    cursor.execute('''select idpage, title, url, texy, html, ispublic, isprivate, isvisible, idforumsection from page where idyear=%s order by idpage''', [year['year']])
     data=cursor.fetchall()
 
     if (data):
@@ -237,7 +237,7 @@ def insert_page(year, title, url, texy, html, ispublic, isprivate, isvisible, id
 
 def get_admin_menu(year):
     cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''select idmenu, idpage, menu, link, `order`, isnewpart, ispublic, isprivate, isvisible, issystem, iscurrentyear from menu where idyear=%s order by `order`''', [year['year']])
+    cursor.execute('''select idmenu, idpage, menu, link, `order`, param, isnewpart, ispublic, isprivate, isvisible, issystem, iscurrentyear from menu where idyear=%s order by `order`''', [year['year']])
     data=cursor.fetchall()
 
     if (data):
@@ -637,5 +637,72 @@ def delete_mascot(mascot):
         cursor.execute('''DELETE FROM mascot where mascot=%s''', [mascot] )
     except Exception as e:
         return False, "Problem deleting from db: " + str(e)
+    current_app.mysql.connection.commit()
+    return True, ""
+
+def copy_year(year, next_year):
+    # year
+    cursor = current_app.mysql.connection.cursor()
+    try:
+        cursor.execute('''INSERT INTO year (idyear) VALUES (%s)''', [next_year, ] )
+    except Exception as e:
+        return False, "Problem inserting into table year : " + str(e)
+
+    # settings``
+    settings=get_settings(year)
+    for setting in settings:
+        try:
+            cursor.execute('''INSERT INTO setting (idyear, param, `value`) VALUES (%s, %s, %s)''', [next_year, setting['param'], setting['value'] ])
+        except Exception as e:
+            return False, "Problem inserting into table setting : " + str(e)
+
+    # forum_section
+    forums=get_admin_forum_sections(year)
+    forum_keys={}
+    isvisible=1
+    for section in forums:
+        try:
+            cursor.execute('''INSERT INTO forum_section (idyear, section, `order`, isvisible) VALUES (%s, %s, %s, %s)''', [next_year, section['section'], section['order'], isvisible ])
+            isvisible=0
+            forum_keys[section['idforumsection']]=cursor.lastrowid
+        except Exception as e:
+            return False, "Problem inserting into table forum_section : " + str(e)
+
+    # pages
+    pages=get_admin_pages(year)
+    pages_keys={}
+    for page in pages:
+        try:
+            forum_section=None
+            if page['idforumsection']:
+                if page['idforumsection'] in forum_keys.keys():
+                    forum_section=forum_keys[page['idforumsection']]
+
+            cursor.execute('''INSERT INTO page (idyear, title, url, texy, html, ispublic, isprivate, isvisible, idforumsection) 
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)''', 
+            [next_year, page['title'], page['url'], page['texy'], page['html'], page['ispublic'], page['isprivate'], page['isvisible'], forum_section ])
+            pages_keys[page['idpage']]=cursor.lastrowid
+        except Exception as e:
+            return False, "Problem inserting into table page : " + str(e)
+
+    # menu
+    menu=get_admin_menu(year)
+    for item in menu:
+        try:
+            page_forum=None
+            if item['idpage']:
+                if item['idpage'] in pages_keys.keys():
+                    page_forum=pages_keys[item['idpage']]
+
+            cursor.execute('''INSERT INTO menu 
+                (idyear, idpage, menu, link, param, `order`, isnewpart, ispublic, isprivate, isvisible, issystem, iscurrentyear) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)''', 
+                [next_year, page_forum, item['menu'], item['link'], item['param'], item['order'], item['isnewpart'], item['ispublic'], item['isprivate'],
+                item['isvisible'], item['issystem'], item['iscurrentyear']
+            ])
+        except Exception as e:
+            return False, "Problem inserting into table menu : " + str(e)
+
+    # commit
     current_app.mysql.connection.commit()
     return True, ""

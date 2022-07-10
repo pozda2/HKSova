@@ -1,1 +1,1 @@
-from .controller import main
+from .controller import main_blueprint

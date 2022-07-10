@@ -55,5 +55,4 @@ Future features
 - Team, displaying payment detail as QR
 
 Administration
-- Settings - create new year by copying current year
 - Teams management - switching form org to team perspective

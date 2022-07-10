@@ -5,14 +5,16 @@ from flask_wtf.csrf import CSRFProtect
 from flask_mdeditor import MDEditor
 from flask import render_template
 
-from .page import main
-from .team import team
-from .forum import forum
-from .admin import admin
+from .page import main_blueprint
+from .team import team_blueprint
+from .forum import forum_blueprint
+from .admin import admin_blueprint
 from .year.model import *
+from hksova import admin
 
 def create_flask_app():
     flask_app = Flask(__name__)
+
 
     config_dir = "configs"
     if 'HKSOVA_CONFIG_DIR' in os.environ:
@@ -30,19 +32,26 @@ def create_flask_app():
     mdeditor = MDEditor(flask_app)
     csrf = CSRFProtect(flask_app)
 
-    flask_app.register_blueprint (main)
-    flask_app.register_blueprint (team)
-    flask_app.register_blueprint (forum)
-    flask_app.register_blueprint (admin)
+    flask_app.register_blueprint (main_blueprint)
+    flask_app.register_blueprint (team_blueprint)
+    flask_app.register_blueprint (forum_blueprint)
+    flask_app.register_blueprint (admin_blueprint)
 
     with flask_app.app_context():
         years=get_years()
         for yy in years:
             y=str(yy['idyear'])
-            flask_app.register_blueprint (main, name="main"+y, url_prefix="/"+y)
-            flask_app.register_blueprint (team, name="team"+y, url_prefix="/"+y)
-            flask_app.register_blueprint (forum, name="forum"+y, url_prefix="/"+y)
-            flask_app.register_blueprint (admin, name="admin"+y, url_prefix="/"+y)
+            flask_app.register_blueprint (main_blueprint, name="main"+y, url_prefix="/"+y)
+            flask_app.register_blueprint (team_blueprint, name="team"+y, url_prefix="/"+y)
+            flask_app.register_blueprint (forum_blueprint, name="forum"+y, url_prefix="/"+y)
+            flask_app.register_blueprint (admin_blueprint, name="admin"+y, url_prefix="/"+y)
+
+        # blueprint for next year
+        y=str(years[0]['idyear']+1)
+        flask_app.register_blueprint (main_blueprint, name="main"+y, url_prefix="/"+y)
+        flask_app.register_blueprint (team_blueprint, name="team"+y, url_prefix="/"+y)
+        flask_app.register_blueprint (forum_blueprint, name="forum"+y, url_prefix="/"+y)
+        flask_app.register_blueprint (admin_blueprint, name="admin"+y, url_prefix="/"+y)
 
     @flask_app.errorhandler(500)
     def internal_server_error(error):

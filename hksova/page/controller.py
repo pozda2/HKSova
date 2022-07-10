@@ -12,7 +12,7 @@ from ..forum.model import *
 from ..forum.form import *
 from ..team.model import *
 
-main = Blueprint("main", __name__)
+main_blueprint = Blueprint("main", __name__)
 
 def check_authorization(ispublic, isprivate, isvisible):
     # org
@@ -36,7 +36,7 @@ def check_authorization(ispublic, isprivate, isvisible):
             return False
         return False
 
-@main.route("/")
+@main_blueprint.route("/")
 def view_index():
     year=get_year(request.blueprint)
     years=get_years()
@@ -48,7 +48,7 @@ def view_index():
     r.headers.set('X-Frame-Options', 'SAMEORIGIN')
     return r
 
-@main.route("/<pageurl>")
+@main_blueprint.route("/<pageurl>")
 def view_page(pageurl):
     year=get_year(request.blueprint)
     years=get_years()
