@@ -297,6 +297,58 @@ def get_team(year, login):
     else:
         return None
 
+def get_team_by_email(year, email):
+    cursor = current_app.mysql.connection.cursor()
+    cursor.execute('''SELECT  idteam, name, login, mascot, email, mobil, weburl, reporturl, isPaid, isBackup, isDeleted, registeredAt FROM team where idYear=%s and isdeleted=0 and email=%s order by isBackup, registeredAt''', [year['year'], email])
+    data=cursor.fetchall()
+
+    # podrobnosti o tymu
+    if (data):
+        team=data[0]
+        players=get_team_players(team['idteam'])
+        team['players']=players
+        team['players_private']=players_to_string(players)
+        team['players_public']=players_to_public_string(players)
+        team['zaplaceno']=get_team_status_paid(team)
+        team['stav']=get_team_status(team)
+        return team
+    else:
+        return None
+
+def get_team_by_reset_code(code):
+    timeout_sec=900
+    cursor = current_app.mysql.connection.cursor()
+    cursor.execute('''select idteam, name, login, mascot, email, mobil, weburl, reporturl, isPaid, isBackup, isDeleted, registeredAt from team where passresetcode=%s and  CURRENT_TIMESTAMP() - passresetat < 900;''', [code])
+    data=cursor.fetchall()
+    if (data):
+        team=data[0]
+        return team
+    else:
+        return None
+
+def generate_reset_code (idteam):
+    code=secrets.token_hex(50)
+    try:
+        cursor = current_app.mysql.connection.cursor()
+        cursor.execute('''UPDATE team set passresetcode=%s, passresetat=current_timestamp() where idteam=%s''',
+            [code, idteam])
+    except Exception as e:
+        return False, "Problem updatint db: " + str(e)
+
+    current_app.mysql.connection.commit()
+    return code, True, ""
+
+def reset_team_pass (idteam, password_new):
+    salt=secrets.token_hex(20)
+    hash_new = sha256_crypt.hash(current_app.config['SECRET_PEPPER'] + password_new + salt)
+    try:
+        cursor = current_app.mysql.connection.cursor()
+        cursor.execute('''UPDATE team set pass=%s, salt=%s where idteam=%s ''', [hash_new, salt, idteam])
+        current_app.mysql.connection.commit()
+    except Exception as e:
+        return False, "Problem updating db: " + str(e)
+    return True, ""
+
 def get_city_statistics (year):
     cursor = current_app.mysql.connection.cursor()
     cursor.execute('''select city, count(*) as count from player p, team t where t.idteam = p.idteam and idyear=%s and city is not null and isdeleted =0 group by city order by 2 desc''', [year['year']])

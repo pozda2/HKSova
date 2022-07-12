@@ -1,6 +1,11 @@
 from flask import current_app
 import secrets
 from passlib.hash import sha256_crypt
+from cryptography.fernet import Fernet
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+import base64
+
 from ..team.model import *
 
 def translate_visibility(page):
@@ -570,6 +575,12 @@ def get_setting(idsetting):
     return data
 
 def insert_setting(year, param, value):
+    if param == "email-smtp-password":
+        kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=b'246', iterations=390000, )
+        key = base64.urlsafe_b64encode(kdf.derive(str.encode(current_app.config['SECRET_PEPPER'])))
+        cipher_suite = Fernet(key)
+        encoded_text = cipher_suite.encrypt(str.encode(value))
+        value=encoded_text.decode("utf-8")
     try:
         cursor = current_app.mysql.connection.cursor()
         cursor.execute('''INSERT INTO setting (idyear, param, `value`)
@@ -581,6 +592,12 @@ def insert_setting(year, param, value):
     return True, ""
 
 def update_setting(idsetting, param, value):
+    if param == "email-smtp-password":
+        kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=b'246', iterations=390000, )
+        key = base64.urlsafe_b64encode(kdf.derive(str.encode(current_app.config['SECRET_PEPPER'])))
+        cipher_suite = Fernet(key)
+        encoded_text = cipher_suite.encrypt(str.encode(value))
+        value=encoded_text.decode("utf-8")
     try:
         cursor = current_app.mysql.connection.cursor()
         cursor.execute('''UPDATE setting set param=%s, `value`=%s where idsetting=%s''',

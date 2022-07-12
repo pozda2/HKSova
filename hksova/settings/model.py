@@ -3,12 +3,27 @@ from flask import current_app
 from datetime import datetime
 from dateutil import parser
 from datetime import timedelta
+from cryptography.fernet import Fernet
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+import base64
+
 
 def get_settings_year(year, param):
     cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''SELECT value  FROM setting where idYear=%s and param=%s''', [year['year'], param])
+    cursor.execute('''SELECT value FROM setting where idYear=%s and param=%s''', [year['year'], param])
     data = cursor.fetchall()
-    return data[0]['value']
+    if not data: return None
+    value=data[0]['value']
+    
+    if param == "email-smtp-password":
+        kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=b'246', iterations=390000, )
+        key = base64.urlsafe_b64encode(kdf.derive(str.encode(current_app.config['SECRET_PEPPER'])))
+        cipher_suite = Fernet(key)
+        encoded_text=str.encode(data[0]['value'])
+        decoded_text = cipher_suite.decrypt(encoded_text)
+        value=decoded_text.decode("utf-8")
+    return value
 
 def get_settings_global(param):
     cursor = current_app.mysql.connection.cursor()

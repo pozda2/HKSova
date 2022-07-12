@@ -5,6 +5,7 @@ from wtforms import StringField
 from wtforms import PasswordField
 from wtforms import BooleanField
 from wtforms import FieldList, FormField
+from wtforms import HiddenField
 from wtforms.validators import InputRequired, length, Email, ValidationError
 
 from ..year.model import *
@@ -71,4 +72,10 @@ class PasswordChangeForm (FlaskForm):
 
 class RegistrationCancelForm(FlaskForm):
     agree = BooleanField ("Opravdu chcete zrušit vaši účast na hře?", validators=[InputRequired()] )
-    
+
+class ForgetPasswordForm (FlaskForm):
+    email = StringField("Email", validators=[InputRequired(), length(max=255, message='Maximální délka email je 255 znaků'), Email()])
+
+class ResetPasswordForm (FlaskForm):
+    password1 = PasswordField("Nové heslo", validators=[InputRequired(), length(min=6, max=100)])
+    password2 = PasswordField("Nové heslo znovu", validators=[InputRequired(), length(min=6, max=100)])

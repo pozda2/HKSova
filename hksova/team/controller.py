@@ -10,7 +10,7 @@ from .form import *
 from .model import *
 from ..year.model import *
 from ..menu.model import *
-from .utils import login_required, current_year_required
+from .utils import login_required, current_year_required, send_reset_code
 
 team_blueprint = Blueprint("team", __name__)
 
@@ -57,17 +57,6 @@ def logout_team():
     flash("Úspěšné odhlášení", "info")
     return redirect (url_for("main.view_index"))
 
-@team_blueprint.route("/teams/", methods=["GET"])
-def view_teams():
-    year=get_year(request.blueprint)
-    years=get_years()
-    menu=get_menu(year)
-    teams=get_teams_not_deleted(year)
-    city_stats=get_city_statistics(year)
-    teams_stats=get_teams_statistics(year)
-    players_stats=get_players_statistics(year)
-    return render_template("team/teams.jinja", title="Týmy", year=year, menu=menu, years=years, teams=teams, city_stats=city_stats, teams_stats=teams_stats, players_stats=players_stats)
-
 @team_blueprint.route("/changepassword/", methods=["GET"])
 @login_required
 @current_year_required
@@ -104,6 +93,99 @@ def change_password():
         for error in password_change_form.errors:
             flash (f'{error} nezadán', "error")
         return redirect (url_for("team.view_password_change"))
+
+@team_blueprint.route("/forgetpassword/", methods=["GET"])
+@current_year_required
+def view_forget_password():
+    forget_password_form = ForgetPasswordForm()
+    year=get_year(request.blueprint)
+    years=get_years()
+    menu=get_menu(year)
+    return render_template("team/password_forget.jinja", form=forget_password_form, title="Zapomenuté heslo", year=year, menu=menu, years=years)
+
+@team_blueprint.route("/forgetpassword/", methods=["POST"])
+@current_year_required
+def forget_password():
+    year=get_year(request.blueprint)
+    years=get_years()
+    menu=get_menu(year)
+    forget_password_form = ForgetPasswordForm(request.form)
+
+    if forget_password_form.validate():
+        team=get_team_by_email(year, forget_password_form.email.data)
+        if team is None:
+            flash("Neplatný kontaktní email", "error")
+            return render_template("team/password_forget.jinja", form=forget_password_form, year=year, menu=menu, years=years)
+
+        code, status, message= generate_reset_code(team['idteam'])
+        if (status):
+            status, message=send_reset_code(year, code, team['login'], team['email'])
+            if (status):
+                flash("Na kontaktní email byl odeslán odkaz na reset hesla.", "info")
+            else:
+                flash(f"Chyba při posílání emailu - {message}.", "error")
+            return redirect (url_for("main.view_index"))
+        else:
+            flash(message, "error")
+            return render_template("team/password_forget.jinja", form=forget_password_form, year=year, menu=menu, years=years)
+    else:
+        for error in forget_password_form.errors:
+            flash (f'{error} nezadán', "error")
+        return redirect (url_for("team.view_forget_password"))
+
+@team_blueprint.route("/resetpassword/<resetcode>", methods=["GET"])
+@current_year_required
+def view_reset_password(resetcode):
+    reset_password_form = ResetPasswordForm()
+    year=get_year(request.blueprint)
+    years=get_years()
+    menu=get_menu(year)
+    team=get_team_by_reset_code(resetcode)
+    if team is None:
+        return render_template("errors/404.jinja",  year=year, menu=menu, years=years), 404
+
+    return render_template("team/password_reset.jinja", form=reset_password_form, title="Reset hesla", year=year, menu=menu, years=years, team=team, resetcode=resetcode)
+
+@team_blueprint.route("/resetpassword/<resetcode>", methods=["POST"])
+@current_year_required
+def reset_password(resetcode):
+    year=get_year(request.blueprint)
+    years=get_years()
+    menu=get_menu(year)
+    valid=True
+    password_reset_form = ResetPasswordForm(request.form)
+
+    team=get_team_by_reset_code(resetcode)
+    if team is None:
+        return render_template("errors/404.jinja",  year=year, menu=menu, years=years), 404
+
+    if (password_reset_form.password1.data != password_reset_form.password2.data):
+        valid=False
+        flash (f'Zadaná hesla nejsou stejná.', "error")
+
+    if password_reset_form.validate() and valid:
+        status, message= reset_team_pass(team['idteam'], password_reset_form.password1.data)
+        if (status):
+            flash("Reset hesla proběhl úspěšně", "info")
+            return redirect (url_for("team.view_login"))
+        else:
+            flash(message, "error")
+            return render_template("team/password_reset.jinja", form=password_reset_form, year=year, menu=menu, years=years, resetcode=resetcode)
+    else:
+        for error in password_reset_form.errors:
+            flash (f'{error} nezadán', "error")
+        return redirect (url_for("team.view_reset_password"))
+
+@team_blueprint.route("/teams/", methods=["GET"])
+def view_teams():
+    year=get_year(request.blueprint)
+    years=get_years()
+    menu=get_menu(year)
+    teams=get_teams_not_deleted(year)
+    city_stats=get_city_statistics(year)
+    teams_stats=get_teams_statistics(year)
+    players_stats=get_players_statistics(year)
+    return render_template("team/teams.jinja", title="Týmy", year=year, menu=menu, years=years, teams=teams, city_stats=city_stats, teams_stats=teams_stats, players_stats=players_stats)
 
 @team_blueprint.route("/team", methods=["GET"])
 @login_required

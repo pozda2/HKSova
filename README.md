@@ -51,7 +51,6 @@ Side notices
 
 Future features 
 ---------------
-- Login, reset of forgot password
 - Team, displaying payment detail as QR
 
 Administration
