@@ -835,3 +835,26 @@ def next_year():
                     return render_template("admin/next_year.jinja", title="Nový ročník", year=year, form=next_year_form, menu=menu, years=years, next_year=next_year)
 
     return redirect (url_for("main"+str(next_year)+".view_page", pageurl='/'))
+
+@admin_blueprint.route("/admin/switch_team/<int:idteam>", methods=["GET"])
+@org_login_required
+def switch_team(idteam):
+    year=get_year(request.blueprint)
+    team=get_admin_team(idteam)
+    if team is None:
+        flash (f'Tým nenalezen', "error")
+    else:
+        flash (f'Přepnuto na tým {team["name"]}.', "info")
+        session["org"] = False
+        session["logged"] = True
+        session["login"] = team['login']
+        session["team"] = team['name']
+        if team['ispaid']==0:
+            session["ispaid"] = False
+        else:
+            session["ispaid"] = True
+        if team['isbackup']==0:
+            session["isbackup"] = False
+        else:
+            session["isbackup"] = True
+    return redirect (url_for("main.view_index"))

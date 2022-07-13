@@ -27,6 +27,7 @@
         <td>{{ team.stav}}</td>
         <td>
             <a href="{{ url_for('admin' ~ year.year ~ '.view_admin_team', idteam=team.idteam) }}"><img alt="=Úprava" src={{url_for("static", filename="img/edit.gif")}}></a>
+            <a href="{{ url_for('admin' ~ year.year ~ '.switch_team', idteam=team.idteam) }}"><img alt="=Přepnutí na tým" src={{url_for("static", filename="img/switch.gif")}}></a>
         </td>
     </tr>
     {%- endfor -%}
