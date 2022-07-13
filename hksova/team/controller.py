@@ -1,3 +1,6 @@
+import qrcode
+import io
+import base64
 from flask import Blueprint
 from flask import render_template
 from flask import request
@@ -196,7 +199,12 @@ def view_team():
     menu=get_menu(year)
     team=get_team(year, session['login'])
     payment=get_payment_information(year)
-    return render_template("team/team.jinja", title="Údaje o týmu", year=year, team=team, payment=payment, menu=menu, years=years)
+    qrcode_payment=f"SPD*1.0*ACC:{payment['iban']}*AM:{float(payment['price']):.2f}*CC:CZK*X-VS:{year['year']}{team['idteam']}*MSG:{team['name']}"
+    img = qrcode.make(qrcode_payment)
+    buffered = io.BytesIO()
+    img.save(buffered, format="PNG")
+    img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+    return render_template("team/team.jinja", title="Údaje o týmu", year=year, team=team, payment=payment, menu=menu, years=years, img_str=img_str)
 
 @team_blueprint.route("/registration/", methods=["GET"])
 @current_year_required

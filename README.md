@@ -49,9 +49,6 @@ Side notices
 - `flask_mysqldb` needs `libmysqlclient-dev` package installed
 - DO NOT try to install it in conda env, you'll end in dependency hell (originates in mistune pkg)
 
-Future features 
----------------
-- Team, displaying payment detail as QR
 
 Administration
 - Teams management - switching form org to team perspective

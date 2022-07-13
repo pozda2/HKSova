@@ -58,7 +58,9 @@ def get_max_teams(year):
 
 def get_payment_information(year):
     data={}
-    data['account']=get_settings_year(year, 'account')
-    data['price']=get_settings_year(year, 'price')
-    data['paid_to']=parser.parse(get_settings_year(year, "paid-to")).strftime("%-d. %-m. %Y")
+    data['account']=get_settings_year(year, 'payment-account')
+    data['iban']=get_settings_year(year, "payment-iban")
+    data['price']=get_settings_year(year, 'payment-price')
+    data['unit']=get_settings_year(year, 'payment-unit')
+    data['to']=parser.parse(get_settings_year(year, "payment-to")).strftime("%-d. %-m. %Y")
     return data
