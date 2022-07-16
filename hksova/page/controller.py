@@ -16,15 +16,15 @@ main_blueprint = Blueprint("main", __name__)
 
 def check_authorization(ispublic, isprivate, isvisible):
     # org
-    if session.get("org"): 
-        if session["org"]: 
+    if session.get("org"):
+        if session["org"]:
             return True
 
     # not org not visible
     if not isvisible: return False
 
     # public
-    if ispublic: 
+    if ispublic:
         return True
     else:
         if session.get("logged"):
@@ -56,7 +56,7 @@ def view_page(pageurl):
     page=get_page(year, pageurl)
 
     # forum on page
-    if page['idforumsection']:
+    if page != None and page['idforumsection']:
         section_id=page['idforumsection']
         post_count=get_forum_post_count(section_id)
         post_form = PostForm()

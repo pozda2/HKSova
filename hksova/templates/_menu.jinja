@@ -3,6 +3,8 @@
         <a href="#!" class="menu-toggle"><img src={{url_for("static", filename="img/bars.png")}}></a>
         <a href="/" class="brand-logo"><img src={{url_for("static", filename="img/sova_bila_mala.png")}} title="Logo Hradecká sova" alt="Logo Hradecká sova" /></a>
     </header>
+    {%- set active_page = request.url_rule|default('/')|string -%}
+    {{ request.url_rule }} AP: {{active_page}}
 
     <nav class="dashboard-nav-list">
 
@@ -19,7 +21,6 @@
                 ('.view_admin_password_change', 'Změna hesla'),
                 ('.view_admin_next_year', 'Nový ročník'),
             ] -%}
-            {% set active_page = request.url_rule|default('/')|string -%}
             <div id="1" class='dashboard-nav-dropdown'><a href="#!" class="dashboard-nav-item dashboard-nav-dropdown-toggle"></i> Administrace </a>
             <div class='dashboard-nav-dropdown-menu'>
                 {% for route, title in admin_menu %}
@@ -69,7 +70,8 @@
         <div id="200000000" class='dashboard-nav-dropdown'><a href="#!" class="dashboard-nav-item dashboard-nav-dropdown-toggle"></i> Minulé ročníky </a>
         <div class='dashboard-nav-dropdown-menu'>
             {%- for y in years -%}
-                <a href="{{ url_for('main' ~ y.idyear ~'.view_index') }}" title="informace o hře" class="dashboard-nav-item">Ročník {{y.idyear}} </a>
+                {% set href = url_for('main' ~ y.idyear ~ '.view_index') -%}
+                <a href="{{href|e}}" title="informace o hře" class="dashboard-nav-item{% if href|e == active_page %} active{% endif %}">Ročník {{y.idyear}} </a>
             {%- endfor-%}
             <a href="/static/data/2009/index.html" title="informace o hře" class="dashboard-nav-item">Ročník 2009</a>
             <a href="/static/data/2008/index.html" title="informace o hře" class="dashboard-nav-item">Ročník 2008</a>
