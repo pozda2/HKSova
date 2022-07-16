@@ -1,8 +1,8 @@
 <div class="dashboard-nav">
     <header>
-        <a href="#!" class="menu-toggle"><img src={{url_for("static", filename="img/bars.png")}}></a>
         <a href="/" class="brand-logo"><img src={{url_for("static", filename="img/sova_bila_mala.png")}} title="Logo Hradecká sova" alt="Logo Hradecká sova" /></a>
     </header>
+  
     {# for special pages NOT rendered from DB #}
     {%- set active_page = request.url_rule|default('/')|string -%}
     {# for editable pages rendered from DB #}
@@ -59,7 +59,7 @@
                             {%- if item.blueprint -%}
                                 {%- if item.function == "view_page" -%}
                                     {% set href = url_for(item.blueprint ~ year.year ~ '.' ~ item.function, pageurl=item.link) -%}
-                                    <a href={{href|e}} class="dashboard-nav-item{% if item.idpage == page.idpage %} active{% endif %}">{{item.idpage}} {{item.menu}}</a>
+                                    <a href={{href|e}} class="dashboard-nav-item{% if item.idpage == page.idpage %} active{% endif %}">{{item.menu}}</a>
                                 {%- else -%}
                                     {%- if not session.logged or (session.logged and item.function != 'login_team' and item.function != 'view_registration') -%}
                                         {%- if not session.org or (session.logged and item.function != 'view_team' and item.function != 'view_password_change' and item.function != 'view_registration_cancel') -%}
