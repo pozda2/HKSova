@@ -3,7 +3,7 @@
 {%- if year.is_current_year -%}
 <form action="{{url_for('forum' ~ year.year ~ ".create_post", section_id=section_id)}}" method="post">
     {{ form.csrf_token }}
-    <input class="hidden" name="source_url" value="{{ form.source_url }}">
+    <input type="hidden" name="source_url" value="{{ form.source_url }}">
     <div class="form-row">
       {{ form.user(class="form-control", id="inputUser", placeholder="Jméno") }}
     </div>
