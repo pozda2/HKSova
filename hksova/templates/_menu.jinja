@@ -8,7 +8,8 @@
     {# for editable pages rendered from DB #}
     {%- if page is not defined -%}{%- set page={'idpage': -42} %}{%- endif -%}
     
-    {# debug:
+    {#
+    debug:
     request: {{ request.url_rule }} <br>
     AP: {{active_page}}<br>
     page: {{page.idpage}}<br>
@@ -63,7 +64,12 @@
                                     {%- if not session.logged or (session.logged and item.function != 'login_team' and item.function != 'view_registration') -%}
                                         {%- if not session.org or (session.logged and item.function != 'view_team' and item.function != 'view_password_change' and item.function != 'view_registration_cancel') -%}
                                             {% set href = url_for(item.blueprint ~ year.year ~ '.' ~ item.function) -%}
-                                            <a href={{href|e}} class="dashboard-nav-item-alone{% if href|e == active_page %} active{% endif %}">{{item.menu}}</a>
+                                            
+                                            {# !!! WTF comparison - in forum section, the active menu item is not matched!!! WTF!!!
+                                            {{ href.__class__.__name__ }} {{active_page.__class__.__name__}}<br>
+                                            {{ href}} {{active_page}} {{href == active_page}}<br>
+                                            #}
+                                            <a href={{href|e}} class="dashboard-nav-item-alone{% if href == active_page %} active{% endif %}">{{item.menu}}</a>
                                         {%- endif -%}
                                     {%- endif -%}
                                 {%- endif -%}
