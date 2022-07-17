@@ -3,10 +3,11 @@
 
 <h2>Správa týmů</h2>
 
-<table id="table" class="table-dark table-striped" data-toggle="table" data-filter-control="true" data-click-to-select="true">
+<table id="table" class="table-dark table-striped" data-toggle="table" data-escape="false" data-filter-control="true" data-click-to-select="true">
   <thead>
     <tr>
-        <th data-field="team-id" data-sortable="true" data-filter-control="input">ID</th>
+        <th data-field="team-id" data-sortable="true">ID</th>
+        <th data-field="team-ki" data-sortable="true">KI</th>
         <th data-field="team-name" data-sortable="true" data-filter-control="input" data-formatter="teamFormatter">Tým</th>
         <th data-field="team-web" data-visible="false">Web</th>
         <th data-field="team-players">Hráči</th>
@@ -19,12 +20,25 @@
 {%- if teams -%}
     {%- for team in teams -%}
     <tr>
-        <td>{{ team.idteam}}</td>
-        <td>{{ team.name}}</td>
-        <td>{{ team.weburl}}</td>
-        <td>{{ team.players_private}}</td>
-        <td>{{ team.zaplaceno}}</td>
-        <td>{{ team.stav}}</td>
+        <td>{{team.idteam}}</td>
+        <td>{{team.avgki|round(1)}}</td>
+        <td>{{team.name}}</td>
+        <td>{{team.weburl}}</td>
+        <td>
+          {%- for p in team.players -%}
+            {%- if p.KI -%}
+              <strong title="KI src: {{p.KI_src}} match: {{p.KI_match}}">{{p.name|e}}</strong>
+              <a href="https://statek.seslost.cz{{p.KI_uid}}">
+                <sup>{{p.KI}}</sup> 
+              </a>
+            {%- else -%}
+              <span title="KI: N/A">{{p.name|e}}</span>
+            {%- endif -%}
+            {{ ", " if not loop.last else ""}}
+          {%- endfor -%}
+        </td>
+        <td>{{team.zaplaceno}}</td>
+        <td>{{team.stav}}</td>
         <td>
             <a href="{{ url_for('admin' ~ year.year ~ '.view_admin_team', idteam=team.idteam) }}"><img alt="=Úprava" src={{url_for("static", filename="img/edit.gif")}}></a>
             <a href="{{ url_for('admin' ~ year.year ~ '.switch_team', idteam=team.idteam) }}"><img alt="=Přepnutí na tým" src={{url_for("static", filename="img/switch.gif")}}></a>
