@@ -255,7 +255,7 @@ def get_admin_menu(year):
 
 def get_admin_menu_item(year, idmenu):
     cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''select idpage, menu, link, `order`, isnewpart, ispublic, isprivate, isvisible, issystem, iscurrentyear from menu where idyear=%s and idmenu=%s''', [year['year'], idmenu])
+    cursor.execute('''select idmenu, idpage, menu, link, `order`, isnewpart, ispublic, isprivate, isvisible, issystem, iscurrentyear from menu where idyear=%s and idmenu=%s''', [year['year'], idmenu])
     data=cursor.fetchone()
 
     if (data):
