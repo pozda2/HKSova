@@ -130,7 +130,6 @@ h1, .h1 {
     -webkit-flex-grow: 2;
     -ms-flex-positive: 2;
     flex-grow: 2;
-    margin-top: 84px;
 }
 
 .dashboard-content {
@@ -138,7 +137,8 @@ h1, .h1 {
     -webkit-flex-grow: 2;
     -ms-flex-positive: 2;
     flex-grow: 2;
-    padding: 25px;
+    margin-top: 84px;
+    /*padding: 25px;*/
     background-color: #111111;
 }
 
@@ -233,8 +233,8 @@ h1, .h1 {
 }
 
 .dashboard-nav-item {
-    min-height: 56px;
-    padding: 8px 20px 8px 70px;
+    /*min-height: 56px;*/
+    padding: 8px 10px 8px 30px;
     display: -webkit-box;
     display: -webkit-flex;
     display: -ms-flexbox;
@@ -258,8 +258,8 @@ h1, .h1 {
 }
 
 .dashboard-nav-item-alone {
-    min-height: 56px;
-    padding: 8px 20px 8px 70px;
+    /*min-height: 56px;*/
+    padding: 8px 10px 8px 30px;
     display: -webkit-box;
     display: -webkit-flex;
     display: -ms-flexbox;
@@ -283,7 +283,8 @@ h1, .h1 {
 }
 
 .active {
-    background: rgba(0, 0, 0, 0.1);
+    /*background: rgba(0, 0, 255, 0.1);*/
+    background: #007bff;
 }
 
 .dashboard-nav-dropdown {
@@ -382,6 +383,8 @@ h1, .h1 {
     -ms-flex-pack: center;
     justify-content: center;
     color: #443ea2;
+    display: none;
+    font-size: 2.5rem;
 }
 
 .menu-toggle:hover, .menu-toggle:active, .menu-toggle:focus {
@@ -417,6 +420,17 @@ h1, .h1 {
     margin: 1rem 0;
     overflow: hidden;
     background-color: rgba(236, 238, 239, 0.3);
+}
+
+@media only screen and (max-width: 992px) {
+  .menu-toggle {
+    display: block;
+    margin: 1ex;
+    vertical-align: middle;
+  }
+  .dashboard-toolbar {
+    padding: 0;
+  }
 }
 
 @media (min-width: 992px) {

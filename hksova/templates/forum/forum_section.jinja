@@ -1,30 +1,40 @@
 {%- extends "_main.jinja" -%}
 {%- block main -%}
-{%- if year.is_current_year -%}
-<form action="{{url_for('forum' ~ year.year ~ ".create_post", section_id=section_id)}}" method="post">
-    {{ form.csrf_token }}
-    <input class="hidden" type="hidden" name="source_url" value="{{ form.source_url }}">
-    <div class="form-row">
-      {{ form.user(class="form-control", id="inputUser", placeholder="Jméno") }}
-    </div>
-    <p>
-    <div class="form-row">
-      {{ form.post(class="form-control", id="inputPost", placeholder="Příspěvek") }}
-    </div>
-  <p><p>
-  <button type="submit" class="btn btn-primary">Vložit příspěvek</button>
-</form>
+  {%- if year.is_current_year -%}
+    <form action="{{url_for('forum' ~ year.year ~ ".create_post", section_id=section_id)}}" method="post">
+      {{ form.csrf_token }}
+      <input type="hidden" class="hidden" name="source_url" value="{{ form.source_url }}">
+    
+      <div class="form-group row">
+        <label for="inputUser" class="col-sm-1 col-form-label">Kdo</label>
+        <div class="col-sm-11">
+          {{ form.user(class="form-control", id="inputUser", placeholder="Jméno") }}
+        </div>
+      </div>
+      
+      <div class="form-row">
+        {{ form.post(class="form-control", id="inputPost", placeholder="Příspěvek", rows='5') }}
+      </div>
+      
+      <div class="form-row mt-1">
+        <button type="submit " class="btn btn-primary">Vložit příspěvek</button>
+      </div>
+    </form>
+  {%- endif -%}
 
-{%- endif -%}
-
-{%- if section -%}
-    {%- for post in section -%}
-    <table class="table table-dark table-striped">
-        <tr><td>{{post.name}} {%- if session.org -%} <small>({{ post.dns }})</small> {%- endif -%}</td><td align="right">{{post.insertedAt}}  </td></tr>
-        <tr><td colspan=2>{{ post.text }} </td></tr>
-    </table>
-    {%- endfor -%}
-    <div class="d-flex justify-content-center">{{ pagination.links }}</div>
-
-{%- endif -%}
+  <p>
+  {%- if section -%}
+      {%- for post in section -%}
+      <table class="table table-dark table-striped">
+          <tr>
+            <td>{{post.name|e}} {%- if session.org %} <small>({{ post.dns }})</small> {%- endif -%}</td>
+            <td align="right"> &#128197; {{post.insertedAt}}</td>
+          </tr>
+          <tr><td colspan=2>{{ post.text|e }} </td></tr>
+      </table>
+      {%- endfor -%}
+      <div class="d-flex justify-content-center">{{ pagination.links }}</div>
+  {%- endif -%}
+  </p>
+  
 {%- endblock -%}

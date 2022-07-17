@@ -59,6 +59,12 @@ def create_post(section_id):
 
     if post_form.validate():
         status, message=insert_post(section_id, post_form.user.data, post_form.post.data, request.remote_addr, socket.getnameinfo((request.remote_addr, 0), 0)[0], request.headers.get('User-Agent'))
+        '''
+        # TODO: handle IPs behind proxy
+        print(request.remote_addr)
+        print(request.environ.get('HTTP_X_REAL_IP', request.remote_addr))
+        print(request.environ)
+        '''
         session['forum_name']=post_form.user.data
         if not status:
             flash (message, "error")

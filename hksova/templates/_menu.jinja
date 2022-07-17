@@ -1,25 +1,43 @@
 <div class="dashboard-nav">
     <header>
-        <a href="#!" class="menu-toggle"><img src={{url_for("static", filename="img/bars.png")}}></a>
         <a href="/" class="brand-logo"><img src={{url_for("static", filename="img/sova_bila_mala.png")}} title="Logo Hradecká sova" alt="Logo Hradecká sova" /></a>
     </header>
-
+  
+    {# for special pages NOT rendered from DB #}
+    {%- set active_page = request.url_rule|default('/')|string -%}
+    {# for editable pages rendered from DB #}
+    {%- if page is not defined -%}{%- set page={'idpage': -42} %}{%- endif -%}
+    
+    {#
+    debug:
+    request: {{ request.url_rule }} <br>
+    AP: {{active_page}}<br>
+    page: {{page.idpage}}<br>
+    #}
+    
     <nav class="dashboard-nav-list">
+
         {%- if session.org -%}
+            {% set admin_menu = [
+                ('.view_admin_teams', 'Správa týmů'),
+                ('.view_admin_pages', 'Správa stránek'),
+                ('.view_admin_menu', 'Správa menu'),
+                ('.view_admin_forum_sections', 'Správa fóra'),
+                ('.view_admin_mascots', 'Správa maskotů'),
+                ('.view_generating_emails', 'Generování emailů'),
+                ('.export_csv', 'Export dat'),
+                ('.view_settings', 'Správa nastavení'),
+                ('.view_admin_password_change', 'Změna hesla'),
+                ('.view_admin_next_year', 'Nový ročník'),
+            ] -%}
             <div id="1" class='dashboard-nav-dropdown'><a href="#!" class="dashboard-nav-item dashboard-nav-dropdown-toggle"></i> Administrace </a>
             <div class='dashboard-nav-dropdown-menu'>
-                <a href="{{ url_for('admin' ~ year.year ~ '.view_admin_teams') }}" title="Správa týmů" class="dashboard-nav-item">Správa týmů</a>
-                <a href="{{ url_for('admin' ~ year.year ~ '.view_admin_pages') }}" title="Správa stránek" class="dashboard-nav-item">Správa stránek</a>
-                <a href="{{ url_for('admin' ~ year.year ~ '.view_admin_menu') }}" title="Správa menu" class="dashboard-nav-item">Správa menu</a>
-                <a href="{{ url_for('admin' ~ year.year ~ '.view_admin_forum_sections') }}" title="Správa fóra" class="dashboard-nav-item">Správa fóra</a>
-                <a href="{{ url_for('admin' ~ year.year ~ '.view_admin_mascots') }}" title="Správa maskotů" class="dashboard-nav-item">Správa maskotů</a>
-                <a href="{{ url_for('admin' ~ year.year ~ '.view_generating_emails') }}" title="Generování emailů" class="dashboard-nav-item">Export emailů</a>
-                <a href="{{ url_for('admin' ~ year.year ~ '.export_csv') }}" title="Export dat" class="dashboard-nav-item">Export dat</a>
-                <a href="{{ url_for('admin' ~ year.year ~ '.view_settings') }}" title="Správa nastavení" class="dashboard-nav-item">Správa nastavení</a>
-                <a href="{{ url_for('admin' ~ year.year ~ '.view_admin_password_change') }}" title="Změna hesla" class="dashboard-nav-item">Změna hesla</a>
-                {%- if year.is_current_year -%}
-                <a href="{{ url_for('admin' ~ year.year ~ '.view_admin_next_year') }}" title="Nový ročník" class="dashboard-nav-item">Nový ročník</a>
-                {%- endif -%}
+                {% for route, title in admin_menu %}
+                    {% set href = url_for('admin' ~ year.year ~ route) -%}
+                    {%- if (route == '.view_admin_next_year' and year.is_current_year) or route != '.view_admin_next_year' -%}
+                    <a href="{{href|e}}" title="{{title|e}}" class="dashboard-nav-item{% if href|e == active_page %} active{% endif %}">{{title|e}}</a>
+                    {%- endif -%}
+                {% endfor %}
             </div>
             </div>
         {%- endif -%}
@@ -29,39 +47,47 @@
             {%- for item in menu if not (year.is_current_year==False and item.iscurrentyear == 1) %}
                 {%- if (session.org or item.ispublic or (item.isprivate==1 and session.logged) or (item.isprivate==2 and session.logged and session.isbackup==0) or (item.isprivate==3 and session.logged and session.ispaid))  -%}
                     {%- if session.org or item.isvisible -%}
-                        {%- if item.link is none -%} 
+                        {%- if item.link is none -%}
                             {%- if ns.group -%} </div></div> {%- endif -%}
                                 <div id="{{item.idmenu}}" class='dashboard-nav-dropdown'><a href="#!" class="dashboard-nav-item dashboard-nav-dropdown-toggle">{{item.menu}}</a>
                                     <div id="{{item.idmenu}}" class='dashboard-nav-dropdown-menu'>
                             {%- set ns.group = True -%}
                         {%- else -%}
-                            {%- if item.isnewpart -%} 
+                            {%- if item.isnewpart -%}
                                 {%- if ns.group -%} </div></div>{%- set ns.group = False -%} {%- endif -%}
                             {%- endif -%}
                             {%- if item.blueprint -%}
                                 {%- if item.function == "view_page" -%}
-                                    <a href={{ url_for(item.blueprint ~ year.year ~ '.' ~ item.function, pageurl=item.link) }} class="dashboard-nav-item">{{item.menu}}</a>
+                                    {% set href = url_for(item.blueprint ~ year.year ~ '.' ~ item.function, pageurl=item.link) -%}
+                                    <a href={{href|e}} class="dashboard-nav-item{% if item.idpage == page.idpage %} active{% endif %}">{{item.menu}}</a>
                                 {%- else -%}
                                     {%- if not session.logged or (session.logged and item.function != 'login_team' and item.function != 'view_registration') -%}
                                         {%- if not session.org or (session.logged and item.function != 'view_team' and item.function != 'view_password_change' and item.function != 'view_registration_cancel') -%}
-                                            <a href={{ url_for(item.blueprint ~ year.year ~ '.' ~ item.function) }} class="dashboard-nav-item-alone">{{item.menu}}</a>
+                                            {% set href = url_for(item.blueprint ~ year.year ~ '.' ~ item.function) -%}
+                                            
+                                            {# !!! WTF comparison - in forum section, the active menu item is not matched!!! WTF!!!
+                                            {{ href.__class__.__name__ }} {{active_page.__class__.__name__}}<br>
+                                            {{ href}} {{active_page}} {{href == active_page}}<br>
+                                            #}
+                                            <a href={{href|e}} class="dashboard-nav-item-alone{% if href == active_page %} active{% endif %}">{{item.menu}}</a>
                                         {%- endif -%}
                                     {%- endif -%}
                                 {%- endif -%}
                             {%- else -%}
                                 <a href={{item.link}} class="dashboard-nav-item">{{item.menu}}</a>
                             {%- endif -%}
-                        {%- endif -%} 
-                    {%- endif -%} 
-                {%- endif -%} 
+                        {%- endif -%}
+                    {%- endif -%}
+                {%- endif -%}
             {%- endfor -%}
             {%- if ns.group -%} </div></div>{%- endif -%}
         {%- endif -%}
 
-        <div id="200000000" class='dashboard-nav-dropdown'><a href="#!" class="dashboard-nav-item dashboard-nav-dropdown-toggle"></i> Ročníky </a>
+        <div id="200000000" class='dashboard-nav-dropdown'><a href="#!" class="dashboard-nav-item dashboard-nav-dropdown-toggle"></i> Minulé ročníky </a>
         <div class='dashboard-nav-dropdown-menu'>
             {%- for y in years -%}
-                <a href="{{ url_for('main' ~ y.idyear ~'.view_index') }}" title="informace o hře" class="dashboard-nav-item">Ročník {{y.idyear}} </a>
+                {% set href = url_for('main' ~ y.idyear ~ '.view_index') -%}
+                <a href="{{href|e}}" title="informace o hře" class="dashboard-nav-item{% if href|e == active_page %} active{% endif %}">Ročník {{y.idyear}} </a>
             {%- endfor-%}
             <a href="/static/data/2009/index.html" title="informace o hře" class="dashboard-nav-item">Ročník 2009</a>
             <a href="/static/data/2008/index.html" title="informace o hře" class="dashboard-nav-item">Ročník 2008</a>
