@@ -1,72 +1,65 @@
-from flask import current_app
 import secrets
+import base64
+from flask import current_app
 from passlib.hash import sha256_crypt
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-import base64
+
 
 from .kimatch import load_ki, match_ki
-from ..team.model import *
+from ..team.model import recalculate_teams
 
 
 def translate_visibility(page):
-    if (page['isvisible'] == 1):
+    if page['isvisible'] == 1:
         return 'Viditelné'
-    else:
-        return 'Pouze pro orgy'
+    return 'Pouze pro orgy'
 
 
 def translate_accces_right(page):
-    if (page['ispublic'] == 1):
+    if page['ispublic'] == 1:
         return 'Kdokoliv'
-    elif (page['isprivate'] == 1):
+    elif page['isprivate'] == 1:
         return 'Náhradníci a hrající'
-    elif (page['isprivate'] == 2):
+    elif page['isprivate'] == 2:
         return 'Hrající'
-    elif (page['isprivate'] == 3):
+    elif page['isprivate'] == 3:
         return 'Zaplatili'
     else:
         return ''
 
 
 def translate_menu_typ(item):
-    if (item['issystem'] == 1):
+    if item['issystem'] == 1:
         if item['isnewpart']:
             return 'Systémová samostatná'
-        else:
-            return 'Systémová'
+        return 'Systémová'
     else:
         if item['link'] is None:
             return "Skupina menu"
         elif item['idpage'] is None:
             if item['isnewpart']:
                 return "Externí samostatná"
-            else:
-                return "Externí"
+            return "Externí"
         else:
             if item['isnewpart']:
                 return 'Interní samostatná'
-            else:
-                return 'Interní'
+            return 'Interní'
 
 
 def translate_currentyear(item):
-    if (item['iscurrentyear'] == 1):
+    if item['iscurrentyear'] == 1:
         return 'Jen letošní ročník'
-    else:
-        return 'I starší ročník'
+
+    return 'I starší ročník'
 
 
 def encode_access_rights(ispublic, isprivate):
+    assert isinstance(isprivate, int) and isprivate >= 1 and isprivate <= 3
     if ispublic == 1:
         return 0
-    if isprivate == 1:
-        return 1
-    elif isprivate == 2:
-        return 2
-    elif isprivate == 3:
-        return 3
+    return isprivate
 
 
 def decode_access_rights(rights):
@@ -134,12 +127,12 @@ def encode_menu_item(menuitem):
         issystem = 1
         page = 0
         link = menuitem['link']
-    elif (menuitem['idpage'] is not None):
+    elif menuitem['idpage'] is not None:
         pagetype = 0
         issystem = 0
         page = menuitem['idpage']
         link = menuitem['link']
-    elif (menuitem['idpage'] is None and menuitem['link']):
+    elif menuitem['idpage'] is None and menuitem['link']:
         pagetype = 1
         issystem = 0
         page = 0
@@ -198,7 +191,7 @@ def decode_menu_item(pagetype, page, link):
         issystem = 0
     elif pagetype == 1:
         idpage = None
-        link = link
+        # link = link # redundant?
         issystem = 0
     else:
         idpage = None
@@ -213,7 +206,7 @@ def get_admin_pages(year):
     cursor.execute('''select idpage, title, url, texy, html, ispublic, isprivate, isvisible, idforumsection from page where idyear=%s order by idpage''', [year['year']])
     data = cursor.fetchall()
 
-    if (data):
+    if data:
         for page in data:
             page['visibility'] = translate_visibility(page)
             page['access_right'] = translate_accces_right(page)
@@ -264,7 +257,7 @@ def get_admin_menu(year):
     cursor.execute('''select idmenu, idpage, menu, link, `order`, param, isnewpart, ispublic, isprivate, isvisible, issystem, iscurrentyear from menu where idyear=%s order by `order`''', [year['year']])
     data = cursor.fetchall()
 
-    if (data):
+    if data:
         for menu in data:
             menu['visibility'] = translate_visibility(menu)
             menu['access_right'] = translate_accces_right(menu)
@@ -278,7 +271,7 @@ def get_admin_menu_item(year, idmenu):
     cursor.execute('''select idmenu, idpage, menu, link, `order`, isnewpart, ispublic, isprivate, isvisible, issystem, iscurrentyear from menu where idyear=%s and idmenu=%s''', [year['year'], idmenu])
     data = cursor.fetchone()
 
-    if (data):
+    if data:
         data['visibility'] = translate_visibility(data)
         data['access_right'] = translate_accces_right(data)
         data['currentyear'] = translate_currentyear(data)
@@ -324,7 +317,7 @@ def get_admin_forum_sections(year):
     cursor.execute('''select idforumsection, section, `order`, isvisible from forum_section where idyear=%s order by `order`''', [year['year']])
     data = cursor.fetchall()
 
-    if (data):
+    if data:
         for section in data:
             section['visibility'] = translate_visibility(section)
     return data
@@ -378,7 +371,7 @@ def insert_forum_section(year, section, order, isvisible):
 
 
 def change_admin_pass(password_old, password_new):
-    if (check_password_org(password_old)):
+    if check_password_org(password_old):
         salt = secrets.token_hex(20)
         hash_new = sha256_crypt.hash(current_app.config['SECRET_PEPPER'] + password_new + salt)
         try:
@@ -395,8 +388,8 @@ def change_admin_pass(password_old, password_new):
 
         current_app.mysql.connection.commit()
         return True, ""
-    else:
-        return False, "Nesprávné staré heslo"
+
+    return False, "Nesprávné staré heslo"
 
 
 def check_password_org(password):
@@ -415,8 +408,8 @@ def check_password_org(password):
 
         if hash_in_setting and salt_in_setting:
             return sha256_crypt.verify(current_app.config['SECRET_PEPPER'] + password + salt_in_setting, hash_in_setting)
-        else:
-            return False
+
+        return False
     except Exception:
         return False
 
@@ -441,19 +434,18 @@ def players_to_string(players):
 
 
 def translate_team_paid(team):
-    if (team['ispaid'] == 1):
+    if team['ispaid'] == 1:
         return 'Zaplaceno'
-    else:
-        return 'Neplaceno'
+    return 'Neplaceno'
 
 
 def translate_team_status(team):
-    if (team['isdeleted'] == 1):
+    if team['isdeleted'] == 1:
         return "Smazaní"
-    if (team['isbackup'] == 1):
+    if team['isbackup'] == 1:
         return 'Náhradníci'
-    else:
-        return 'Hrající'
+
+    return 'Hrající'
 
 
 def is_unique_name(year, name, login):
@@ -463,20 +455,14 @@ def is_unique_name(year, name, login):
     else:
         cursor.execute('''SELECT name FROM team where idYear=%s and name=%s''', [year['year'], name])
     data = cursor.fetchall()
-    if (len(data) == 0):
-        return True
-    else:
-        return False
+    return bool(len(data) == 0)
 
 
 def is_unique_loginname(year, name):
     cursor = current_app.mysql.connection.cursor()
     cursor.execute('''SELECT name FROM team where idYear=%s and login=%s''', [year['year'], name])
     data = cursor.fetchall()
-    if (len(data) == 0):
-        return True
-    else:
-        return False
+    return bool(len(data) == 0)
 
 
 def is_unique_email(year, email, login):
@@ -486,10 +472,7 @@ def is_unique_email(year, email, login):
     else:
         cursor.execute('''SELECT email FROM team where idYear=%s and email=%s''', [year['year'], email])
     data = cursor.fetchall()
-    if (len(data) == 0):
-        return True
-    else:
-        return False
+    return bool(len(data) == 0)
 
 
 def is_minimum_players(players, min_players):
@@ -499,10 +482,7 @@ def is_minimum_players(players, min_players):
         if player['name'] != '':
             players_count += 1
 
-    if (players_count >= min_players):
-        return True
-    else:
-        return False
+    return bool(players_count >= min_players)
 
 
 def get_admin_teams(year):
@@ -514,7 +494,7 @@ def get_admin_teams(year):
     kidata = load_ki(fn='./hksova/ki2022-7-17.csv')
 
     # podrobnosti o tymu
-    if (data):
+    if data:
         i = 1
         for team in data:
             players = get_team_players(team['idteam'])
@@ -542,7 +522,7 @@ def get_admin_team(idteam):
     data = cursor.fetchone()
 
     # podrobnosti o tymu
-    if (data):
+    if data:
         players = get_team_players(data['idteam'])
         data['players'] = players
         data['players_private'] = players_to_string(players)
@@ -561,7 +541,7 @@ def update_admin_team(idteam, year, login, name, email, mobil, weburl, reporturl
         return False, "Problem updatint db: " + str(e)
 
     # recalculate normal and backup teams
-    status, message = recalculate_teams(year)
+    _, _ = recalculate_teams(year)
 
     # update players
     for i, player in enumerate(new_players):
@@ -575,7 +555,7 @@ def update_admin_team(idteam, year, login, name, email, mobil, weburl, reporturl
         if player['age'].strip() == "":
             player['age'] = None
 
-        if (player['name'].strip()):
+        if player['name'].strip():
             if player_in_database:
                 try:
                     cursor.execute('''UPDATE player set name=%s, publicname=%s, city=%s, age=%s where idteam=%s and `order`=%s''',
@@ -598,14 +578,14 @@ def update_admin_team(idteam, year, login, name, email, mobil, weburl, reporturl
     return True, ""
 
 
-def get_emails_list(year, filter):
+def get_emails_list(year, _filter):
     try:
         cursor = current_app.mysql.connection.cursor()
-        if (filter == "1"):
+        if _filter == "1":
             cursor.execute('''SELECT  email FROM team where idYear=%s and isdeleted=0 and ispaid=1''', [year['year']])
-        elif (filter == "2"):
+        elif _filter == "2":
             cursor.execute('''SELECT  email FROM team where idYear=%s and isdeleted=0 and ispaid=0''', [year['year']])
-        elif (filter == "3"):
+        elif _filter == "3":
             cursor.execute('''SELECT  email FROM team where idYear=%s and isdeleted=0 and isbackup=1''', [year['year']])
         else:
             cursor.execute('''SELECT  email FROM team where idYear=%s and isdeleted=0 ''', [year['year']])
@@ -756,8 +736,8 @@ def copy_year(year, next_year):
                     forum_section = forum_keys[page['idforumsection']]
 
             cursor.execute('''INSERT INTO page (idyear, title, url, texy, html, ispublic, isprivate, isvisible, idforumsection)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)''',
-            [next_year, page['title'], page['url'], page['texy'], page['html'], page['ispublic'], page['isprivate'], page['isvisible'], forum_section])
+                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)''',
+                           [next_year, page['title'], page['url'], page['texy'], page['html'], page['ispublic'], page['isprivate'], page['isvisible'], forum_section])
             pages_keys[page['idpage']] = cursor.lastrowid
         except Exception as e:
             return False, "Problem inserting into table page : " + str(e)
@@ -771,12 +751,11 @@ def copy_year(year, next_year):
                 if item['idpage'] in pages_keys.keys():
                     page_forum = pages_keys[item['idpage']]
 
-            cursor.execute('''INSERT INTO menu
-                (idyear, idpage, menu, link, param, `order`, isnewpart, ispublic, isprivate, isvisible, issystem, iscurrentyear)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)''',
-                [next_year, page_forum, item['menu'], item['link'], item['param'], item['order'], item['isnewpart'], item['ispublic'], item['isprivate'],
-                 item['isvisible'], item['issystem'], item['iscurrentyear']
-                 ])
+            cursor.execute('''INSERT INTO menu (idyear, idpage, menu, link, param, `order`, isnewpart, ispublic, isprivate, isvisible, issystem, iscurrentyear)
+                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)''',
+                           [next_year, page_forum, item['menu'], item['link'], item['param'], item['order'], item['isnewpart'], item['ispublic'], item['isprivate'],
+                            item['isvisible'], item['issystem'], item['iscurrentyear']
+                            ])
         except Exception as e:
             return False, "Problem inserting into table menu : " + str(e)
 
