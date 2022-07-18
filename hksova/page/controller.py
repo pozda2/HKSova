@@ -1,16 +1,16 @@
-from flask import Blueprint
-from flask import render_template
-from flask import make_response
-from flask import request
-from flask import session
+'''
+Page - controller
+'''
+from flask import Blueprint, render_template, make_response, request, session
 from flask_paginate import Pagination, get_page_parameter
 
-from .model import *
-from ..year.model import *
-from ..menu.model import *
-from ..forum.model import *
-from ..forum.form import *
-from ..team.model import *
+from .model import get_page
+
+from ..year.model import get_year, get_years
+from ..menu.model import get_menu
+from ..forum.model import get_forum, get_forum_post_count
+from ..forum.form import PostForm
+from ..team.model import get_reports
 
 main_blueprint = Blueprint("main", __name__)
 
@@ -28,19 +28,21 @@ def check_authorization(ispublic, isprivate, isvisible):
     # public
     if ispublic:
         return True
-    else:
-        if session.get("logged"):
-            if not session["logged"]:
-                return False
 
-            if isprivate == 3 and session["ispaid"]:
-                return True
-            if isprivate == 2 and not session["isbackup"]:
-                return True
-            if isprivate == 1:
-                return True
+    # solve access in common case
+    if session.get("logged"):
+        if not session["logged"]:
             return False
+
+        if isprivate == 3 and session["ispaid"]:
+            return True
+        if isprivate == 2 and not session["isbackup"]:
+            return True
+        if isprivate == 1:
+            return True
         return False
+
+    return False
 
 
 @main_blueprint.route("/")
@@ -90,11 +92,11 @@ def view_page(pageurl):
             r.headers.set('X-Content-Type-Options', 'nosniff')
             r.headers.set('X-Frame-Options', 'SAMEORIGIN')
             return r
-        else:
-            return render_template("errors/404.jinja", year=year, menu=menu, years=years, page=page), 404
+
+        return render_template("errors/404.jinja", year=year, menu=menu, years=years, page=page), 404
 
     # reports on page
-    if (pageurl == "reportaze"):
+    if pageurl == "reportaze":
         reports = get_reports(year)
         if page:
             if check_authorization(page['ispublic'], page['isprivate'], page['isvisible']):
@@ -103,10 +105,10 @@ def view_page(pageurl):
                 r.headers.set('X-Content-Type-Options', 'nosniff')
                 r.headers.set('X-Frame-Options', 'SAMEORIGIN')
                 return r
-            else:
-                return render_template("errors/404.jinja", year=year, menu=menu, years=years, page=page), 404
-        else:
+
             return render_template("errors/404.jinja", year=year, menu=menu, years=years, page=page), 404
+
+        return render_template("errors/404.jinja", year=year, menu=menu, years=years, page=page), 404
 
     # page wihout anything
     if page:
@@ -116,9 +118,7 @@ def view_page(pageurl):
             r.headers.set('X-Content-Type-Options', 'nosniff')
             r.headers.set('X-Frame-Options', 'SAMEORIGIN')
             return r
-        else:
-            return render_template("errors/404.jinja", year=year, menu=menu, years=years, page=page), 404
-    else:
-        return render_template("errors/404.jinja", year=year, menu=menu, years=years), 404
 
+        return render_template("errors/404.jinja", year=year, menu=menu, years=years, page=page), 404
 
+    return render_template("errors/404.jinja", year=year, menu=menu, years=years), 404
