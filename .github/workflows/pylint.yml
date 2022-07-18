@@ -22,4 +22,4 @@ jobs:
     # disable: C0301 - long lines
     - name: Analysing the code with pylint
       run: |
-        pylint -d C0301 $(git ls-files '*.py')
+        pylint --exit-zero -d C0301 $(git ls-files '*.py')
