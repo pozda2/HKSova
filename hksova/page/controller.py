@@ -15,7 +15,11 @@ from ..team.model import get_reports
 main_blueprint = Blueprint("main", __name__)
 
 
-def check_authorization(ispublic, isprivate, isvisible):
+def check_authorization(page):
+    ispublic = page['ispublic']
+    isprivate = page['isprivate']
+    isvisible = page['isvisible']
+
     # org
     if session.get("org"):
         if session["org"]:
@@ -45,6 +49,11 @@ def check_authorization(ispublic, isprivate, isvisible):
     return False
 
 
+def set_custom_headers(response):
+    response.headers.set('X-Content-Type-Options', 'nosniff')
+    response.headers.set('X-Frame-Options', 'SAMEORIGIN')
+
+
 @main_blueprint.route("/")
 def view_index():
     year = get_year(request.blueprint)
@@ -52,9 +61,7 @@ def view_index():
     menu = get_menu(year)
     page = get_page(year, 'index')
     r = make_response(render_template("page/page.jinja", title=page['title'], page=page, year=year, menu=menu, years=years))
-    # r.headers.set('Content-Security-Policy', "default-src 'self'")
-    r.headers.set('X-Content-Type-Options', 'nosniff')
-    r.headers.set('X-Frame-Options', 'SAMEORIGIN')
+    set_custom_headers(r)
     return r
 
 
@@ -65,60 +72,48 @@ def view_page(pageurl):
     menu = get_menu(year)
     page = get_page(year, pageurl)
 
-    # forum on page
-    if page is not None and page['idforumsection']:
-        section_id = page['idforumsection']
-        post_count = get_forum_post_count(section_id)
-        post_form = PostForm()
-        search = False
-        q = request.args.get('q')
-        if q:
-            search = True
-
-        if session.get("forum_name"):
-            post_form.user.data = session['forum_name']
-        else:
-            if session.get('team'):
-                post_form.user.data = session['team']
-
-        forum_page = request.args.get(get_page_parameter(), type=int, default=1)
-        pagination = Pagination(page=forum_page, total=post_count, per_page=10, search=search, record_name='sections')
-        forum_section = get_forum(section_id, pagination.skip, 10)
-        post_form.source_url = pageurl
-
-        if check_authorization(page['ispublic'], page['isprivate'], page['isvisible']):
-            r = make_response(render_template("page/page_forum.jinja", title=page['title'], page=page, year=year, years=years, menu=menu, section=forum_section, pagination=pagination, form=post_form, section_id=section_id))
-            # r.headers.set('Content-Security-Policy', "default-src 'self'")
-            r.headers.set('X-Content-Type-Options', 'nosniff')
-            r.headers.set('X-Frame-Options', 'SAMEORIGIN')
-            return r
-
-        return render_template("errors/404.jinja", year=year, menu=menu, years=years, page=page), 404
-
-    # reports on page
-    if pageurl == "reportaze":
-        reports = get_reports(year)
-        if page:
-            if check_authorization(page['ispublic'], page['isprivate'], page['isvisible']):
-                r = make_response(render_template("page/page_reports.jinja", title=page['title'], page=page, year=year, years=years, menu=menu, reports=reports))
-                # r.headers.set('Content-Security-Policy', "default-src 'self'")
-                r.headers.set('X-Content-Type-Options', 'nosniff')
-                r.headers.set('X-Frame-Options', 'SAMEORIGIN')
-                return r
-
+    # page exists
+    if page is not None:
+        #  authorize user
+        if not check_authorization(page):
             return render_template("errors/404.jinja", year=year, menu=menu, years=years, page=page), 404
 
-        return render_template("errors/404.jinja", year=year, menu=menu, years=years, page=page), 404
+        # special page: with forum
+        if page['idforumsection']:
+            section_id = page['idforumsection']
+            post_count = get_forum_post_count(section_id)
+            post_form = PostForm()
+            search = False
+            q = request.args.get('q')
+            if q:
+                search = True
 
-    # page wihout anything
-    if page:
-        if check_authorization(page['ispublic'], page['isprivate'], page['isvisible']):
-            r = make_response(render_template("page/page.jinja", title=page['title'], page=page, year=year, years=years, menu=menu))
-            # r.headers.set('Content-Security-Policy', "default-src 'self'")
-            r.headers.set('X-Content-Type-Options', 'nosniff')
-            r.headers.set('X-Frame-Options', 'SAMEORIGIN')
+            if session.get("forum_name"):
+                post_form.user.data = session['forum_name']
+            else:
+                if session.get('team'):
+                    post_form.user.data = session['team']
+
+            forum_page = request.args.get(get_page_parameter(), type=int, default=1)
+            pagination = Pagination(page=forum_page, total=post_count, per_page=10, search=search, record_name='sections')
+            forum_section = get_forum(section_id, pagination.skip, 10)
+            post_form.source_url = pageurl
+
+            r = make_response(render_template("page/page_forum.jinja", title=page['title'], page=page, year=year, years=years, menu=menu, section=forum_section, pagination=pagination, form=post_form, section_id=section_id))
+            set_custom_headers(r)
             return r
 
-        return render_template("errors/404.jinja", year=year, menu=menu, years=years, page=page), 404
+        # special page: with reports
+        if pageurl == "reportaze":
+            reports = get_reports(year)
+            r = make_response(render_template("page/page_reports.jinja", title=page['title'], page=page, year=year, years=years, menu=menu, reports=reports))
+            set_custom_headers(r)
+            return r
 
+        # general page
+        r = make_response(render_template("page/page.jinja", title=page['title'], page=page, year=year, years=years, menu=menu))
+        set_custom_headers(r)
+        return r
+
+    # page does not exists
     return render_template("errors/404.jinja", year=year, menu=menu, years=years), 404
