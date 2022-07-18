@@ -1,8 +1,7 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField
-from wtforms import HiddenField
-from wtforms import TextAreaField
+from wtforms import StringField, HiddenField, TextAreaField
 from wtforms.validators import InputRequired
+
 
 class PostForm (FlaskForm):
     user = StringField("Jméno", validators=[InputRequired()])
