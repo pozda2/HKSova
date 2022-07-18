@@ -8,6 +8,7 @@ database/db_init.sh
 database/localhost.sql
 database/osjak_cz3.sql
 docker-compose.yml
+hksova/configs
 hksova/configs/default.py
 hksova/configs/docker.py
 hksova/static/data/
