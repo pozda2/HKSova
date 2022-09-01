@@ -345,7 +345,7 @@ def reset_team_pass(idteam, password_new):
 
 def get_city_statistics(year):
     cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''select city, count(*) as count from player p, team t where t.idteam = p.idteam and idyear=%s and city is not null and isdeleted =0 group by city order by 2 desc 1 asc''', [year['year']])
+    cursor.execute('''select city, count(*) as count from player p, team t where t.idteam = p.idteam and idyear=%s and city is not null and isdeleted =0 group by city order by 2 desc, 1 asc''', [year['year']])
     data = cursor.fetchall()
     return data
 
