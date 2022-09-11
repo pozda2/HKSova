@@ -1,0 +1,79 @@
+<style>
+* {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 10pt;
+}
+h1, h2, h3, h4, h5 {
+  margin: 0;
+}
+h1 {
+  font-size: 22pt;
+}
+h3 {
+  font-size: 12pt;
+  margin-top: 1ex;
+}
+div.env {
+    /* C5 (162 mm x 229 mm)  */
+    width: 209mm;
+    height: 142mm;
+    border: 1pt solid #000000;
+    padding: 1em;
+    margin-bottom: 2em;
+    margin-top: 1em;
+}
+@media print {
+  div.env, div#pokyny {
+    page-break-after: always;
+  }
+}
+
+</style>
+{%- block main -%}
+
+<div id="pokyny">
+<h3>Pokyny k tisku startovních obálek:</h3>
+<ul>
+  <li>vynechat tuto první stránku; rozsah: 2-</li>
+  <li>formát papíru: C5 (162 mm x 229 mm)</li>
+  <li>na šířku</li>
+  <li>stránek na list: 1</li>
+  <li>okraje: minimální (maximum 1 cm každý)</li>
+  <li>dpi: 150-300</li>
+</ul>
+</div>
+
+{%- if teams -%}
+    {%- for t in teams -%}
+    <div class="env">
+      <h1>{{ t.name }}</h1>
+      
+      <p>Startovní obálka <strong>Hradecká sova 2022</strong> &ndash; otevřete ve správný čas dle pokynů orgů.</p>
+      
+      <h3>Přihlášení do systému</h3>
+      <img src="{{ qrcode("https://seslost.cz/t/" ~ t.mascot, border=1, box_size=5) }}" /><br />
+      <strong>https://seslos­t.cz/t/{{ t.mascot }}</strong>
+
+      <h3>Posílání zpráv (vždy po příchodu na stanoviště)</h3>
+      Zprávy posílejte přes stránku <strong>https://trakar.seslost.cz/hradecka-sova-2022</strong>
+      <pre>
+      kod_stanoviste jaky­koli_dalsi text
+      NAPOVEDA kod_stanoviste
+      RESENI kod_stanoviste
+      KAPITULACE jaky­koli_dalsi_text
+      </pre>
+      
+      Lze též nascanovat QR kód na záhlaví šifry, který vás přesměruje rovnou do systému a předvyplní za vás kod_stanoviste.
+      
+      <h3>Telefony</h3>
+      <ul>
+        <li>Helpdesk na systém zpráv: 737 979 992</li>
+        <li>Nouzové nápovědy a řešení: 737 481 334</li>
+        <li>Krizový telefon: 728 040 555</li>
+      </ul>
+    </div>
+    {%- endfor -%}
+{%- endif -%}
+  
+  
+{%- endblock -%}
