@@ -15,7 +15,10 @@
     </tr>
     <tr>
       <td>Přihlášení do <a href={{ url_for('main' ~ year.year ~ ".view_page", pageurl="system_zprav")}}>systému zpráv</a> během hry</td>
-      <td><A href="https://seslost.cz/t/{{ team.mascot }}">https://seslost.cz/t/{{ team.mascot }}</td>
+      <td>
+        <a href="https://seslost.cz/t/{{ team.mascot }}">https://seslost.cz/t/{{ team.mascot }}</a><br />
+        <img src="{{ qrcode("https://seslost.cz/t/" ~ team.mascot, border=1) }}" />
+      </td>
     </tr>
     <tr>
       <td>Přihlašovací jméno</td>
@@ -79,7 +82,9 @@
     </tr>
       <tr>
       <td>Platba přes QR</td>
-      <td><IMG src="data:image/png;base64,{{ img_str }}"></td>
+      <td>
+          <img src="{{ qrcode(qrcode_payment, border=1) }}" />
+      </td>
     </tr>
   {%- endif -%}
 {%- endblock -%}

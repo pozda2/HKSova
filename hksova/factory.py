@@ -3,6 +3,7 @@ from flask import Flask
 from flask_mysqldb import MySQL
 from flask_wtf.csrf import CSRFProtect
 from flask_mdeditor import MDEditor
+from flask_qrcode import QRcode
 from flask import render_template
 
 from .page import main_blueprint
@@ -31,6 +32,7 @@ def create_flask_app():
     flask_app.mysql = mysql
     mdeditor = MDEditor(flask_app)
     csrf = CSRFProtect(flask_app)
+    QRcode(flask_app)
 
     flask_app.register_blueprint(main_blueprint)
     flask_app.register_blueprint(team_blueprint)
