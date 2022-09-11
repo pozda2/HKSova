@@ -55,7 +55,6 @@ def get_forum_post_count(id_forum_section):
 def insert_post(id_forum_section, name, text, ip, dns, browser):
     now = datetime.now()
 
-    text = "<br />".join(text.split("\n"))
     try:
         cursor = current_app.mysql.connection.cursor()
         cursor.execute('''INSERT INTO forum (idforumsection, name, text, insertedAt, ip, dns, browser) VALUES (%s, %s, %s, %s, %s, %s, %s)''',

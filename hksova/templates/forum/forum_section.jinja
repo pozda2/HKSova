@@ -30,7 +30,11 @@
             <td>{{post.name|e}} {%- if session.org %} <small>({{ post.dns }})</small> {%- endif -%}</td>
             <td align="right"> &#128197; {{post.insertedAt}}</td>
           </tr>
-          <tr><td colspan=2>{{ post.text|e }} </td></tr>
+          <tr><td colspan=2>
+            {% autoescape false %}
+              {{ post.text|e|replace("\n", "<br />") }}
+            {% endautoescape %}
+          </td></tr>
       </table>
       {%- endfor -%}
       <div class="d-flex justify-content-center">{{ pagination.links }}</div>
