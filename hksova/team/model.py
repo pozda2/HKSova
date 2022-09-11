@@ -59,13 +59,15 @@ def get_random_mascot():
 
 
 def get_unique_mascot(year):
-    used_mascots = get_used_mascot(year)
-    unique = False
-    while not unique:
-        mascot = get_random_mascot()
-        if mascot not in used_mascots:
-            unique = True
-    return mascot
+    used_mascots = [x['mascot'] for x in get_used_mascot(year)]
+    free_mascots = [x['mascot'] for x in get_mascots() if x['mascot'] not in used_mascots]
+    return free_mascots[random.randrange(0, len(free_mascots))]
+    # unique = False
+    # while not unique:
+    #     mascot = get_random_mascot()
+    #     if mascot not in used_mascots:
+    #         unique = True
+    # return mascot
 
 
 def get_registred_number_teams(year):
