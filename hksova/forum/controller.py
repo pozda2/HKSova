@@ -56,14 +56,17 @@ def create_post(section_id):
     year = get_year(request.blueprint)
     post_form = PostForm(request.form)
 
+    '''
+    # TODO: handle IPs behind proxy + probably proxy reconf needed
+    print(request.remote_addr)
+    print(request.environ.get('HTTP_X_REAL_IP', request.remote_addr))
+    print(request.environ)
+    '''
+    remote_ip = request.headers.get('X-Forwarded-For').split(', ')[0]
+
     if post_form.validate():
-        status, message = insert_post(section_id, post_form.user.data, post_form.post.data, request.remote_addr, socket.getnameinfo((request.remote_addr, 0), 0)[0], request.headers.get('User-Agent'))
-        '''
-        # TODO: handle IPs behind proxy + probably proxy reconf needed
-        print(request.remote_addr)
-        print(request.environ.get('HTTP_X_REAL_IP', request.remote_addr))
-        print(request.environ)
-        '''
+        status, message = insert_post(section_id, post_form.user.data, post_form.post.data, remote_ip, socket.getnameinfo((remote_ip, 0), 0)[0], request.headers.get('User-Agent'))
+
         session['forum_name'] = post_form.user.data
         if not status:
             flash(message, "error")
