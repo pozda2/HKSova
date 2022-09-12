@@ -56,7 +56,8 @@ def translate_currentyear(item):
 
 
 def encode_access_rights(ispublic, isprivate):
-    assert isinstance(isprivate, int) and isprivate >= 1 and isprivate <= 3
+    assert isinstance(isprivate, int) and isprivate >= 0 and isprivate <= 3
+    assert isinstance(ispublic, int) and ispublic >= 1
     if ispublic == 1:
         return 0
     return isprivate
