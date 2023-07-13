@@ -209,7 +209,10 @@ def view_team():
     menu = get_menu(year)
     team = get_team(year, session['login'])
     payment = get_payment_information(year)
-    qrcode_payment = f"SPD*1.0*ACC:{payment['iban']}*AM:{float(payment['price']):.2f}*CC:CZK*X-VS:{year['year']}{team['idteam']}*MSG:{team['name']}"
+    if payment['price'].isnumeric():
+        qrcode_payment = f"SPD*1.0*ACC:{payment['iban']}*AM:{float(payment['price']):.2f}*CC:CZK*X-VS:{year['year']}{team['idteam']}*MSG:{team['name']}"
+    else:
+        qrcode_payment = "Zatím neplatte, sledujte informace na webu."
     return render_template("team/team.jinja", title="Údaje o týmu", year=year, team=team, payment=payment, menu=menu, years=years, qrcode_payment=qrcode_payment)
 
 
