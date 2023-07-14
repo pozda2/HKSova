@@ -1,5 +1,11 @@
 import secrets
 import base64
+import csv
+import json
+import io
+import locale
+import requests
+from datetime import datetime
 from flask import current_app
 from passlib.hash import sha256_crypt
 from cryptography.fernet import Fernet
@@ -8,6 +14,7 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 
 from .kimatch import load_ki, match_ki
+from ..settings.model import get_trakar_token
 from ..team.model import recalculate_teams
 
 
@@ -763,3 +770,39 @@ def copy_year(year, next_year):
     # commit
     current_app.mysql.connection.commit()
     return True, ""
+
+
+def sync_teams_trakar(year, teams):
+    # prepare CSV
+    output = io.StringIO()
+    csv.register_dialect('sova', delimiter=';', quoting=csv.QUOTE_MINIMAL)
+    writer = csv.writer(output, dialect='sova')
+
+    # header
+    # line = ['external_id', 'name', 'code', 'qr_token', 'phone', 'cancelled', 'members_str']
+    line = ['name', 'qr_token', 'phone', 'cancelled', 'members_str']
+    writer.writerow(line)
+
+    # content
+    locale.setlocale(locale.LC_ALL, 'cs_CZ.UTF-8')
+    for team in sorted(teams, key=lambda x: locale.strxfrm(x['name'].lower())):
+        print(team)
+        if team['isdeleted'] == 1:
+            continue
+        # line = [team['idteam'], team['name'], team['mascot'], team['mascot'], team['mobil'], team['isdeleted'], team['players_private']]
+        line = [team['name'], team['mascot'], team['mobil'], team['isdeleted'], team['players_private']]
+        writer.writerow(line)
+    output.seek(0)  # rewind to start
+
+    csv_payload = output.getvalue()
+
+    # perform request to Trakar
+    # DOC: https://databaze.seslost.cz/doc/tymy
+    url = 'https://databaze.seslost.cz/hry/hradecka-sova-2023/tymy/import.csv'
+    trakar_token = get_trakar_token(year)
+    x = requests.post(url, headers={'Authorization': f'AUTH-TOKEN {trakar_token}'}, data=csv_payload)
+    json_object = json.loads(x.text)
+    json_formatted_str = json.dumps(json_object, indent=2, ensure_ascii=False)
+    print(json_formatted_str)
+
+    return f'SENT DATA:\n{csv_payload}\nHTTP STATUS CODE: {x.status_code}\nJSON response:\n{json_formatted_str}\n'

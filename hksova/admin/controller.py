@@ -7,7 +7,7 @@ from flask import Blueprint, Response, render_template, request, redirect, url_f
 
 from ..year.model import get_year, get_years
 from ..menu.model import get_menu
-from ..settings.model import get_min_players, get_max_players
+from ..settings.model import get_min_players, get_max_players, get_trakar_token
 from .form import PageForm, PageDeleteForm, MenuItemForm, MenuItemDeleteForm, ForumSectionForm, ForumSectionDeleteForm, PasswordChangeForm, EditTeamForm
 from .form import SettingForm, SettingDeleteForm, GeneratingEmailsForm, MascotForm, MascotDeleteForm, NextYearForm
 from .model import encode_access_rights, encode_menu_item, decode_access_rights, decode_menu_item
@@ -15,10 +15,12 @@ from .model import insert_forum_section, insert_mascot, insert_menu_item, insert
 from .model import update_admin_team, update_forum_section, update_mascot, update_menu_item, update_page, update_setting
 from .model import delete_forum_section, delete_mascot, delete_menu_item, delete_page, delete_setting
 from .model import copy_year, change_admin_pass
+from .model import sync_teams_trakar
 from .model import get_admin_forum_section, get_admin_forum_sections, get_admin_menu, get_admin_menu_item, get_admin_page, get_admin_pages, get_admin_team, get_admin_teams
 from .model import get_emails_list, get_mascot, get_mascots, get_setting, get_settings, get_team_players
 from .model import is_minimum_players, is_unique_email, is_unique_name
 from .utils import org_login_required
+
 
 admin_blueprint = Blueprint("admin", __name__)
 
@@ -442,6 +444,27 @@ def admin_change_password():
     for error in password_change_form.errors:
         flash(f'{error} nezadán', "error")
     return redirect(url_for("admin.view_password_change"))
+
+
+@admin_blueprint.route("/admin/links/", methods=["GET"])
+@org_login_required
+def view_admin_links():
+    year = get_year(request.blueprint)
+    years = get_years()
+    menu = get_menu(year)
+    trakar_token = get_trakar_token(year)
+    return render_template("admin/links.jinja", title="Užitečné odkazy", year=year, menu=menu, years=years, trakar_token=trakar_token)
+
+
+@admin_blueprint.route("/admin/teams/sync", methods=["GET"])
+@org_login_required
+def sync_admin_teams():
+    year = get_year(request.blueprint)
+    years = get_years()
+    menu = get_menu(year)
+    teams = get_admin_teams(year)
+    sync_stat = sync_teams_trakar(year, teams)
+    return render_template("admin/teams.jinja", title="Správa týmů", year=year, teams=teams, menu=menu, years=years, sync_stat=sync_stat)
 
 
 @admin_blueprint.route("/admin/teams/", methods=["GET"])

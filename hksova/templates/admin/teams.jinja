@@ -3,6 +3,12 @@
 
 <h2>Správa týmů</h2>
 
+<A href=" {{ url_for('admin' ~ year.year ~ ".sync_admin_teams")}}">  <button type="submit" class="btn btn-primary" >Import týmů do Trakaře/Statku</button></A>
+
+{% if sync_stat %}   
+  <div class="flash success"><pre>{{sync_stat}}</pre></div>
+{% endif %}
+
 <table id="table" class="table-dark table-striped" data-toggle="table" data-escape="false" data-filter-control="true" data-click-to-select="true">
   <thead>
     <tr>
