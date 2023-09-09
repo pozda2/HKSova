@@ -2,6 +2,8 @@ version: "3"
 services:
     website:
         build: .
+        volumes:
+            - ./hksova:/usr/src/app/hksova
         networks:
             - nginx_network
             - database_network
