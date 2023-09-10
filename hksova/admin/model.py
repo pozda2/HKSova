@@ -428,11 +428,12 @@ def get_team_players(idteam):
     return cursor.fetchall()
 
 
-def players_to_string(players):
+# key: 'name' or 'publicname'
+def players_to_string(players, key='name'):
     hraci = []
     for player in players:
-        if player['name']:
-            name = player['name']
+        if player[key]:
+            name = player[key]
         else:
             name = 'Anonymous'
 
@@ -498,6 +499,9 @@ def get_admin_teams(year):
     cursor.execute('''SELECT  idteam, name, login, mascot, email, mobil, weburl, reporturl, ispaid, isbackup, isdeleted, registeredat FROM team where idYear=%s order by registeredAt''', [year['year']])
     data = cursor.fetchall()
 
+    # 22:45:07 - Tom: Pro týmy jde nasazení získat i jako JSON, viz:
+    # https://statek.seslost.cz/hradecka-sova-2023/nasazeni/conservative.json
+
     # Kuca index checking
     kidata = load_ki(fn='./hksova/ki2022-7-17.csv')
 
@@ -515,7 +519,10 @@ def get_admin_teams(year):
             print(avgki)
 
             team['players'] = kiplayers
+            # real
             team['players_private'] = players_to_string(kiplayers)
+            # for our website & statek
+            team['players_public'] = players_to_string(kiplayers, key='publicname')
             team['avgki'] = avgki
             team['order'] = i
             team['zaplaceno'] = translate_team_paid(team)
@@ -780,7 +787,7 @@ def sync_teams_trakar(year, teams):
 
     # header
     # line = ['external_id', 'name', 'code', 'qr_token', 'phone', 'cancelled', 'members_str']
-    line = ['name', 'qr_token', 'phone', 'cancelled', 'members_str']
+    line = ['name', 'code', 'qr_token', 'phone', 'cancelled', 'members_str']
     writer.writerow(line)
 
     # content
@@ -790,19 +797,27 @@ def sync_teams_trakar(year, teams):
         if team['isdeleted'] == 1:
             continue
         # line = [team['idteam'], team['name'], team['mascot'], team['mascot'], team['mobil'], team['isdeleted'], team['players_private']]
-        line = [team['name'], team['mascot'], team['mobil'], team['isdeleted'], team['players_private']]
+        line = [team['name'], team['mascot'], team['mascot'], team['mobil'], team['isdeleted'], team['players_public']]
+        # print('XXXXX', line)
         writer.writerow(line)
     output.seek(0)  # rewind to start
 
     csv_payload = output.getvalue()
 
+    # print('-' * 80)
+    # print(csv_payload)
+    # print('-' * 80)
+    # with open('tmp.csv', mode='wt', encoding='UTF-8') as f:
+    #     f.write(csv_payload)
+
     # perform request to Trakar
     # DOC: https://databaze.seslost.cz/doc/tymy
     url = 'https://databaze.seslost.cz/hry/hradecka-sova-2023/tymy/import.csv'
+    # url = 'https://databaze.seslost.cz/hry/hradecka-sova-2023/tymy/import.csv?update=1'
     trakar_token = get_trakar_token(year)
-    x = requests.post(url, headers={'Authorization': f'AUTH-TOKEN {trakar_token}'}, data=csv_payload)
+    x = requests.post(url, headers={'Authorization': f'AUTH-TOKEN {trakar_token}'}, data=csv_payload.encode('utf-8'))
     json_object = json.loads(x.text)
     json_formatted_str = json.dumps(json_object, indent=2, ensure_ascii=False)
-    print(json_formatted_str)
+    # print(json_formatted_str)
 
     return f'SENT DATA:\n{csv_payload}\nHTTP STATUS CODE: {x.status_code}\nJSON response:\n{json_formatted_str}\n'

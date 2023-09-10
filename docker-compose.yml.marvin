@@ -2,6 +2,8 @@ version: "3"
 services:
     website_sova:
         build: .
+        volumes:
+            - ./hksova:/usr/src/app/hksova
         networks:
             - sovanet
 
