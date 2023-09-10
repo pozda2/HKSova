@@ -8,9 +8,9 @@ pip install virtualenv
 virtualenv env
 virtualenv --always-copy env (for vagrant on Windows)
 
-soruce ./env/bin/activate
+source ./env/bin/activate
 pip install -r requirements.txt
-source ./source configs/setevars.sh
+source ./configs/setevars.sh
 ```
 
 ```
