@@ -62,7 +62,8 @@ def create_post(section_id):
     print(request.environ.get('HTTP_X_REAL_IP', request.remote_addr))
     print(request.environ)
     '''
-    remote_ip = request.headers.get('X-Forwarded-For').split(', ')[0]
+    #remote_ip = request.headers.get('X-Forwarded-For').split(', ')[0]
+    remote_ip = request.remote_addr
 
     if post_form.validate():
         status, message = insert_post(section_id, post_form.user.data, post_form.post.data, remote_ip, socket.getnameinfo((remote_ip, 0), 0)[0], request.headers.get('User-Agent'))
