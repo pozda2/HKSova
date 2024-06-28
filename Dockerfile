@@ -2,10 +2,6 @@ FROM python:3-alpine
 
 RUN apk add --update --no-cache --virtual .tmp gcc libc-dev linux-headers
 RUN apk add tzdata
-    
-#    musl-dev \
-#    build-base \
-
 RUN apk add --no-cache jpeg-dev zlib-dev freetype-dev lcms2-dev openjpeg-dev tiff-dev tk-dev tcl-dev pcre-dev mariadb-connector-c-dev python3-dev
 
 RUN python -m pip install --upgrade pip
@@ -14,10 +10,6 @@ RUN pip install --no-cache-dir -r /usr/src/app/requirements.txt
 RUN pip install uwsgi
 
 RUN apk del .tmp
-
-COPY ./configs/default.py /usr/src/app/configs/default.py
-COPY ./configs/docker.py /usr/src/app/configs/docker.py
-COPY ./configs/uwsgi/docker_wsgi.ini /usr/src/app/configs/uwsgi/docker_uwsgi.ini
 
 RUN addgroup -S hksova && adduser -u 2000 -S hksova -G hksova
 
