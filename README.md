@@ -7,12 +7,9 @@ Development
 pip install virtualenv
 virtualenv env
 virtualenv --always-copy env (for vagrant on Windows)
-
-source ./env/bin/activate
-pip install -r requirements.txt
-source ./configs/setevars.sh
 ```
 
+venv/bin/activate
 ```
 export HKSOVA_CONFIG_SECRET_KEY="CHANGE_ME"
 export HKSOVA_CONFIG_SECRET_PEPPER="CHANGE_ME"

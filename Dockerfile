@@ -10,7 +10,15 @@ RUN apk add \
     build-base \
     linux-headers \
     pcre-dev \
+    jpeg-dev zlib-dev freetype-dev lcms2-dev openjpeg-dev tiff-dev tk-dev tcl-dev \
     && rm -f /var/cache/apk/*
+
+# TODO:
+# vylepsit ten buildstack, aby nebyl v image:
+#RUN apk add --update --no-cache --virtual .tmp gcc libc-dev linux-headers
+#RUN apk add --no-cache jpeg-dev zlib-dev
+#RUN pip install -r /requirements.txt
+#RUN apk del .tmp
 
 RUN python -m pip install --upgrade pip
 COPY requirements.txt /usr/src/app/
