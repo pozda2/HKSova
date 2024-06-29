@@ -30,6 +30,8 @@ services:
             - nginx_network
             - database_network
         restart: always
+        environment:
+            WAIT_HOSTS: database:3306
         depends_on:
             database:
                 condition: service_healthy
