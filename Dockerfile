@@ -13,6 +13,8 @@ RUN apk del .tmp
 
 RUN addgroup -S hksova && adduser -u 2000 -S hksova -G hksova
 
+COPY --from=ghcr.io/ufoscout/docker-compose-wait:latest /wait /wait
+
 ENV HKSOVA_CONFIG_DIR=/usr/src/app/configs
 ENV HKSOVA_CONFIG=/usr/src/app/configs/docker.py
 ENV TZ=Europe/Prague
@@ -20,4 +22,5 @@ ENV TZ=Europe/Prague
 EXPOSE 5000
 
 # stale to pri startu containeru pinda, ze chces --uid flag...
-CMD ["uwsgi", "--ini", "/usr/src/app/configs/uwsgi/docker_uwsgi.ini", "--uid", "2000"]
+# script wait ocekava nastavenou env promennou WAIT_HOSTS a to o hodnote host:port, pripadne carkou oddelit vice
+CMD ["/bin/sh", "-c", "/wait && uwsgi --ini /usr/src/app/configs/uwsgi/docker_uwsgi.ini --uid 2000"]
