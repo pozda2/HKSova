@@ -64,6 +64,10 @@ def get_trakar_token(year):
     return get_settings_year(year, "trakar-token")
 
 
+def get_trakar_login(year):
+    return get_settings_year(year, "trakar-login")
+
+
 def get_payment_information(year):
     data = {}
     data['account'] = get_settings_year(year, 'payment-account')

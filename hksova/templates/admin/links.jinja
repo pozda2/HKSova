@@ -10,35 +10,39 @@
   {% if TT is none %}   
     <div class="flash error">Není definována sysémová proměnná <strong>trakar-token</strong>. Nastav ji v: <a href="{{ url_for('admin' ~ year.year ~ '.view_settings') }}">Admin -&gt; Správa nastavení</a></div>
   {% else %}
-    <div class="flash info">?auth_token={{TT}}</div>
+    <div class="flash info">
+        <strong>Pozor změna:</strong><br />
+        <del>?auth_token={{TT}}</del> neplatí, nově je potřeba dát parametry:<br />
+        ?identification_login=hradecka-sova&identification_token={{TT}}
+    </div>
   {% endif %}
   
 </p>
 
 <ul>
   <li>
-    <a href="https://trakar.seslost.cz/hradecka-sova-{{year.year}}/poradi?auth_token={{TT}}&amp;mobile=0">Pořadí</a> 
-    (<a href="https://trakar.seslost.cz/hradecka-sova-{{year.year}}/poradi?auth_token={{TT}}&amp;mobile=1">mobilní verze</a>)
+    <a href="https://trakar.seslost.cz/hradecka-sova-{{year.year}}/poradi?identification_login=hradecka-sova&identification_token={{TT}}&amp;mobile=0">Pořadí</a> 
+    (<a href="https://trakar.seslost.cz/hradecka-sova-{{year.year}}/poradi?identification_login=hradecka-sova&identification_token={{TT}}&amp;mobile=1">mobilní verze</a>)
   </li>
   
   <li>
-    <a href="https://statek.seslost.cz/hradecka-sova-{{year.year}}/postup-hrou?auth_token={{TT}}&amp;mobile=0">Postup hrou</a> 
-    (<a href="https://statek.seslost.cz/hradecka-sova-{{year.year}}/postup-hrou?auth_token={{TT}}&amp;mobile=1">mobilní verze</a>)
+    <a href="https://statek.seslost.cz/hradecka-sova-{{year.year}}/postup-hrou?identification_login=hradecka-sova&identification_token={{TT}}&amp;mobile=0">Postup hrou</a> 
+    (<a href="https://statek.seslost.cz/hradecka-sova-{{year.year}}/postup-hrou?identification_login=hradecka-sova&identification_token={{TT}}&amp;mobile=1">mobilní verze</a>)
   </li>
   
   <li>
-    <a href="https://statek.seslost.cz/hradecka-sova-{{year.year}}/nasazeni?auth_token={{TT}}&amp;mobile=0">Nasazení</a> 
-    (<a href="https://statek.seslost.cz/hradecka-sova-{{year.year}}/nasazeni?auth_token={{TT}}&amp;mobile=1">mobilní verze</a>)
+    <a href="https://statek.seslost.cz/hradecka-sova-{{year.year}}/nasazeni?identification_login=hradecka-sova&identification_token={{TT}}&amp;mobile=0">Nasazení</a> 
+    (<a href="https://statek.seslost.cz/hradecka-sova-{{year.year}}/nasazeni?identification_login=hradecka-sova&identification_token={{TT}}&amp;mobile=1">mobilní verze</a>)
   </li>
   
   <li>
-    <a href="https://trakar.seslost.cz/hradecka-sova-{{year.year}}/schema-hry?auth_token={{TT}}&amp;mobile=0">Schéma hry</a> 
-    (<a href="https://trakar.seslost.cz/hradecka-sova-{{year.year}}/schema-hry?auth_token={{TT}}&amp;mobile=1">mobilní verze</a>)
+    <a href="https://trakar.seslost.cz/hradecka-sova-{{year.year}}/schema-hry?identification_login=hradecka-sova&identification_token={{TT}}&amp;mobile=0">Schéma hry</a> 
+    (<a href="https://trakar.seslost.cz/hradecka-sova-{{year.year}}/schema-hry?identification_login=hradecka-sova&identification_token={{TT}}&amp;mobile=1">mobilní verze</a>)
   </li>
   
   <li>
-    <a href="https://trakar.seslost.cz/hradecka-sova-{{year.year}}/mapa?auth_token={{TT}}&amp;mobile=0">Mapa</a> 
-    (<a href="https://trakar.seslost.cz/hradecka-sova-{{year.year}}/mapa?auth_token={{TT}}&amp;mobile=1">mobilní verze</a>)
+    <a href="https://trakar.seslost.cz/hradecka-sova-{{year.year}}/mapa?identification_login=hradecka-sova&identification_token={{TT}}&amp;mobile=0">Mapa</a> 
+    (<a href="https://trakar.seslost.cz/hradecka-sova-{{year.year}}/mapa?identification_login=hradecka-sova&identification_token={{TT}}&amp;mobile=1">mobilní verze</a>)
   </li>
   
   <li><a href="https://databaze.seslost.cz/doc">Dokumentace API Statku</a></li>

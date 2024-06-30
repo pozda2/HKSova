@@ -14,7 +14,7 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 
 from .kimatch import load_ki, match_ki
-from ..settings.model import get_trakar_token
+from ..settings.model import get_trakar_token, get_trakar_login
 from ..team.model import recalculate_teams
 
 
@@ -793,7 +793,6 @@ def sync_teams_trakar(year, teams):
     # content
     locale.setlocale(locale.LC_ALL, 'cs_CZ.UTF-8')
     for team in sorted(teams, key=lambda x: locale.strxfrm(x['name'].lower())):
-        print(team)
         if team['isdeleted'] == 1:
             continue
         # line = [team['idteam'], team['name'], team['mascot'], team['mascot'], team['mobil'], team['isdeleted'], team['players_private']]
@@ -812,12 +811,29 @@ def sync_teams_trakar(year, teams):
 
     # perform request to Trakar
     # DOC: https://databaze.seslost.cz/doc/tymy
-    url = 'https://databaze.seslost.cz/hry/hradecka-sova-2023/tymy/import.csv'
-    # url = 'https://databaze.seslost.cz/hry/hradecka-sova-2023/tymy/import.csv?update=1'
+    url = f'https://databaze.seslost.cz/hry/hradecka-sova-{year["year"]}/tymy/import.csv'
+    # url = f'https://databaze.seslost.cz/hry/hradecka-sova-{year["year"]}/tymy/import.csv?update=1'
+    trakar_login = get_trakar_login(year)
     trakar_token = get_trakar_token(year)
-    x = requests.post(url, headers={'Authorization': f'AUTH-TOKEN {trakar_token}'}, data=csv_payload.encode('utf-8'))
-    json_object = json.loads(x.text)
-    json_formatted_str = json.dumps(json_object, indent=2, ensure_ascii=False)
-    # print(json_formatted_str)
+    headers = {
+        # 'Authorization': f'AUTH-TOKEN {trakar_token}',
+        'X-Auth-Login': f'{trakar_login}',
+        'X-Auth-Token': f'{trakar_token}',
+    }
+    payload = csv_payload.encode('utf-8')
+    print('request URL: ', url)
+    print('request payload: ', payload)
+    x = requests.post(url, headers=headers, data=payload)
+    print('response: ', x)
+    print('response body: ', x.text)
+    try:
+        json_object = json.loads(x.text)
+        json_formatted_str = json.dumps(json_object, indent=2, ensure_ascii=False)
+        # print(json_formatted_str)
+    except:
+        pass
+    finally:
+        json_formatted_str = f'unparsable JSON: {x.text}'
+        pass
 
     return f'SENT DATA:\n{csv_payload}\nHTTP STATUS CODE: {x.status_code}\nJSON response:\n{json_formatted_str}\n'
