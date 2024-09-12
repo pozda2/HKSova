@@ -811,14 +811,16 @@ def sync_teams_trakar(year, teams):
 
     # perform request to Trakar
     # DOC: https://databaze.seslost.cz/doc/tymy
+    #url = f'https://databaze.seslost.cz/hry/hradecka-sova-{year["year"]}/tymy/import.csv?overwrite=1'
+    #url = f'https://databaze.seslost.cz/hry/hradecka-sova-{year["year"]}/tymy/import.csv?update=1'
     url = f'https://databaze.seslost.cz/hry/hradecka-sova-{year["year"]}/tymy/import.csv'
-    # url = f'https://databaze.seslost.cz/hry/hradecka-sova-{year["year"]}/tymy/import.csv?update=1'
     trakar_login = get_trakar_login(year)
     trakar_token = get_trakar_token(year)
     headers = {
         # 'Authorization': f'AUTH-TOKEN {trakar_token}',
         'X-Auth-Login': f'{trakar_login}',
         'X-Auth-Token': f'{trakar_token}',
+        'Content-type': 'text/csv',
     }
     payload = csv_payload.encode('utf-8')
     print('request URL: ', url)
