@@ -1,3 +1,4 @@
+czech-sort
 Flask
 Flask-MDEditor
 Flask-MySQLdb

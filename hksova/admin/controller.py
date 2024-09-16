@@ -1,4 +1,5 @@
 import csv
+import czech_sort
 import io
 import locale
 import mistune
@@ -764,12 +765,14 @@ def export_envelope():
     # content
     locale.setlocale(locale.LC_ALL, 'cs_CZ.UTF-8')
     teams_output = []
-    for team in sorted(teams, key=lambda x: locale.strxfrm(x['name'].lower())):
+    # for team in sorted(teams, key=lambda x: locale.strxfrm(x['name'].lower())):
+    for team in sorted(teams, key=lambda x: czech_sort.key(x['name'].lower())):
         if team['isdeleted'] == 1:
             continue
         line = [team['name'], team['mascot'], team['mobil'], team['email'], team['zaplaceno'], team['stav'], team['players_private']]
         writer.writerow(line)
         teams_output.append(team)
+        print(team['name'])
 
     # output.seek(0)
     # return Response(output, mimetype="text/csv", headers={"Content-Disposition": f"attachment;filename=sova-teams-export_{dstr}.csv"})
