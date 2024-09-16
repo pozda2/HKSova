@@ -27,6 +27,9 @@ def create_flask_app():
     if 'HKSOVA_CONFIG' in os.environ:
         flask_app.config.from_envvar("HKSOVA_CONFIG")
 
+    # autoreload templates
+    flask_app.config['TEMPLATES_AUTO_RELOAD'] = True
+
     mysql = MySQL()
     mysql.init_app(flask_app)
     flask_app.mysql = mysql

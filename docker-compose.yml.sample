@@ -1,4 +1,3 @@
-version: "3.8"
 services:
     database:
       image: mariadb:latest
@@ -22,7 +21,9 @@ services:
     website:
         build: .
         volumes:
-            - ./hksova:/usr/src/app/hksova
+            - type: bind
+              source: ./hksova
+              target: /usr/src/app/hksova
             - ./configs/default.py:/usr/src/app/configs/default.py:ro
             - ./configs/docker.py:/usr/src/app/configs/docker.py:ro
             - ./configs/uwsgi/docker_wsgi.ini:/usr/src/app/configs/uwsgi/docker_uwsgi.ini:ro
