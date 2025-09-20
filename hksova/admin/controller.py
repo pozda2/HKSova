@@ -10,9 +10,9 @@ from ..year.model import get_year, get_years
 from ..menu.model import get_menu
 from ..settings.model import get_min_players, get_max_players, get_trakar_token
 from .form import PageForm, PageDeleteForm, MenuItemForm, MenuItemDeleteForm, ForumSectionForm, ForumSectionDeleteForm, PasswordChangeForm, EditTeamForm
-from .form import SettingForm, SettingDeleteForm, GeneratingEmailsForm, MascotForm, MascotDeleteForm, NextYearForm
+from .form import SettingForm, SettingDeleteForm, GeneratingEmailsForm, MascotForm, MascotDeleteForm, NextYearForm, PlaceForm
 from .model import encode_access_rights, encode_menu_item, decode_access_rights, decode_menu_item
-from .model import insert_forum_section, insert_mascot, insert_menu_item, insert_page, insert_setting
+from .model import insert_forum_section, insert_mascot, insert_menu_item, insert_page, insert_setting, insert_place
 from .model import update_admin_team, update_forum_section, update_mascot, update_menu_item, update_page, update_setting
 from .model import delete_forum_section, delete_mascot, delete_menu_item, delete_page, delete_setting
 from .model import copy_year, change_admin_pass
@@ -952,3 +952,59 @@ def switch_team(idteam):
         else:
             session["isbackup"] = True
     return redirect(url_for("main.view_index"))
+
+
+@admin_blueprint.route("/admin/places/", methods=["GET"])
+@org_login_required
+def view_admin_places():
+    year = get_year(request.blueprint)
+    # years = get_years()
+    # menu = get_menu(year)
+    # mascots = get_mascots()
+    return render_template("admin/places.jinja", title="Správa stanovišť", year=year)
+
+
+@admin_blueprint.route("/admin/place/add", methods=["GET"])
+@org_login_required
+def view_place_add():
+    year = get_year(request.blueprint)
+    # years = get_years()
+    # menu = get_menu(year)
+    place_form = PlaceForm()
+    return render_template("admin/place_create.jinja", title="Nové stanoviště", year=year, form=place_form)
+
+
+@admin_blueprint.route("/admin/place/add", methods=["POST"])
+@org_login_required
+def create_place():
+    year = get_year(request.blueprint)
+    place_form = PlaceForm(request.form)
+
+    if place_form.validate():
+        status, message = insert_place(year['year'], place_form.place.data, place_form.latitude.data, place_form.longitude.data)
+        if not status:
+            flash(message, "error")
+        else:
+            flash('Stanoviště bylo přidáno', "info")
+    else:
+        for _, errors in place_form.errors.items():
+            for error in errors:
+                if isinstance(error, dict) and (len(error) > 0):
+                    for k in error.keys():
+                        flash(f'{error[k][0]}', "error")
+                else:
+                    flash(f'{error}', "error")
+                    return render_template("admin/place_create.jinja", title="Nové stanoviště", year=year, form=place_form)
+
+    return redirect(url_for("admin" + year['year'] + ".view_admin_places"))
+
+
+@admin_blueprint.route("/admin/puzzles/", methods=["GET"])
+@org_login_required
+def view_admin_puzzles():
+    # year = get_year(request.blueprint)
+    # years = get_years()
+    # menu = get_menu(year)
+    # mascots = get_mascots()
+    # return render_template("admin/mascots.jinja", title="Správa maskotů", year=year, menu=menu, years=years, mascots=mascots)
+    print('TBD puzzles')

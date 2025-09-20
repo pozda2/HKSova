@@ -1,6 +1,6 @@
 import re
 from flask_wtf import FlaskForm
-from wtforms import StringField, IntegerField, BooleanField, SelectField, PasswordField, RadioField, FieldList, FormField
+from wtforms import StringField, IntegerField, DecimalField, BooleanField, SelectField, PasswordField, RadioField, FieldList, FormField
 from wtforms.validators import length, InputRequired, DataRequired, NumberRange, Email, ValidationError
 from flask_mdeditor import MDEditorField
 
@@ -132,3 +132,8 @@ class MascotDeleteForm(FlaskForm):
 
 class NextYearForm(FlaskForm):
     agree = BooleanField("Opravdu chcete založit nový ročník?", validators=[InputRequired()])
+
+class PlaceForm(FlaskForm):
+    place = StringField("Název", validators=[InputRequired(), length(min=1, max=255, message='Název')])
+    latitude = DecimalField("Zeměpisná šířka", validators=[NumberRange(-90, 90, "Zeměpisná šířka musí být v intervalu -90 až 90")])
+    longitude = DecimalField("Zeměpisná délka", validators=[NumberRange(-180, 180, "Zeměpisná délka musí být v intervalu -180 až 180")])

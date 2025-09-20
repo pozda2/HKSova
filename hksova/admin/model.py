@@ -779,6 +779,17 @@ def copy_year(year, next_year):
     return True, ""
 
 
+def insert_place(year, place, lat, lon):
+    print(place, lat, lon)
+    try:
+        cursor = current_app.mysql.connection.cursor()
+        cursor.execute('''INSERT INTO place (year, name, longitude, latitude) VALUES (%s, %s, %s, %s)''', [year, place, float(lat), float(lon)])
+    except Exception as e:
+        return False, "Problem inserting into db: " + str(e)
+    current_app.mysql.connection.commit()
+    return True, ""
+
+
 def sync_teams_trakar(year, teams):
     # prepare CSV
     output = io.StringIO()

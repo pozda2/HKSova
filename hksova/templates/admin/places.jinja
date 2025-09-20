@@ -1,0 +1,28 @@
+{%- extends "_main.jinja" -%}
+{%- block main -%}
+
+<h2>Správa stanovišť</h2>
+<A href=" {{ url_for('admin' ~ year.year ~ ".view_place_add")}}">  <button type="submit" class="btn btn-primary" >Nové stanoviště</button></A>
+<p>
+<table id="table" class="table-dark table-striped" data-toggle="table" data-filter-control="true" data-click-to-select="true">
+  <thead>
+    <tr>
+        <th data-field="setting-param" data-sortable="true" data-filter-control="input">Maskot</th>
+        <th data-field="setting-action" data-formatter="settingsActionFormatter">Akce</th>
+    </tr>
+  </thead>
+  <tbody>
+{%- if mascots -%}
+    {%- for mascot in mascots -%}
+    <tr>
+        <td>{{ mascot.mascot}}</td>
+        <td>
+        <a href="{{ url_for('admin' ~ year.year ~ '.view_place', mascot=mascot.mascot) }}"><img alt="=Úprava" src={{url_for("static", filename="img/edit.gif")}}></a>
+        <a href="{{ url_for('admin' ~ year.year ~ '.view_mascot_delete', mascot=mascot.mascot) }}"><img alt="=Smazání" src={{url_for("static", filename="img/delete.gif")}}></a>
+        </td>
+    </tr>
+    {%- endfor -%}
+{%- endif -%}
+  </tbody>
+</table>
+{%- endblock -%}
