@@ -1,0 +1,94 @@
+{%- extends "_main.jinja" -%}
+{%- block main -%}
+
+<h2>Nová šifra</h2>
+<form action="{{url_for('admin' ~ year.year ~ ".create_puzzle")}}" method="post" enctype="multipart/form-data">
+  {{ form.csrf_token }}
+  <div class="form-row">
+    <div class="col"><label for="latitude">{{ form.position.label }}</label></div>
+    <div class="col">{{ form.position(class="form-control", id="position", placeholder="") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col"><label for="name">{{ form.name.label }}</label></div>
+    <div class="col">{{ form.name(class="form-control", id="name", placeholder="Název") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col"><label for="longitude">{{ form.code.label }}</label></div>
+    <div class="col">{{ form.code(class="form-control", id="code", placeholder="") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col"><label for="longitude">{{ form.description.label }} (pokud možno PDF)</label></div>
+    <div class="col">{{ form.description(class="form-control", id="description", placeholder="") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col"><label for="longitude">{{ form.url.label }}</label></div>
+    <div class="col">{{ form.url(class="form-control", id="url", placeholder="") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col"><label for="longitude">{{ form.id_place.label }}</label></div>
+    <div class="col">{{ form.id_place(class="form-control", id="id_place", placeholder="") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col"><label for="longitude">{{ form.specification.label }}</label></div>
+    <div class="col">{{ form.specification(class="form-control", id="specification", placeholder="") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col"><label for="longitude">{{ form.comment.label }}</label></div>
+    <div class="col">{{ form.comment(class="form-control", id="comment", placeholder="") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col"><label for="longitude">{{ form.hint.label }}</label></div>
+    <div class="col">{{ form.hint(class="form-control", id="hint", placeholder="") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col"><label for="longitude">{{ form.hint_interval.label }}</label></div>
+    <div class="col">{{ form.hint_interval(class="form-control", id="hint_interval", placeholder="") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col"><label for="longitude">{{ form.solution.label }}</label></div>
+    <div class="col">{{ form.solution(class="form-control", id="solution", placeholder="") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col"><label for="longitude">{{ form.solution_interval.label }}</label></div>
+    <div class="col">{{ form.solution_interval(class="form-control", id="solution_interval", placeholder="") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col"><label for="longitude">{{ form.solution_instructions.label }} (pokud možno PDF)</label></div>
+    <div class="col">{{ form.solution_instructions(class="form-control", id="solution_instructions", placeholder="") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col"><label for="longitude">{{ form.solution_url.label }}</label></div>
+    <div class="col">{{ form.solution_url(class="form-control", id="solution_url", placeholder="") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col"><label for="longitude">{{ form.mandatory_additional_info.label }}</label></div>
+    <div class="col">{{ form.mandatory_additional_info(class="form-control", id="mandatory_additional_info", placeholder="") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col"><label for="longitude">{{ form.final.label }}</label></div>
+    <div class="col">{{ form.final(class="form-control", id="final", placeholder="") }}</div>
+  </div>
+  
+  <button type="submit" class="btn btn-primary">Uložit novou šifru</button>
+  <button type="button"  class="btn btn-primary" onclick="history.back()">Zpět</button>
+</form>
+{%- endblock -%}
+
+<!--
+    position = StringField("Pořadí", validators=[])
+    name = StringField("Název", validators=[InputRequired(), length(min=1, max=255, message='Název')]) 
+    final = StringField("Je poslední?", validators=[InputRequired(), ])
+    code = StringField("Kód", validators=[InputRequired(), length(min=1, max=255, message='Název')])
+    description = StringField("Zadání", validators=[])
+    id_place = StringField("Stanoviště", validators=[])
+    specification = StringField("Upřesnítko", validators=[])
+    comment = StringField("Komentář", validators=[])
+    url = StringField("URL", validators=[])
+    hint = StringField("Nápověda", validators=[])
+    hint_interval = StringField("Nápověda po", validators=[])
+    mandatory_additional_info = StringField("Jde řešit samostatně?", validators=[])
+    solution = StringField("Řešení", validators=[])
+    solution_interval = StringField("Řešení po", validators=[])
+    solution_instructions = StringField("Řešení postup", validators=[])
+    solution_url = StringField("Řešení URL", validators=[])
+-->

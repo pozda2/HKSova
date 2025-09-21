@@ -1,6 +1,6 @@
 import re
 from flask_wtf import FlaskForm
-from wtforms import StringField, IntegerField, DecimalField, BooleanField, SelectField, PasswordField, RadioField, FieldList, FormField
+from wtforms import StringField, IntegerField, DecimalField, BooleanField, SelectField, PasswordField, RadioField, FieldList, FormField, TextAreaField, FileField
 from wtforms.validators import length, InputRequired, DataRequired, NumberRange, Email, ValidationError
 from flask_mdeditor import MDEditorField
 
@@ -140,3 +140,42 @@ class PlaceForm(FlaskForm):
     
 class PlaceDeleteForm(FlaskForm):
     agree = BooleanField("Opravdu chcete smazat stanoviště?", validators=[InputRequired()])
+    
+class PuzzleForm(FlaskForm):     
+    position = IntegerField("Pořadí", validators=[])
+    name = StringField("Název", validators=[InputRequired(), length(min=1, max=255, message='Název')]) 
+    code = StringField("Kód", validators=[InputRequired(), length(min=1, max=255, message='Název')])
+    description = FileField("Zadání", validators=[])
+    url = StringField("Zadání URL", validators=[validate_url])
+    
+    id_place = SelectField("Stanoviště", validators=[], coerce=int)
+    specification = StringField("Upřesnítko", validators=[])
+    comment = TextAreaField("Komentář", validators=[])
+        
+    hint = TextAreaField("Nápověda", validators=[])
+    hint_interval = IntegerField("Nápověda po", default=30, validators=[])
+    
+    solution = StringField("Řešení", validators=[])
+    solution_interval = IntegerField("Řešení po", validators=[])
+    solution_instructions = FileField("Řešení postup", validators=[])
+    solution_url = StringField("Řešení URL", validators=[validate_url])
+    
+    mandatory_additional_info = BooleanField("Jde řešit samostatně?", validators=[])
+    final = BooleanField("Je poslední?", validators=[])
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        if 'places' in kwargs:
+            self.id_place.choices = [(-1, ' --- nepřiřazovat --- ')]
+            for pl in kwargs['places']:
+                if 'puzzle_name' in pl:
+                    if pl['puzzle_name'] is None:
+                        self.id_place.choices.append((pl['id'], f"{pl['name']}"))
+                    else:
+                        self.id_place.choices.append((pl['id'], f"{pl['name']} (šifra: {pl['puzzle_name']})"))
+                else:
+                    self.id_place.choices.append((pl['id'], pl['name']))
+        
+   
+    

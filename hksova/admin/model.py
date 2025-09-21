@@ -779,9 +779,12 @@ def copy_year(year, next_year):
     return True, ""
 
 
-def get_places(year):
+def get_places(year, with_puzzles=False):
     cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''SELECT * FROM place WHERE year=%s ORDER BY id''', [year])
+    if with_puzzles:
+        cursor.execute('''SELECT pl.*, p.name as puzzle_name FROM place pl LEFT JOIN puzzle as p ON p.id_place = pl.id WHERE pl.year=%s ORDER BY pl.id''', [year])
+    else:
+        cursor.execute('''SELECT * FROM place WHERE year=%s ORDER BY id''', [year])
     data = cursor.fetchall()
     return data
 
@@ -820,6 +823,20 @@ def delete_place(pid):
         return False, "Problem deleting from db: " + str(e)
     current_app.mysql.connection.commit()
     return True, ""
+
+
+def get_puzzles(year):
+    cursor = current_app.mysql.connection.cursor()
+    cursor.execute('''SELECT * FROM puzzle WHERE year=%s ORDER BY position''', [year])
+    data = cursor.fetchall()
+    return data
+
+
+def get_puzzle(pid):
+    cursor = current_app.mysql.connection.cursor()
+    cursor.execute('''SELECT * FROM puzzle WHERE id=%s''', [pid])
+    data = cursor.fetchone()
+    return data
 
 
 def sync_teams_trakar(year, teams):

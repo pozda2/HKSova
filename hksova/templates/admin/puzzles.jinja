@@ -1,0 +1,60 @@
+{%- extends "_main.jinja" -%}
+{%- block main -%}
+
+<h2>Správa šifer</h2>
+<a href=" {{ url_for('admin' ~ year.year ~ ".view_puzzle_add")}}">  <button type="submit" class="btn btn-primary" >Nová šifra</button></a>
+<p>
+<table id="table" class="table-dark table-striped" data-toggle="table" data-filter-control="true" data-click-to-select="true">
+  <thead>
+    <tr>
+        <th data-field="setting-param" data-sortable="true" data-filter-control="input">#</th>
+        <th data-field="setting-param1" data-sortable="true" data-filter-control="input">Název</th>
+        <th data-field="setting-param2" data-sortable="true" data-filter-control="input">Kód</th>
+        <th data-field="setting-param3" data-sortable="true" data-filter-control="input">Zadání</th>
+        <th data-field="setting-param4" data-sortable="true" data-filter-control="input">Stanoviště</th>
+        <th data-field="setting-param5" data-sortable="true" data-filter-control="input">Upřesnítko</th>
+        <th data-field="setting-param6" data-sortable="true" data-filter-control="input">Poslední?</th>
+        <th data-field="setting-param7" data-sortable="true" data-filter-control="input">Komentář</th>
+        <th data-field="setting-param8" data-sortable="true" data-filter-control="input">URL</th>
+        <th data-field="setting-param9" data-sortable="true" data-filter-control="input">Nápověda</th>
+        <th data-field="setting-param10" data-sortable="true" data-filter-control="input">Nápověda po</th>
+        <th data-field="setting-param11" data-sortable="true" data-filter-control="input">Jde řešit samostatně?</th>
+        <th data-field="setting-param12" data-sortable="true" data-filter-control="input">Řešení</th>
+        <th data-field="setting-param13" data-sortable="true" data-filter-control="input">Řešení po</th>
+        <th data-field="setting-param14" data-sortable="true" data-filter-control="input">Řešení postup</th>
+        <th data-field="setting-param15" data-sortable="true" data-filter-control="input">Řešení URL</th>
+        <th data-field="setting-action" data-formatter="settingsActionFormatter">Akce</th>
+    </tr>
+  </thead>
+  <tbody>
+{%- if puzzles -%}
+    {%- for puzzle in puzzles -%}
+    <tr>
+        <td>{{ puzzle.position }}</td>
+        <td>{{ puzzle.name }}</td>
+        <td>{{ puzzle.code }}</td>
+        <td>{{ puzzle.description }}</td>
+        <td>{{ puzzle.id_place }}</td>
+        <td>{{ puzzle.specification }}</td>
+        <td>{{ puzzle.final }}</td>
+        <td>{{ puzzle.comment }}</td>
+        <td>{{ puzzle.url }}</td>
+        <td>{{ puzzle.hint }}</td>
+        <td>{{ puzzle.hint_interval }}</td>
+        <td>{{ puzzle.mandatory_additional_info }}</td>
+        <td>{{ puzzle.solution }}</td>
+        <td>{{ puzzle.solution_interval }}</td>
+        <td>{{ puzzle.solution_instructions }}</td>
+        <td>{{ puzzle.solution_url }}</td>
+        
+        <td>
+          <a href="{{ url_for('admin' ~ year.year ~ '.view_puzzle', puzzle_id=puzzle.id) }}"><img alt="=Úprava" src={{url_for("static", filename="img/edit.gif")}}></a>
+          <a href="{{ url_for('admin' ~ year.year ~ '.view_puzzle_delete', puzzle_id=puzzle.id) }}"><img alt="=Smazání" src={{url_for("static", filename="img/delete.gif")}}></a>
+        </td>
+    </tr>
+    {%- endfor -%}
+{%- endif -%}
+  </tbody>
+</table>
+
+{%- endblock -%}
