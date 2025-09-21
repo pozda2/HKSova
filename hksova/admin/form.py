@@ -134,6 +134,9 @@ class NextYearForm(FlaskForm):
     agree = BooleanField("Opravdu chcete založit nový ročník?", validators=[InputRequired()])
 
 class PlaceForm(FlaskForm):
-    place = StringField("Název", validators=[InputRequired(), length(min=1, max=255, message='Název')])
-    latitude = DecimalField("Zeměpisná šířka", validators=[NumberRange(-90, 90, "Zeměpisná šířka musí být v intervalu -90 až 90")])
-    longitude = DecimalField("Zeměpisná délka", validators=[NumberRange(-180, 180, "Zeměpisná délka musí být v intervalu -180 až 180")])
+    name = StringField("Název", validators=[InputRequired(), length(min=1, max=255, message='Název')])
+    latitude = DecimalField("Zeměpisná šířka", places=15, validators=[NumberRange(-90, 90, "Zeměpisná šířka musí být v intervalu -90 až 90")])
+    longitude = DecimalField("Zeměpisná délka", places=15, validators=[NumberRange(-180, 180, "Zeměpisná délka musí být v intervalu -180 až 180")])
+    
+class PlaceDeleteForm(FlaskForm):
+    agree = BooleanField("Opravdu chcete smazat stanoviště?", validators=[InputRequired()])

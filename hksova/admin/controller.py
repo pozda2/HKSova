@@ -10,15 +10,15 @@ from ..year.model import get_year, get_years
 from ..menu.model import get_menu
 from ..settings.model import get_min_players, get_max_players, get_trakar_token
 from .form import PageForm, PageDeleteForm, MenuItemForm, MenuItemDeleteForm, ForumSectionForm, ForumSectionDeleteForm, PasswordChangeForm, EditTeamForm
-from .form import SettingForm, SettingDeleteForm, GeneratingEmailsForm, MascotForm, MascotDeleteForm, NextYearForm, PlaceForm
+from .form import SettingForm, SettingDeleteForm, GeneratingEmailsForm, MascotForm, MascotDeleteForm, NextYearForm, PlaceForm, PlaceDeleteForm
 from .model import encode_access_rights, encode_menu_item, decode_access_rights, decode_menu_item
 from .model import insert_forum_section, insert_mascot, insert_menu_item, insert_page, insert_setting, insert_place
-from .model import update_admin_team, update_forum_section, update_mascot, update_menu_item, update_page, update_setting
-from .model import delete_forum_section, delete_mascot, delete_menu_item, delete_page, delete_setting
+from .model import update_admin_team, update_forum_section, update_mascot, update_menu_item, update_page, update_setting, update_place
+from .model import delete_forum_section, delete_mascot, delete_menu_item, delete_page, delete_setting, delete_place
 from .model import copy_year, change_admin_pass
 from .model import sync_teams_trakar
 from .model import get_admin_forum_section, get_admin_forum_sections, get_admin_menu, get_admin_menu_item, get_admin_page, get_admin_pages, get_admin_team, get_admin_teams
-from .model import get_emails_list, get_mascot, get_mascots, get_setting, get_settings, get_team_players
+from .model import get_emails_list, get_mascot, get_mascots, get_setting, get_settings, get_team_players, get_place, get_places
 from .model import is_minimum_players, is_unique_email, is_unique_name
 from .utils import org_login_required
 
@@ -958,20 +958,28 @@ def switch_team(idteam):
 @org_login_required
 def view_admin_places():
     year = get_year(request.blueprint)
-    # years = get_years()
-    # menu = get_menu(year)
-    # mascots = get_mascots()
-    return render_template("admin/places.jinja", title="Správa stanovišť", year=year)
+    places = get_places(year['year'])
+    return render_template("admin/places.jinja", title="Správa stanovišť", year=year, places=places)
 
 
 @admin_blueprint.route("/admin/place/add", methods=["GET"])
 @org_login_required
 def view_place_add():
     year = get_year(request.blueprint)
-    # years = get_years()
-    # menu = get_menu(year)
     place_form = PlaceForm()
     return render_template("admin/place_create.jinja", title="Nové stanoviště", year=year, form=place_form)
+
+
+@admin_blueprint.route("/admin/place/delete/<int:place_id>", methods=["GET"])
+@org_login_required
+def view_place_delete(place_id):
+    year = get_year(request.blueprint)
+    place = get_place(place_id)
+    if not place:
+        return render_template("errors/404.jinja", year=year), 404
+
+    place_delete_form = PlaceDeleteForm()
+    return render_template("admin/place_delete.jinja", title="Smazání maskota", year=year, form=place_delete_form, place=place)
 
 
 @admin_blueprint.route("/admin/place/add", methods=["POST"])
@@ -981,7 +989,7 @@ def create_place():
     place_form = PlaceForm(request.form)
 
     if place_form.validate():
-        status, message = insert_place(year['year'], place_form.place.data, place_form.latitude.data, place_form.longitude.data)
+        status, message = insert_place(year['year'], place_form.name.data, place_form.latitude.data, place_form.longitude.data)
         if not status:
             flash(message, "error")
         else:
@@ -996,6 +1004,55 @@ def create_place():
                     flash(f'{error}', "error")
                     return render_template("admin/place_create.jinja", title="Nové stanoviště", year=year, form=place_form)
 
+    return redirect(url_for("admin" + year['year'] + ".view_admin_places"))
+
+
+@admin_blueprint.route("/admin/place/<int:place_id>", methods=["GET"])
+@org_login_required
+def view_place(place_id):
+    year = get_year(request.blueprint)
+    place = get_place(place_id)
+    if not place:
+        return render_template("errors/404.jinja", year=year), 404
+    place_form = PlaceForm()
+    place_form.name.data = place['name']
+    place_form.latitude.data = place['latitude']
+    place_form.longitude.data = place['longitude']
+    return render_template("admin/place.jinja", title="Editace stanoviště", year=year, form=place_form, place=place)
+
+
+@admin_blueprint.route("/admin/place/<int:place_id>", methods=["POST"])
+@org_login_required
+def edit_place(place_id):
+    year = get_year(request.blueprint)
+    place_form = PlaceForm(request.form)
+    if place_form.validate():
+        status, message = update_place(place_id, place_form.name.data, place_form.latitude.data, place_form.longitude.data)
+        if not status:
+            flash(message, "error")
+        else:
+            flash('Stanoviště upraveno', "info")
+    else:
+        for _, errors in place_form.errors.items():
+            for error in errors:
+                if isinstance(error, dict) and (len(error) > 0):
+                    for k in error.keys():
+                        flash(f'{error[k][0]}', "error")
+                else:
+                    flash(f'{error}', "error")
+                    return render_template("admin/place.jinja", title="Editace stanoviště", year=year)
+    return redirect(url_for("admin" + year['year'] + ".view_admin_places"))
+
+
+@admin_blueprint.route("/admin/place/delete/<int:place_id>", methods=["POST"])
+@org_login_required
+def place_delete(place_id):
+    year = get_year(request.blueprint)
+    status, message = delete_place(place_id)
+    if not status:
+        flash(message, "error")
+    else:
+        flash('Stanoviště smazáno', "info")
     return redirect(url_for("admin" + year['year'] + ".view_admin_places"))
 
 

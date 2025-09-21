@@ -1,0 +1,15 @@
+{%- extends "_main.jinja" -%}
+{%- block main -%}
+
+<h2>Smazání stanoviště: {{ place.name }}</h2>
+<form action="{{url_for('admin' ~ year.year ~ ".place_delete", place_id=place.id)}}" method="POST">
+    {{ form.csrf_token }}
+     <div class="form-row">
+        <div class="col">{{ form.agree.label}}</div>
+        <div class="col">{{ form.agree() }}</div>
+    </div>
+    <br>
+    <button type="submit" class="btn btn-primary">Smazat stanoviště</button>
+    <button type="button"  class="btn btn-primary" onclick="history.back()">Zpět</button>
+</form>
+{%- endblock -%}

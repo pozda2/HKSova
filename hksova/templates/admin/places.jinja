@@ -7,22 +7,43 @@
 <table id="table" class="table-dark table-striped" data-toggle="table" data-filter-control="true" data-click-to-select="true">
   <thead>
     <tr>
-        <th data-field="setting-param" data-sortable="true" data-filter-control="input">Maskot</th>
+        <th data-field="setting-param" data-sortable="true" data-filter-control="input">Stanoviště</th>
+        <th data-field="setting-param1" data-sortable="true" data-filter-control="input">Zem. šířka</th>
+        <th data-field="setting-param2" data-sortable="true" data-filter-control="input">Zem. délka</th>
         <th data-field="setting-action" data-formatter="settingsActionFormatter">Akce</th>
     </tr>
   </thead>
   <tbody>
-{%- if mascots -%}
-    {%- for mascot in mascots -%}
+{%- if places -%}
+    {%- for place in places -%}
     <tr>
-        <td>{{ mascot.mascot}}</td>
+        <td>{{ place.name }}</td>
+        <td>{{ place.latitude }}</td>
+        <td>{{ place.longitude }}</td>
         <td>
-        <a href="{{ url_for('admin' ~ year.year ~ '.view_place', mascot=mascot.mascot) }}"><img alt="=Úprava" src={{url_for("static", filename="img/edit.gif")}}></a>
-        <a href="{{ url_for('admin' ~ year.year ~ '.view_mascot_delete', mascot=mascot.mascot) }}"><img alt="=Smazání" src={{url_for("static", filename="img/delete.gif")}}></a>
+          <a href="{{ url_for('admin' ~ year.year ~ '.view_place', place_id=place.id) }}"><img alt="=Úprava" src={{url_for("static", filename="img/edit.gif")}}></a>
+        <a href="{{ url_for('admin' ~ year.year ~ '.view_place_delete', place_id=place.id) }}"><img alt="=Smazání" src={{url_for("static", filename="img/delete.gif")}}></a>
         </td>
     </tr>
     {%- endfor -%}
 {%- endif -%}
   </tbody>
 </table>
+
+<div id="map2" style="height: 500px;"></div>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@latest/dist/leaflet.js"></script>
+  <script>
+      const map = L.map('map2').setView([50.21, +15.83], 13);
+      {%- if places -%}
+        {%- for place in places %}
+          L.marker([{{place.latitude}}, {{place.longitude}}], {'title': '{{place.name}}'}).addTo(map);
+        {%- endfor -%}
+      {%- endif %}
+      const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      }).addTo(map);
+  </script>
+
 {%- endblock -%}

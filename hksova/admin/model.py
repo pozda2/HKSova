@@ -779,13 +779,45 @@ def copy_year(year, next_year):
     return True, ""
 
 
-def insert_place(year, place, lat, lon):
-    print(place, lat, lon)
+def get_places(year):
+    cursor = current_app.mysql.connection.cursor()
+    cursor.execute('''SELECT * FROM place WHERE year=%s ORDER BY id''', [year])
+    data = cursor.fetchall()
+    return data
+
+
+def get_place(pid):
+    cursor = current_app.mysql.connection.cursor()
+    cursor.execute('''SELECT * FROM place WHERE id=%s''', [pid])
+    data = cursor.fetchone()
+    return data
+
+def update_place(pid, name, lat, lon):
     try:
         cursor = current_app.mysql.connection.cursor()
-        cursor.execute('''INSERT INTO place (year, name, longitude, latitude) VALUES (%s, %s, %s, %s)''', [year, place, float(lat), float(lon)])
+        cursor.execute('''UPDATE place SET name=%s, latitude=%s, longitude=%s WHERE id=%s''', [name, float(lat), float(lon), pid])
+    except Exception as e:
+        return False, "Problem updating into db: " + str(e)
+    current_app.mysql.connection.commit()
+    return True, ""
+    
+    
+def insert_place(year, name, lat, lon):
+    try:
+        cursor = current_app.mysql.connection.cursor()
+        cursor.execute('''INSERT INTO place (year, name, longitude, latitude) VALUES (%s, %s, %s, %s)''', [year, name, float(lat), float(lon)])
     except Exception as e:
         return False, "Problem inserting into db: " + str(e)
+    current_app.mysql.connection.commit()
+    return True, ""
+
+
+def delete_place(pid):
+    try:
+        cursor = current_app.mysql.connection.cursor()
+        cursor.execute('''DELETE FROM place WHERE id=%s''', [pid])
+    except Exception as e:
+        return False, "Problem deleting from db: " + str(e)
     current_app.mysql.connection.commit()
     return True, ""
 
