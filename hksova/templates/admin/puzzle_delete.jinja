@@ -1,0 +1,18 @@
+{%- extends "_main.jinja" -%}
+{%- block main -%}
+
+<h2>Smazání šifry: {{ puzzle.name }}</h2>
+
+<p>Šifra je na stanovišti: <strong>{{ puzzle.place.name }}</strong></p>
+
+<form action="{{url_for('admin' ~ year.year ~ ".puzzle_delete", puzzle_id=puzzle.id)}}" method="POST">
+    {{ form.csrf_token }}
+     <div class="form-row">
+        <div class="col">{{ form.agree.label}}</div>
+        <div class="col">{{ form.agree() }}</div>
+    </div>
+    <br>
+    <button type="submit" class="btn btn-primary">Smazat šifru</button>
+    <button type="button"  class="btn btn-primary" onclick="history.back()">Zpět</button>
+</form>
+{%- endblock -%}

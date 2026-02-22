@@ -3,6 +3,12 @@ Year - model
 '''
 import re
 from flask import current_app
+from sqlalchemy import func
+from ..database import db
+
+class Year(db.Model):
+    __tablename__ = 'year'
+    idYear = db.Column(db.Integer, primary_key=True)
 
 
 def get_current_year():
@@ -14,10 +20,8 @@ def get_current_year():
     str: year in YYYY form
 
     '''
-    cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''SELECT max(idYear) as idYear FROM year''')
-    data = cursor.fetchall()
-    return str(data[0]['idYear'])
+    max_year = db.session.query(func.max(Year.idYear)).scalar()
+    return str(max_year) if max_year else None
 
 
 def get_years():
@@ -29,10 +33,8 @@ def get_years():
     dict: all available years
 
     '''
-    cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''SELECT idyear FROM year order by idyear desc''')
-    data = cursor.fetchall()
-    return data
+    years = Year.query.order_by(Year.idYear.desc()).all()
+    return [{'idyear': y.idYear} for y in years]
 
 
 def get_year(blueprint_year):

@@ -1,0 +1,97 @@
+{%- extends "_main.jinja" -%}
+{%- block main -%}
+
+<h2>Úprava šifry</h2>
+
+<form action="{{url_for('admin' ~ year.year ~ ".edit_puzzle", puzzle_id=puzzle.id)}}" method="post">
+  {{ form.csrf_token }}
+
+  <div class="form-row">
+    <div class="col"><label for="position">{{ form.position.label }}</label></div>
+    <div class="col">{{ form.position(class="form-control", id="position", placeholder="Pořadí") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col"><label for="name">{{ form.name.label }}</label></div>
+    <div class="col">{{ form.name(class="form-control", id="name", placeholder="Název") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col"><label for="code">{{ form.code.label }}</label></div>
+    <div class="col">{{ form.code(class="form-control", id="code", placeholder="Kód") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col"><label for="id_place">{{ form.id_place.label }}</label></div>
+    <div class="col">{{ form.id_place(class="form-control", id="id_place", placeholder="Stanoviště") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col"><label for="description">{{ form.description.label }}</label></div>
+    <div class="col">{{ form.description(class="form-control", id="description", placeholder="Popis") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col"><label for="url">{{ form.url.label }}</label></div>
+    <div class="col">{{ form.url(class="form-control", id="url", placeholder="Zadání URL") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col"><label for="specification">{{ form.specification.label }}</label></div>
+    <div class="col">{{ form.specification(class="form-control", id="specification", placeholder="Upřesnítko") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col"><label for="comment">{{ form.comment.label }}</label></div>
+    <div class="col">{{ form.comment(class="form-control", id="comment", placeholder="Komentář") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col"><label for="hint">{{ form.hint.label }}</label></div>
+    <div class="col">{{ form.hint(class="form-control", id="hint", placeholder="Nápověda") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col"><label for="hint_interval">{{ form.hint_interval.label }}</label></div>
+    <div class="col">{{ form.hint_interval(class="form-control", id="hint_interval", placeholder="Nápověda po") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col"><label for="solution">{{ form.solution.label }}</label></div>
+    <div class="col">{{ form.solution(class="form-control", id="solution", placeholder="Řešení") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col"><label for="solution_interval">{{ form.solution_interval.label }}</label></div>
+    <div class="col">{{ form.solution_interval(class="form-control", id="solution_interval", placeholder="Řešení po") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col"><label for="solution_instructions">{{ form.solution_instructions.label }}</label></div>
+    <div class="col">{{ form.solution_instructions(class="form-control", id="solution_instructions", placeholder="Řešení postup") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col"><label for="solution_url">{{ form.solution_url.label }}</label></div>
+    <div class="col">{{ form.solution_url(class="form-control", id="solution_url", placeholder="Řešení URL") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col"><label for="mandatory_additional_info">{{ form.mandatory_additional_info.label }}</label></div>
+    <div class="col">{{ form.mandatory_additional_info(class="form-control", id="mandatory_additional_info", placeholder="Jde řešit samostatně?") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col"><label for="final">{{ form.final.label }}</label></div>
+    <div class="col">{{ form.final(class="form-control", id="final", placeholder="Je poslední?") }}</div>
+  </div>
+    
+  <div id="map2" style="height: 500px;"></div>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@latest/dist/leaflet.js"></script>
+  <script>
+      const map = L.map('map2').setView([{{puzzle.place.latitude}}, {{puzzle.place.longitude}}], 15);
+      const marker = L.marker([{{puzzle.place.latitude}}, {{puzzle.place.longitude}}]).addTo(map);
+      const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      }).addTo(map);
+      map.on('click', function(ev) {
+        console.log(ev.latlng, ev.latlng.lat);
+        const elat = document.getElementById("latitude");
+        const elon = document.getElementById("longitude");
+        elat.value = ev.latlng.lat;
+        elon.value = ev.latlng.lng;
+        marker.setLatLng(ev.latlng)
+      });
+  </script>
+  
+  <button type="submit" class="btn btn-primary">Upravit šifru</button>
+  <button type="button"  class="btn btn-primary" onclick="history.back()">Zpět</button>
+</form>
+{%- endblock -%}

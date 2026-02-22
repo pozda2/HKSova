@@ -14,8 +14,15 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 
 from .kimatch import load_ki, match_ki
-from ..settings.model import get_trakar_token, get_trakar_login
-from ..team.model import recalculate_teams
+from ..database import db
+from ..page.model import Page
+from ..menu.model import Menu
+from ..forum.model import ForumSection, Forum
+from ..settings.model import Setting, get_trakar_token, get_trakar_login
+from ..year.model import Year
+from ..team.model import Team, Player, Mascot, recalculate_teams
+from ..place.model import Place
+from ..puzzle.model import Puzzle
 
 
 def translate_visibility(page):
@@ -210,172 +217,226 @@ def decode_menu_item(pagetype, page, link):
 
 
 def get_admin_pages(year):
-    cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''select idpage, title, url, texy, html, ispublic, isprivate, isvisible, idforumsection from page where idyear=%s order by idpage''', [year['year']])
-    data = cursor.fetchall()
-
-    if data:
-        for page in data:
-            page['visibility'] = translate_visibility(page)
-            page['access_right'] = translate_accces_right(page)
+    pages = Page.query.filter_by(idYear=year['year']).order_by(Page.idPage).all()
+    data = []
+    if pages:
+        for p in pages:
+            page_dict = {
+                'idpage': p.idPage, 'idyear': p.idYear, 'title': p.title, 'url': p.url,
+                'texy': p.texy, 'html': p.html, 'ispublic': 1 if p.isPublic else 0,
+                'isprivate': p.isPrivate, 'isvisible': 1 if p.isVisible else 0,
+                'idforumsection': p.idForumSection
+            }
+            page_dict['visibility'] = translate_visibility(page_dict)
+            page_dict['access_right'] = translate_accces_right(page_dict)
+            data.append(page_dict)
     return data
 
 
 def get_admin_page(idpage):
-    cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''select idpage, idyear, title, url, texy, html, ispublic, isprivate, isvisible, idforumsection from page where idpage=%s ''', [idpage])
-    data = cursor.fetchone()
-    return data
+    p = Page.query.get(idpage)
+    if p:
+        return {
+            'idpage': p.idPage, 'idyear': p.idYear, 'title': p.title, 'url': p.url,
+            'texy': p.texy, 'html': p.html, 'ispublic': 1 if p.isPublic else 0,
+            'isprivate': p.isPrivate, 'isvisible': 1 if p.isVisible else 0,
+            'idforumsection': p.idForumSection
+        }
+    return None
 
 
 def update_page(idpage, title, url, texy, html, ispublic, isprivate, isvisible, idforumsection):
     try:
-        cursor = current_app.mysql.connection.cursor()
-        cursor.execute('''UPDATE page set title=%s, url=%s, texy=%s, html=%s, ispublic=%s, isprivate=%s, isvisible=%s, idforumsection=%s where idpage=%s''', [title, url, texy, html, ispublic, isprivate, isvisible, idforumsection, idpage])
+        page = Page.query.get(idpage)
+        if page:
+            page.title = title
+            page.url = url
+            page.texy = texy
+            page.html = html
+            page.isPublic = bool(ispublic)
+            page.isPrivate = isprivate
+            page.isVisible = bool(isvisible)
+            page.idForumSection = idforumsection if idforumsection else None
+            db.session.commit()
+            return True, ""
+        return False, "Page not found"
     except Exception as e:
-        return False, "Problem updating into db: " + str(e)
-    current_app.mysql.connection.commit()
-    return True, ""
+        db.session.rollback()
+        return False, "Problem updating db: " + str(e)
 
 
 def delete_page(idpage):
     try:
-        cursor = current_app.mysql.connection.cursor()
-        cursor.execute('''DELETE FROM page where idpage=%s''', [idpage])
+        Page.query.filter_by(idPage=idpage).delete()
+        db.session.commit()
+        return True, ""
     except Exception as e:
+        db.session.rollback()
         return False, "Problem deleting from db: " + str(e)
-    current_app.mysql.connection.commit()
-    return True, ""
 
 
 def insert_page(year, title, url, texy, html, ispublic, isprivate, isvisible, idforumsection):
     try:
-        cursor = current_app.mysql.connection.cursor()
-        cursor.execute('''INSERT INTO page (idyear, title, url, texy, html, ispublic, isprivate, isvisible, idforumsection)
-                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)''',
-                       [year['year'], title, url, texy, html, ispublic, isprivate, isvisible, idforumsection])
+        new_page = Page(
+            idYear=year['year'], title=title, url=url, texy=texy, html=html,
+            isPublic=bool(ispublic), isPrivate=isprivate, isVisible=bool(isvisible),
+            idForumSection=idforumsection if idforumsection else None
+        )
+        db.session.add(new_page)
+        db.session.commit()
+        return True, ""
     except Exception as e:
+        db.session.rollback()
         return False, "Problem inserting into db: " + str(e)
-    current_app.mysql.connection.commit()
-    return True, ""
 
 
 def get_admin_menu(year):
-    cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''select idmenu, idpage, menu, link, `order`, param, isnewpart, ispublic, isprivate, isvisible, issystem, iscurrentyear from menu where idyear=%s order by `order`''', [year['year']])
-    data = cursor.fetchall()
-
-    if data:
-        for menu in data:
-            menu['visibility'] = translate_visibility(menu)
-            menu['access_right'] = translate_accces_right(menu)
-            menu['currentyear'] = translate_currentyear(menu)
-            menu['menutyp'] = translate_menu_typ(menu)
+    menus = Menu.query.filter_by(idYear=year['year']).order_by(Menu.order).all()
+    data = []
+    if menus:
+        for m in menus:
+            menu_dict = {
+                'idmenu': m.idMenu, 'idpage': m.idPage, 'menu': m.menu, 'link': m.link,
+                'order': m.order, 'param': m.param, 'isnewpart': 1 if m.isNewPart else 0,
+                'ispublic': 1 if m.isPublic else 0, 'isprivate': m.isPrivate,
+                'isvisible': 1 if m.isVisible else 0, 'issystem': 1 if m.isSystem else 0,
+                'iscurrentyear': 1 if m.isCurrentYear else 0
+            }
+            menu_dict['visibility'] = translate_visibility(menu_dict)
+            menu_dict['access_right'] = translate_accces_right(menu_dict)
+            menu_dict['currentyear'] = translate_currentyear(menu_dict)
+            menu_dict['menutyp'] = translate_menu_typ(menu_dict)
+            data.append(menu_dict)
     return data
 
 
 def get_admin_menu_item(year, idmenu):
-    cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''select idmenu, idpage, menu, link, `order`, isnewpart, ispublic, isprivate, isvisible, issystem, iscurrentyear from menu where idyear=%s and idmenu=%s''', [year['year'], idmenu])
-    data = cursor.fetchone()
-
-    if data:
-        data['visibility'] = translate_visibility(data)
-        data['access_right'] = translate_accces_right(data)
-        data['currentyear'] = translate_currentyear(data)
-        data['system'] = translate_menu_typ(data)
-    return data
+    m = Menu.query.filter_by(idYear=year['year'], idMenu=idmenu).first()
+    if m:
+        menu_dict = {
+            'idmenu': m.idMenu, 'idpage': m.idPage, 'menu': m.menu, 'link': m.link,
+            'order': m.order, 'param': m.param, 'isnewpart': 1 if m.isNewPart else 0,
+            'ispublic': 1 if m.isPublic else 0, 'isprivate': m.isPrivate,
+            'isvisible': 1 if m.isVisible else 0, 'issystem': 1 if m.isSystem else 0,
+            'iscurrentyear': 1 if m.isCurrentYear else 0
+        }
+        menu_dict['visibility'] = translate_visibility(menu_dict)
+        menu_dict['access_right'] = translate_accces_right(menu_dict)
+        menu_dict['currentyear'] = translate_currentyear(menu_dict)
+        menu_dict['system'] = translate_menu_typ(menu_dict)
+        return menu_dict
+    return None
 
 
 def update_menu_item(idmenu, year, idpage, menu, link, order, isnewpart, ispublic, isprivate, isvisible, issystem, iscurrentyear):
     try:
-        cursor = current_app.mysql.connection.cursor()
-        cursor.execute('''UPDATE menu set idyear=%s, idpage=%s, menu=%s, link=%s, `order`=%s, isnewpart=%s, ispublic=%s, isprivate=%s, isvisible=%s, issystem=%s, iscurrentyear=%s where idmenu=%s''',
-                       [year['year'], idpage, menu, link, order, isnewpart, ispublic, isprivate, isvisible, issystem, iscurrentyear, idmenu])
+        m = Menu.query.get(idmenu)
+        if m:
+            m.idYear = year['year']
+            m.idPage = idpage if idpage else None
+            m.menu = menu
+            m.link = link
+            m.order = order
+            m.isNewPart = bool(isnewpart)
+            m.isPublic = bool(ispublic)
+            m.isPrivate = isprivate
+            m.isVisible = bool(isvisible)
+            m.isSystem = bool(issystem)
+            m.isCurrentYear = bool(iscurrentyear)
+            db.session.commit()
+            return True, ""
+        return False, "Menu item not found"
     except Exception as e:
+        db.session.rollback()
         return False, "Problem updating into db: " + str(e)
-    current_app.mysql.connection.commit()
-    return True, ""
 
 
 def delete_menu_item(idmenu):
     try:
-        cursor = current_app.mysql.connection.cursor()
-        cursor.execute('''DELETE FROM menu where idmenu=%s''', [idmenu])
+        Menu.query.filter_by(idMenu=idmenu).delete()
+        db.session.commit()
+        return True, ""
     except Exception as e:
+        db.session.rollback()
         return False, "Problem deleting from db: " + str(e)
-    current_app.mysql.connection.commit()
-    return True, ""
 
 
 def insert_menu_item(year, idpage, menu, link, order, isnewpart, ispublic, isprivate, isvisible, issystem, iscurrentyear):
     try:
-        cursor = current_app.mysql.connection.cursor()
-        cursor.execute('''INSERT INTO menu (idyear, idpage, menu, link, `order`, isnewpart, ispublic, isprivate, isvisible, issystem, iscurrentyear)
-                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)''',
-                       [year['year'], idpage, menu, link, order, isnewpart, ispublic, isprivate, isvisible, issystem, iscurrentyear])
+        new_menu = Menu(
+            idYear=year['year'], idPage=idpage if idpage else None, menu=menu, link=link, order=order,
+            isNewPart=bool(isnewpart), isPublic=bool(ispublic), isPrivate=isprivate,
+            isVisible=bool(isvisible), isSystem=bool(issystem), isCurrentYear=bool(iscurrentyear)
+        )
+        db.session.add(new_menu)
+        db.session.commit()
+        return True, ""
     except Exception as e:
+        db.session.rollback()
         return False, "Problem inserting into db: " + str(e)
-    current_app.mysql.connection.commit()
-    return True, ""
 
 
 def get_admin_forum_sections(year):
-    cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''select idforumsection, section, `order`, isvisible from forum_section where idyear=%s order by `order`''', [year['year']])
-    data = cursor.fetchall()
-
-    if data:
-        for section in data:
-            section['visibility'] = translate_visibility(section)
+    sections = ForumSection.query.filter_by(idYear=year['year']).order_by(ForumSection.order).all()
+    data = []
+    if sections:
+        for s in sections:
+            section_dict = {
+                'idforumsection': s.idForumSection, 'section': s.section,
+                'order': s.order, 'isvisible': 1 if s.isVisible else 0
+            }
+            section_dict['visibility'] = translate_visibility(section_dict)
+            data.append(section_dict)
     return data
 
 
 def get_admin_forum_section(idforumsection):
-    cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''select section, `order`, isvisible from forum_section where idforumsection=%s ''', [idforumsection])
-    data = cursor.fetchone()
-    return data
+    s = ForumSection.query.get(idforumsection)
+    if s:
+        return {
+            'idforumsection': s.idForumSection, 'section': s.section,
+            'order': s.order, 'isvisible': 1 if s.isVisible else 0
+        }
+    return None
 
 
 def update_forum_section(idsection, section, order, isvisible):
     try:
-        cursor = current_app.mysql.connection.cursor()
-        cursor.execute('''UPDATE forum_section set section=%s, `order`=%s, isvisible=%s where idforumsection=%s''',
-                       [section, order, isvisible, idsection])
+        s = ForumSection.query.get(idsection)
+        if s:
+            s.section = section
+            s.order = order
+            s.isVisible = bool(isvisible)
+            db.session.commit()
+            return True, ""
+        return False, "Section not found"
     except Exception as e:
+        db.session.rollback()
         return False, "Problem updating into db: " + str(e)
-    current_app.mysql.connection.commit()
-    return True, ""
 
 
 def delete_forum_section(idforumsection):
     try:
-        cursor = current_app.mysql.connection.cursor()
-        cursor.execute('''DELETE FROM forum where idforumsection=%s''', [idforumsection])
+        Forum.query.filter_by(idForumSection=idforumsection).delete()
+        ForumSection.query.filter_by(idForumSection=idforumsection).delete()
+        db.session.commit()
+        return True, ""
     except Exception as e:
+        db.session.rollback()
         return False, "Problem deleting from db: " + str(e)
-
-    try:
-        cursor = current_app.mysql.connection.cursor()
-        cursor.execute('''DELETE FROM forum_section where idforumsection=%s''', [idforumsection])
-    except Exception as e:
-        return False, "Problem deleting from db: " + str(e)
-
-    current_app.mysql.connection.commit()
-    return True, ""
 
 
 def insert_forum_section(year, section, order, isvisible):
     try:
-        cursor = current_app.mysql.connection.cursor()
-        cursor.execute('''INSERT INTO forum_section (idyear, section, `order`, isvisible)
-                       VALUES (%s, %s, %s, %s)''',
-                       [year['year'], section, order, isvisible])
+        new_section = ForumSection(
+            idYear=year['year'], section=section, order=order, isVisible=bool(isvisible)
+        )
+        db.session.add(new_section)
+        db.session.commit()
+        return True, ""
     except Exception as e:
+        db.session.rollback()
         return False, "Problem inserting into db: " + str(e)
-    current_app.mysql.connection.commit()
-    return True, ""
 
 
 def change_admin_pass(password_old, password_new):
@@ -383,36 +444,38 @@ def change_admin_pass(password_old, password_new):
         salt = secrets.token_hex(20)
         hash_new = sha256_crypt.hash(current_app.config['SECRET_PEPPER'] + password_new + salt)
         try:
-            cursor = current_app.mysql.connection.cursor()
-            cursor.execute('''UPDATE setting set `value`=%s where idyear is null and param=%s ''', [hash_new, 'org-pass'])
-        except Exception as e:
-            return False, "Problem updating db: " + str(e)
+            p_setting = Setting.query.filter(Setting.idYear == None, Setting.param == 'org-pass').first()
+            if p_setting:
+                p_setting.value = hash_new
+            else:
+                db.session.add(Setting(param='org-pass', value=hash_new))
 
-        try:
-            cursor = current_app.mysql.connection.cursor()
-            cursor.execute('''UPDATE setting set `value`=%s where idyear is null and param=%s ''', [salt, 'org-salt'])
-        except Exception as e:
-            return False, "Problem updating db: " + str(e)
+            s_setting = Setting.query.filter(Setting.idYear == None, Setting.param == 'org-salt').first()
+            if s_setting:
+                s_setting.value = salt
+            else:
+                db.session.add(Setting(param='org-salt', value=salt))
 
-        current_app.mysql.connection.commit()
-        return True, ""
+            db.session.commit()
+            return True, ""
+        except Exception as e:
+            db.session.rollback()
+            return False, "Problem updating db: " + str(e)
 
     return False, "Nesprávné staré heslo"
 
 
 def check_password_org(password):
     try:
-        cursor = current_app.mysql.connection.cursor()
-        cursor.execute('''select param, value from setting where idyear is null''')
-        data = cursor.fetchall()
+        settings = Setting.query.filter(Setting.idYear == None).all()
         hash_in_setting = None
         salt_in_setting = None
 
-        for param in data:
-            if param['param'] == 'org-pass':
-                hash_in_setting = param['value']
-            elif param['param'] == 'org-salt':
-                salt_in_setting = param['value']
+        for s in settings:
+            if s.param == 'org-pass':
+                hash_in_setting = s.value
+            elif s.param == 'org-salt':
+                salt_in_setting = s.value
 
         if hash_in_setting and salt_in_setting:
             return sha256_crypt.verify(current_app.config['SECRET_PEPPER'] + password + salt_in_setting, hash_in_setting)
@@ -423,9 +486,8 @@ def check_password_org(password):
 
 
 def get_team_players(idteam):
-    cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''SELECT  idteam, name, publicname, city, age, `order` FROM player where idteam=%s order by `order`''', [idteam])
-    return cursor.fetchall()
+    players = Player.query.filter_by(idTeam=idteam).order_by(Player.order).all()
+    return [{'idteam': p.idTeam, 'name': p.name, 'publicname': p.publicName, 'city': p.city, 'age': p.age, 'order': p.order} for p in players]
 
 
 # key: 'name' or 'publicname'
@@ -458,30 +520,21 @@ def translate_team_status(team):
 
 
 def is_unique_name(year, name, login):
-    cursor = current_app.mysql.connection.cursor()
+    q = Team.query.filter_by(idYear=year['year'], name=name)
     if login is not None:
-        cursor.execute('''SELECT name FROM team where idYear=%s and name=%s and login<>%s''', [year['year'], name, login])
-    else:
-        cursor.execute('''SELECT name FROM team where idYear=%s and name=%s''', [year['year'], name])
-    data = cursor.fetchall()
-    return bool(len(data) == 0)
+        q = q.filter(Team.login != login)
+    return q.count() == 0
 
 
 def is_unique_loginname(year, name):
-    cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''SELECT name FROM team where idYear=%s and login=%s''', [year['year'], name])
-    data = cursor.fetchall()
-    return bool(len(data) == 0)
+    return Team.query.filter_by(idYear=year['year'], login=name).count() == 0
 
 
 def is_unique_email(year, email, login):
-    cursor = current_app.mysql.connection.cursor()
+    q = Team.query.filter_by(idYear=year['year'], email=email)
     if login is not None:
-        cursor.execute('''SELECT email FROM team where idYear=%s and email=%s and login <> %s''', [year['year'], email, login])
-    else:
-        cursor.execute('''SELECT email FROM team where idYear=%s and email=%s''', [year['year'], email])
-    data = cursor.fetchall()
-    return bool(len(data) == 0)
+        q = q.filter(Team.login != login)
+    return q.count() == 0
 
 
 def is_minimum_players(players, min_players):
@@ -495,9 +548,16 @@ def is_minimum_players(players, min_players):
 
 
 def get_admin_teams(year):
-    cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''SELECT  idteam, name, login, mascot, email, mobil, weburl, reporturl, ispaid, isbackup, isdeleted, registeredat FROM team where idYear=%s order by registeredAt''', [year['year']])
-    data = cursor.fetchall()
+    teams = Team.query.filter_by(idYear=year['year']).order_by(Team.registeredAt).all()
+    data = []
+    if teams:
+        for t in teams:
+            data.append({
+                'idteam': t.idTeam, 'name': t.name, 'login': t.login, 'mascot': t.mascot,
+                'email': t.email, 'mobil': t.mobil, 'weburl': t.webUrl, 'reporturl': t.reportUrl,
+                'ispaid': 1 if t.isPaid else 0, 'isbackup': 1 if t.isBackup else 0,
+                'isdeleted': 1 if t.isDeleted else 0, 'registeredat': t.registeredAt
+            })
 
     # 22:45:07 - Tom: Pro týmy jde nasazení získat i jako JSON, viz:
     # https://statek.seslost.cz/hradecka-sova-2023/nasazeni/conservative.json
@@ -532,96 +592,101 @@ def get_admin_teams(year):
 
 
 def get_admin_team(idteam):
-    cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''SELECT  idteam, name, login, mascot, email, mobil, weburl, reporturl, ispaid, isbackup, isdeleted, registeredat FROM team where idteam=%s ''', [idteam])
-    data = cursor.fetchone()
-
-    # podrobnosti o tymu
-    if data:
-        players = get_team_players(data['idteam'])
-        data['players'] = players
-        data['players_private'] = players_to_string(players)
-        data['zaplaceno'] = translate_team_paid(data)
-        data['stav'] = translate_team_status(data)
-    return data
+    t = Team.query.get(idteam)
+    if t:
+        team_dict = {
+            'idteam': t.idTeam, 'name': t.name, 'login': t.login, 'mascot': t.mascot,
+            'email': t.email, 'mobil': t.mobil, 'weburl': t.webUrl, 'reporturl': t.reportUrl,
+            'ispaid': 1 if t.isPaid else 0, 'isbackup': 1 if t.isBackup else 0,
+            'isdeleted': 1 if t.isDeleted else 0, 'registeredat': t.registeredAt
+        }
+        players = get_team_players(team_dict['idteam'])
+        team_dict['players'] = players
+        team_dict['players_private'] = players_to_string(players)
+        team_dict['zaplaceno'] = translate_team_paid(team_dict)
+        team_dict['stav'] = translate_team_status(team_dict)
+        return team_dict
+    return None
 
 
 def update_admin_team(idteam, year, login, name, email, mobil, weburl, reporturl, ispaid, isdeleted, isbackup, new_players):
-    team = get_admin_team(idteam)
+    team_dict = get_admin_team(idteam)
+    if not team_dict:
+        return False, "Team not found"
+        
     try:
-        cursor = current_app.mysql.connection.cursor()
-        cursor.execute('''UPDATE team set name=%s, email=%s, mobil=%s, weburl=%s, reporturl=%s, isPaid=%s, isDeleted=%s, isBackup=%s where idyear=%s and login=%s''',
-                       [name, email, mobil, weburl, reporturl, ispaid, isdeleted, isbackup, year['year'], login])
+        t = Team.query.get(idteam)
+        t.name = name
+        t.email = email
+        t.mobil = mobil
+        t.webUrl = weburl
+        t.reportUrl = reporturl
+        t.isPaid = bool(ispaid)
+        t.isDeleted = bool(isdeleted)
+        t.isBackup = bool(isbackup)
+        
+        # update players
+        for i, player in enumerate(new_players):
+            player_in_database = any(saved['order'] == i for saved in team_dict['players'])
+
+            age = player['age'].strip()
+            age = int(age) if age.isnumeric() else None
+            city = player['city'] if 'city' in player else None
+
+            if player['name'].strip():
+                if player_in_database:
+                    p = Player.query.filter_by(idTeam=idteam, order=i).first()
+                    if p:
+                        p.name = player['name']
+                        p.publicName = player.get('publicname', '')
+                        p.city = city
+                        p.age = age
+                else:
+                    new_p = Player(
+                        idTeam=idteam, order=i, name=player['name'],
+                        publicName=player.get('publicname', ''), city=city, age=age
+                    )
+                    db.session.add(new_p)
+            else:
+                if player_in_database:
+                    Player.query.filter_by(idTeam=idteam, order=i).delete()
+                    
+        db.session.commit()
     except Exception as e:
-        return False, "Problem updatint db: " + str(e)
+        db.session.rollback()
+        return False, "Problem updating db: " + str(e)
 
     # recalculate normal and backup teams
-    _, _ = recalculate_teams(year)
-
-    # update players
-    for i, player in enumerate(new_players):
-
-        # check player in form is in database
-        player_in_database = False
-        for saved_player in team['players']:
-            if saved_player['order'] == i:
-                player_in_database = True
-
-        if player['age'].strip() == "":
-            player['age'] = None
-
-        if player['name'].strip():
-            if player_in_database:
-                try:
-                    cursor.execute('''UPDATE player set name=%s, publicname=%s, city=%s, age=%s where idteam=%s and `order`=%s''',
-                                   [player['name'], player['publicname'], player['city'], player['age'], team['idteam'], i])
-                except Exception as e:
-                    return False, "Problem updatint db: " + str(e)
-            else:
-                try:
-                    cursor.execute('''INSERT into player (idteam, name, publicname, city, age, `order`) VALUES (%s, %s, %s, %s, %s, %s)''',
-                                   [team['idteam'], player['name'], player['publicname'], player['city'], player['age'], i])
-                except Exception as e:
-                    return False, "Problem updatint db: " + str(e)
-        else:
-            if player_in_database:
-                try:
-                    cursor.execute('''DELETE from player where idteam=%s and `order`=%s''', [team['idteam'], i])
-                except Exception as e:
-                    return False, "Problem updatint db: " + str(e)
-    current_app.mysql.connection.commit()
+    recalculate_teams(year)
     return True, ""
 
 
 def get_emails_list(year, _filter):
     try:
-        cursor = current_app.mysql.connection.cursor()
+        q = Team.query.filter_by(idYear=year['year'], isDeleted=False)
         if _filter == "1":
-            cursor.execute('''SELECT  email FROM team where idYear=%s and isdeleted=0 and ispaid=1''', [year['year']])
+            q = q.filter_by(isPaid=True)
         elif _filter == "2":
-            cursor.execute('''SELECT  email FROM team where idYear=%s and isdeleted=0 and ispaid=0''', [year['year']])
+            q = q.filter_by(isPaid=False)
         elif _filter == "3":
-            cursor.execute('''SELECT  email FROM team where idYear=%s and isdeleted=0 and isbackup=1''', [year['year']])
-        else:
-            cursor.execute('''SELECT  email FROM team where idYear=%s and isdeleted=0 ''', [year['year']])
-        data = cursor.fetchall()
+            q = q.filter_by(isBackup=True)
+            
+        teams = q.all()
+        return [{'email': t.email} for t in teams], True, ""
     except Exception as e:
         return None, False, "Problem reading from db: " + str(e)
-    return data, True, ""
 
 
 def get_settings(year):
-    cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''select idsetting, idyear, param, value from setting where idyear=%s order by param''', [year['year']])
-    data = cursor.fetchall()
-    return data
+    settings = Setting.query.filter_by(idYear=year['year']).order_by(Setting.param).all()
+    return [{'idsetting': s.idSetting, 'idyear': s.idYear, 'param': s.param, 'value': s.value} for s in settings]
 
 
 def get_setting(idsetting):
-    cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''select idsetting, idyear, param, value from setting where idsetting=%s order by param''', [idsetting])
-    data = cursor.fetchone()
-    return data
+    s = Setting.query.get(idsetting)
+    if s:
+        return {'idsetting': s.idSetting, 'idyear': s.idYear, 'param': s.param, 'value': s.value}
+    return None
 
 
 def insert_setting(year, param, value):
@@ -632,14 +697,13 @@ def insert_setting(year, param, value):
         encoded_text = cipher_suite.encrypt(str.encode(value))
         value = encoded_text.decode("utf-8")
     try:
-        cursor = current_app.mysql.connection.cursor()
-        cursor.execute('''INSERT INTO setting (idyear, param, `value`)
-                       VALUES (%s, %s, %s)''',
-                       [year['year'], param, value])
+        new_setting = Setting(idYear=year['year'], param=param, value=value)
+        db.session.add(new_setting)
+        db.session.commit()
+        return True, ""
     except Exception as e:
+        db.session.rollback()
         return False, "Problem inserting into db: " + str(e)
-    current_app.mysql.connection.commit()
-    return True, ""
 
 
 def update_setting(idsetting, param, value):
@@ -650,193 +714,293 @@ def update_setting(idsetting, param, value):
         encoded_text = cipher_suite.encrypt(str.encode(value))
         value = encoded_text.decode("utf-8")
     try:
-        cursor = current_app.mysql.connection.cursor()
-        cursor.execute('''UPDATE setting set param=%s, `value`=%s where idsetting=%s''', [param, value, idsetting])
+        s = Setting.query.get(idsetting)
+        if s:
+            s.param = param
+            s.value = value
+            db.session.commit()
+            return True, ""
+        return False, "Setting not found"
     except Exception as e:
+        db.session.rollback()
         return False, "Problem updating into db: " + str(e)
-    current_app.mysql.connection.commit()
-    return True, ""
 
 
 def delete_setting(idsetting):
     try:
-        cursor = current_app.mysql.connection.cursor()
-        cursor.execute('''DELETE FROM setting where idsetting=%s''', [idsetting])
+        Setting.query.filter_by(idSetting=idsetting).delete()
+        db.session.commit()
+        return True, ""
     except Exception as e:
+        db.session.rollback()
         return False, "Problem deleting from db: " + str(e)
-    current_app.mysql.connection.commit()
-    return True, ""
 
 
 def get_mascots():
-    cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''select mascot from mascot order by mascot''')
-    data = cursor.fetchall()
-    return data
+    mascots = Mascot.query.order_by(Mascot.mascot).all()
+    return [{'mascot': m.mascot} for m in mascots]
 
 
 def get_mascot(mascot):
-    cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''select mascot from mascot where mascot=%s''', [mascot])
-    data = cursor.fetchone()
-    return data
+    m = Mascot.query.get(mascot)
+    if m:
+        return {'mascot': m.mascot}
+    return None
 
 
 def insert_mascot(mascot):
     try:
-        cursor = current_app.mysql.connection.cursor()
-        cursor.execute('''INSERT INTO mascot (mascot) VALUES (%s)''', [mascot])
+        db.session.add(Mascot(mascot=mascot))
+        db.session.commit()
+        return True, ""
     except Exception as e:
+        db.session.rollback()
         return False, "Problem inserting into db: " + str(e)
-    current_app.mysql.connection.commit()
-    return True, ""
 
 
 def update_mascot(oldmascot, newmascot):
     try:
-        cursor = current_app.mysql.connection.cursor()
-        cursor.execute('''UPDATE mascot set mascot=%s where mascot=%s''', [newmascot, oldmascot])
+        m = Mascot.query.get(oldmascot)
+        if m:
+            # Note: changing PK requires cascade or might have issues, usually it's safer to delete and insert if mascot is PK. 
+            # However, since the relationships aren't strictly referencing it if it's just a string, it may work. Let's do a simple delete/insert.
+            m.mascot = newmascot 
+            Mascot.query.filter_by(mascot=oldmascot).delete()
+            db.session.add(Mascot(mascot=newmascot))
+            db.session.commit()
+            return True, ""
+        return False, "Mascot not found"
     except Exception as e:
+        db.session.rollback()
         return False, "Problem updating into db: " + str(e)
-    current_app.mysql.connection.commit()
-    return True, ""
 
 
 def delete_mascot(mascot):
     try:
-        cursor = current_app.mysql.connection.cursor()
-        cursor.execute('''DELETE FROM mascot where mascot=%s''', [mascot])
+        Mascot.query.filter_by(mascot=mascot).delete()
+        db.session.commit()
+        return True, ""
     except Exception as e:
+        db.session.rollback()
         return False, "Problem deleting from db: " + str(e)
-    current_app.mysql.connection.commit()
-    return True, ""
 
 
 def copy_year(year, next_year):
-    # year
-    cursor = current_app.mysql.connection.cursor()
     try:
-        cursor.execute('''INSERT INTO year (idyear) VALUES (%s)''', [next_year, ])
+        # year
+        new_year = Year(idYear=next_year)
+        db.session.add(new_year)
+        db.session.commit()
     except Exception as e:
+        db.session.rollback()
         return False, "Problem inserting into table year : " + str(e)
 
-    # settings``
-    settings = get_settings(year)
-    for setting in settings:
-        try:
-            cursor.execute('''INSERT INTO setting (idyear, param, `value`) VALUES (%s, %s, %s)''', [next_year, setting['param'], setting['value']])
-        except Exception as e:
-            return False, "Problem inserting into table setting : " + str(e)
+    try:
+        # settings
+        settings = get_settings(year)
+        for setting in settings:
+            db.session.add(Setting(idYear=next_year, param=setting['param'], value=setting['value']))
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return False, "Problem inserting into table setting : " + str(e)
 
-    # forum_section
-    forums = get_admin_forum_sections(year)
-    forum_keys = {}
-    isvisible = 1
-    for section in forums:
-        try:
-            cursor.execute('''INSERT INTO forum_section (idyear, section, `order`, isvisible) VALUES (%s, %s, %s, %s)''', [next_year, section['section'], section['order'], isvisible])
-            isvisible = 0
-            forum_keys[section['idforumsection']] = cursor.lastrowid
-        except Exception as e:
-            return False, "Problem inserting into table forum_section : " + str(e)
+    try:
+        # forum_section
+        forums = get_admin_forum_sections(year)
+        forum_keys = {}
+        isvisible = True
+        for section in forums:
+            new_section = ForumSection(idYear=next_year, section=section['section'], order=section['order'], isVisible=isvisible)
+            db.session.add(new_section)
+            db.session.flush()
+            isvisible = False
+            forum_keys[section['idforumsection']] = new_section.idForumSection
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return False, "Problem inserting into table forum_section : " + str(e)
 
-    # pages
-    pages = get_admin_pages(year)
-    pages_keys = {}
-    for page in pages:
-        try:
+    try:
+        # pages
+        pages = get_admin_pages(year)
+        pages_keys = {}
+        for page in pages:
             forum_section = None
-            if page['idforumsection']:
-                if page['idforumsection'] in forum_keys.keys():
-                    forum_section = forum_keys[page['idforumsection']]
+            if page['idforumsection'] and page['idforumsection'] in forum_keys:
+                forum_section = forum_keys[page['idforumsection']]
 
-            cursor.execute('''INSERT INTO page (idyear, title, url, texy, html, ispublic, isprivate, isvisible, idforumsection)
-                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)''',
-                           [next_year, page['title'], page['url'], page['texy'], page['html'], page['ispublic'], page['isprivate'], page['isvisible'], forum_section])
-            pages_keys[page['idpage']] = cursor.lastrowid
-        except Exception as e:
-            return False, "Problem inserting into table page : " + str(e)
+            new_page = Page(
+                idYear=next_year, title=page['title'], url=page['url'], texy=page['texy'],
+                html=page['html'], isPublic=bool(page['ispublic']), isPrivate=page['isprivate'],
+                isVisible=bool(page['isvisible']), idForumSection=forum_section
+            )
+            db.session.add(new_page)
+            db.session.flush()
+            pages_keys[page['idpage']] = new_page.idPage
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return False, "Problem inserting into table page : " + str(e)
 
-    # menu
-    menu = get_admin_menu(year)
-    for item in menu:
-        try:
+    try:
+        # menu
+        menu = get_admin_menu(year)
+        for item in menu:
             page_forum = None
-            if item['idpage']:
-                if item['idpage'] in pages_keys.keys():
-                    page_forum = pages_keys[item['idpage']]
+            if item['idpage'] and item['idpage'] in pages_keys:
+                page_forum = pages_keys[item['idpage']]
 
-            cursor.execute('''INSERT INTO menu (idyear, idpage, menu, link, param, `order`, isnewpart, ispublic, isprivate, isvisible, issystem, iscurrentyear)
-                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)''',
-                           [next_year, page_forum, item['menu'], item['link'], item['param'], item['order'], item['isnewpart'], item['ispublic'], item['isprivate'],
-                            item['isvisible'], item['issystem'], item['iscurrentyear']
-                            ])
-        except Exception as e:
-            return False, "Problem inserting into table menu : " + str(e)
-
-    # commit
-    current_app.mysql.connection.commit()
-    return True, ""
+            new_menu = Menu(
+                idYear=next_year, idPage=page_forum, menu=item['menu'], link=item['link'],
+                param=item['param'], order=item['order'], isNewPart=bool(item['isnewpart']),
+                isPublic=bool(item['ispublic']), isPrivate=item['isprivate'],
+                isVisible=bool(item['isvisible']), isSystem=bool(item['issystem']),
+                isCurrentYear=bool(item['iscurrentyear'])
+            )
+            db.session.add(new_menu)
+        db.session.commit()
+        return True, ""
+    except Exception as e:
+        db.session.rollback()
+        return False, "Problem inserting into table menu : " + str(e)
 
 
 def get_places(year, with_puzzles=False):
-    cursor = current_app.mysql.connection.cursor()
     if with_puzzles:
-        cursor.execute('''SELECT pl.*, p.name as puzzle_name FROM place pl LEFT JOIN puzzle as p ON p.id_place = pl.id WHERE pl.year=%s ORDER BY pl.id''', [year])
+        results = db.session.query(Place, Puzzle.name).outerjoin(Puzzle, Puzzle.id_place == Place.id).filter(Place.year == year).order_by(Place.id).all()
+        return [{'id': p.id, 'year': p.year, 'name': p.name, 'latitude': p.latitude, 'longitude': p.longitude, 'puzzle_name': pn} for p, pn in results]
     else:
-        cursor.execute('''SELECT * FROM place WHERE year=%s ORDER BY id''', [year])
-    data = cursor.fetchall()
-    return data
+        places = Place.query.filter_by(year=year).order_by(Place.id).all()
+        return [{'id': p.id, 'year': p.year, 'name': p.name, 'latitude': p.latitude, 'longitude': p.longitude} for p in places]
 
 
 def get_place(pid):
-    cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''SELECT * FROM place WHERE id=%s''', [pid])
-    data = cursor.fetchone()
-    return data
+    p = Place.query.get(pid)
+    if p:
+        return {'id': p.id, 'year': p.year, 'name': p.name, 'latitude': p.latitude, 'longitude': p.longitude}
+    return None
 
 def update_place(pid, name, lat, lon):
     try:
-        cursor = current_app.mysql.connection.cursor()
-        cursor.execute('''UPDATE place SET name=%s, latitude=%s, longitude=%s WHERE id=%s''', [name, float(lat), float(lon), pid])
+        p = Place.query.get(pid)
+        if p:
+            p.name = name
+            p.latitude = float(lat)
+            p.longitude = float(lon)
+            db.session.commit()
+            return True, ""
+        return False, "Place not found"
     except Exception as e:
+        db.session.rollback()
         return False, "Problem updating into db: " + str(e)
-    current_app.mysql.connection.commit()
-    return True, ""
     
     
 def insert_place(year, name, lat, lon):
     try:
-        cursor = current_app.mysql.connection.cursor()
-        cursor.execute('''INSERT INTO place (year, name, longitude, latitude) VALUES (%s, %s, %s, %s)''', [year, name, float(lat), float(lon)])
+        new_place = Place(year=year, name=name, latitude=float(lat), longitude=float(lon))
+        print(f"{lat=} {lon=}")
+        db.session.add(new_place)
+        db.session.commit()
+        return True, ""
     except Exception as e:
+        db.session.rollback()
         return False, "Problem inserting into db: " + str(e)
-    current_app.mysql.connection.commit()
-    return True, ""
 
 
 def delete_place(pid):
     try:
-        cursor = current_app.mysql.connection.cursor()
-        cursor.execute('''DELETE FROM place WHERE id=%s''', [pid])
+        Place.query.filter_by(id=pid).delete()
+        db.session.commit()
+        return True, ""
     except Exception as e:
+        db.session.rollback()
         return False, "Problem deleting from db: " + str(e)
-    current_app.mysql.connection.commit()
-    return True, ""
 
 
 def get_puzzles(year):
-    cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''SELECT * FROM puzzle WHERE year=%s ORDER BY position''', [year])
-    data = cursor.fetchall()
-    return data
+    puzzles = Puzzle.query.filter_by(year=year).order_by(Puzzle.position).all()
+    return [{
+        'id': p.id, 'year': p.year, 'position': p.position, 'name': p.name,
+        'final': 1 if p.final else 0, 'code': p.code, 'description': p.description,
+        'id_place': p.id_place, 
+        'place': p.place,
+        'specification': p.specification, 'comment': p.comment,
+        'url': p.url, 'hint': p.hint, 'hint_interval': p.hint_interval,
+        'mandatory_additional_info': 1 if p.mandatory_additional_info else 0,
+        'solution': p.solution, 'solution_interval': p.solution_interval,
+        'solution_instructions': p.solution_instructions, 'solution_url': p.solution_url
+    } for p in puzzles]
 
 
 def get_puzzle(pid):
-    cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''SELECT * FROM puzzle WHERE id=%s''', [pid])
-    data = cursor.fetchone()
-    return data
+    p = Puzzle.query.get(pid)
+    if p:
+        return {
+            'id': p.id, 'year': p.year, 'position': p.position, 'name': p.name,
+            'final': 1 if p.final else 0, 'code': p.code, 'description': p.description,
+            'id_place': p.id_place, 
+            'place': p.place,
+            'specification': p.specification, 'comment': p.comment,
+            'url': p.url, 'hint': p.hint, 'hint_interval': p.hint_interval,
+            'mandatory_additional_info': 1 if p.mandatory_additional_info else 0,
+            'solution': p.solution, 'solution_interval': p.solution_interval,
+            'solution_instructions': p.solution_instructions, 'solution_url': p.solution_url
+        }
+    return None
+
+def get_next_puzzle_position(year):
+    puzzles = Puzzle.query.filter_by(year=year).order_by(Puzzle.position.desc()).first()
+    if puzzles:
+        return puzzles.position + 1
+    return 1
+
+def insert_puzzle(year, name, position, final, code, description, id_place, specification, comment, url, hint, hint_interval, mandatory_additional_info, solution, solution_interval, solution_instructions, solution_url):
+    try:
+        new_puzzle = Puzzle(year=year, name=name, position=position, final=final, code=code, description=description, id_place=id_place, specification=specification, comment=comment, url=url, hint=hint, hint_interval=hint_interval, mandatory_additional_info=mandatory_additional_info, solution=solution, solution_interval=solution_interval, solution_instructions=solution_instructions, solution_url=solution_url)
+        db.session.add(new_puzzle)
+        db.session.commit()
+        return True, ""
+    except Exception as e:
+        db.session.rollback()
+        return False, "Problem inserting into db: " + str(e)
+
+def update_puzzle(pid, year, name, position, final, code, description, id_place, specification, comment, url, hint, hint_interval, mandatory_additional_info, solution, solution_interval, solution_instructions, solution_url):
+    try:
+        p = Puzzle.query.get(pid)
+        if p:
+            p.year = year
+            p.name = name
+            p.position = position
+            p.final = final
+            p.code = code
+            p.description = description
+            p.id_place = id_place
+            p.specification = specification
+            p.comment = comment
+            p.url = url
+            p.hint = hint
+            p.hint_interval = hint_interval
+            p.mandatory_additional_info = mandatory_additional_info
+            p.solution = solution
+            p.solution_interval = solution_interval
+            p.solution_instructions = solution_instructions
+            p.solution_url = solution_url
+            db.session.commit()
+            return True, ""
+        return False, "Puzzle not found"
+    except Exception as e:
+        db.session.rollback()
+        return False, "Problem updating into db: " + str(e)
+
+def delete_puzzle(pid):
+    try:
+        Puzzle.query.filter_by(id=pid).delete()
+        db.session.commit()
+        return True, ""
+    except Exception as e:
+        db.session.rollback()
+        return False, "Problem deleting from db: " + str(e)
 
 
 def sync_teams_trakar(year, teams):

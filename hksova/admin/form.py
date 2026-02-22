@@ -1,7 +1,7 @@
 import re
 from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, DecimalField, BooleanField, SelectField, PasswordField, RadioField, FieldList, FormField, TextAreaField, FileField
-from wtforms.validators import length, InputRequired, DataRequired, NumberRange, Email, ValidationError
+from wtforms.validators import length, InputRequired, DataRequired, NumberRange, Email, ValidationError, Optional
 from flask_mdeditor import MDEditorField
 
 
@@ -156,7 +156,7 @@ class PuzzleForm(FlaskForm):
     hint_interval = IntegerField("Nápověda po", default=30, validators=[])
     
     solution = StringField("Řešení", validators=[])
-    solution_interval = IntegerField("Řešení po", validators=[])
+    solution_interval = IntegerField("Řešení po", validators=[Optional()], filters=[lambda x: x if x is not None else None])
     solution_instructions = FileField("Řešení postup", validators=[])
     solution_url = StringField("Řešení URL", validators=[validate_url])
     
@@ -165,6 +165,9 @@ class PuzzleForm(FlaskForm):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        if 'position' in kwargs:
+            self.position.default = int(kwargs['position'])
         
         if 'places' in kwargs:
             self.id_place.choices = [(-1, ' --- nepřiřazovat --- ')]
@@ -177,5 +180,7 @@ class PuzzleForm(FlaskForm):
                 else:
                     self.id_place.choices.append((pl['id'], pl['name']))
         
+class PuzzleDeleteForm(FlaskForm):
+    agree = BooleanField("Opravdu chcete smazat šifru?", validators=[InputRequired()])
    
     

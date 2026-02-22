@@ -35,7 +35,7 @@ function forumFormatter(value, row) {
     if (row["section-url"]) {
         str+="<a href=\""+row["section-url"]+'"';
         str+=">";
-        str+=row["section-name"]+"</A>";
+        str+=row["section-name"]+"</a>";
     } else {
         str+=row["section-name"];
     }

@@ -1,10 +1,41 @@
 from flask import current_app
+from ..database import db
+
+class Menu(db.Model):
+    __tablename__ = 'menu'
+    idMenu = db.Column(db.Integer, primary_key=True)
+    idYear = db.Column(db.Integer, nullable=False)
+    idPage = db.Column(db.Integer, nullable=True)
+    menu = db.Column(db.String(50), nullable=False)
+    link = db.Column(db.String(255), nullable=True)
+    param = db.Column(db.String(255), nullable=True)
+    order = db.Column(db.Integer, nullable=False)
+    isNewPart = db.Column(db.Boolean, nullable=False)
+    isPublic = db.Column(db.Boolean, nullable=False)
+    isPrivate = db.Column(db.Integer, nullable=False)
+    isVisible = db.Column(db.Boolean, nullable=False)
+    isSystem = db.Column(db.Boolean, nullable=False)
+    isCurrentYear = db.Column(db.Boolean, nullable=False)
 
 
 def get_menu(year):
-    cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''SELECT idmenu, idpage, menu, link, isnewpart, ispublic, isprivate, isvisible, issystem,iscurrentyear FROM menu where idyear=%s order by `order`''', [year['year']])
-    data = cursor.fetchall()
+    from sqlalchemy import text
+    menus = Menu.query.filter_by(idYear=year['year']).order_by(Menu.order).all()
+    
+    data = []
+    for m in menus:
+        data.append({
+            'idmenu': m.idMenu,
+            'idpage': m.idPage,
+            'menu': m.menu,
+            'link': m.link,
+            'isnewpart': 1 if m.isNewPart else 0, # Map to int as the template likely expects 1/0
+            'ispublic': 1 if m.isPublic else 0,
+            'isprivate': m.isPrivate,
+            'isvisible': 1 if m.isVisible else 0,
+            'issystem': 1 if m.isSystem else 0,
+            'iscurrentyear': 1 if m.isCurrentYear else 0
+        })
 
     # TODO: use dict to map link -> blueprint, function
     if data:
