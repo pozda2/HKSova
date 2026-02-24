@@ -960,10 +960,10 @@ def insert_puzzle(year, name, position, final, code, description, id_place, spec
         new_puzzle = Puzzle(year=year, name=name, position=position, final=final, code=code, description=description, id_place=id_place, specification=specification, comment=comment, url=url, hint=hint, hint_interval=hint_interval, mandatory_additional_info=mandatory_additional_info, solution=solution, solution_interval=solution_interval, solution_instructions=solution_instructions, solution_url=solution_url)
         db.session.add(new_puzzle)
         db.session.commit()
-        return True, ""
+        return new_puzzle.id, ""
     except Exception as e:
         db.session.rollback()
-        return False, "Problem inserting into db: " + str(e)
+        return None, "Problem inserting into db: " + str(e)
 
 def update_puzzle(pid, year, name, position, final, code, description, id_place, specification, comment, url, hint, hint_interval, mandatory_additional_info, solution, solution_interval, solution_instructions, solution_url):
     try:

@@ -13,6 +13,7 @@ hksova/configs
 hksova/configs/default.py
 hksova/configs/docker.py
 hksova/static/data/
+hksova/upload/
 configs/nginx/docker_hksova_local.conf
 
 REST.txt

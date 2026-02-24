@@ -1,3 +1,4 @@
+-- https://databaze.seslost.cz/doc/sifry
 -- Adminer 5.4.0 MariaDB 12.0.2-MariaDB-ubu2404 dump
 
 SET NAMES utf8;

@@ -22,7 +22,7 @@ from .model import sync_teams_trakar
 from .model import get_admin_forum_section, get_admin_forum_sections, get_admin_menu, get_admin_menu_item, get_admin_page, get_admin_pages, get_admin_team, get_admin_teams
 from .model import get_emails_list, get_mascot, get_mascots, get_setting, get_settings, get_team_players, get_place, get_places, get_puzzles, get_puzzle, get_next_puzzle_position
 from .model import is_minimum_players, is_unique_email, is_unique_name
-from .utils import org_login_required
+from .utils import org_login_required, save_puzzle_file, delete_puzzle_file
 
 
 admin_blueprint = Blueprint("admin", __name__)
@@ -1128,6 +1128,15 @@ def view_puzzle_delete(puzzle_id):
 @org_login_required
 def puzzle_delete(puzzle_id):
     year = get_year(request.blueprint)
+    puzzle = get_puzzle(puzzle_id)
+    if not puzzle:
+        flash('Šifra nenalezena', "error")
+        return redirect(url_for("admin" + year['year'] + ".view_admin_puzzles"))
+
+    # Delete files from disk
+    delete_puzzle_file(puzzle.get('description'))
+    delete_puzzle_file(puzzle.get('solution_instructions'))
+
     status, message = delete_puzzle(puzzle_id)
     if not status:
         flash(message, "error")
@@ -1143,38 +1152,32 @@ def create_puzzle():
     pf = PuzzleForm(places=get_places(year['year'], with_puzzles=True))
     
     if pf.validate():
-        print('-' * 80)    
-        desc_data = None
-        if pf.description.data:
-            file = pf.description.data   # <- tady je ten soubor jako FileStorage objekt
-            print(file, type(file))
-            if file:
-                filename = secure_filename(file.filename)
-                # file.save(f"/tmp/{filename}")
-                desc_data = file.read()
-        
-        solinstr_data = None
-        if pf.solution_instructions.data:
-            file = pf.solution_instructions.data   # <- tady je ten soubor jako FileStorage objekt
-            if file:
-                filename = secure_filename(file.filename)
-                # file.save(f"/tmp/{filename}")
-                solinstr_data = file.read()
-        
         if pf.id_place.data == -1:
             pf.id_place.data = None
 
-        # insert puzzle
-        status, message = insert_puzzle(year['year'], pf.name.data, pf.position.data, pf.final.data, 
-            pf.code.data, desc_data, pf.id_place.data, pf.specification.data, 
+        # 1. Insert puzzle without files first to get ID
+        puzzle_id, message = insert_puzzle(year['year'], pf.name.data, pf.position.data, pf.final.data, 
+            pf.code.data, None, pf.id_place.data, pf.specification.data, 
             pf.comment.data, pf.url.data, pf.hint.data, pf.hint_interval.data, 
             pf.mandatory_additional_info.data, pf.solution.data, pf.solution_interval.data, 
-            solinstr_data, pf.solution_url.data)
-        if not status:
+            None, pf.solution_url.data)
+        
+        if puzzle_id is None:
             flash(message, "error")
-        else:
-            flash('Šifra přidána', "info")
+            return render_template("admin/puzzle_create.jinja", title="Nová šifra", year=year, form=pf)
 
+        # 2. Save files and update puzzle
+        desc_filename = save_puzzle_file(pf.description.data, year['year'], puzzle_id)
+        solinstr_filename = save_puzzle_file(pf.solution_instructions.data, year['year'], puzzle_id)
+
+        if desc_filename or solinstr_filename:
+            update_puzzle(puzzle_id, year['year'], pf.name.data, pf.position.data, pf.final.data, 
+                pf.code.data, desc_filename, pf.id_place.data, pf.specification.data, 
+                pf.comment.data, pf.url.data, pf.hint.data, pf.hint_interval.data, 
+                pf.mandatory_additional_info.data, pf.solution.data, pf.solution_interval.data, 
+                solinstr_filename, pf.solution_url.data)
+
+        flash('Šifra přidána', "info")
     else:
         for item, errors in pf.errors.items():
             for error in errors:
@@ -1191,13 +1194,31 @@ def create_puzzle():
 @org_login_required
 def edit_puzzle(puzzle_id):
     year = get_year(request.blueprint)
+    puzzle = get_puzzle(puzzle_id)
+    if not puzzle:
+        flash('Šifra nenalezena', "error")
+        return redirect(url_for("admin" + year['year'] + ".view_admin_puzzles"))
+
     pf = PuzzleForm(request.form, places=get_places(year['year'], with_puzzles=True))
     if pf.validate():
+        desc_filename = puzzle.get('description')
+        if pf.description.data:
+            delete_puzzle_file(desc_filename)
+            desc_filename = save_puzzle_file(pf.description.data, year['year'], puzzle_id)
+        
+        solinstr_filename = puzzle.get('solution_instructions')
+        if pf.solution_instructions.data:
+            delete_puzzle_file(solinstr_filename)
+            solinstr_filename = save_puzzle_file(pf.solution_instructions.data, year['year'], puzzle_id)
+
+        if pf.id_place.data == -1:
+            pf.id_place.data = None
+
         status, message = update_puzzle(puzzle_id, year['year'], pf.name.data, pf.position.data, pf.final.data, 
-            pf.code.data, pf.description.data, pf.id_place.data, pf.specification.data, 
+            pf.code.data, desc_filename, pf.id_place.data, pf.specification.data, 
             pf.comment.data, pf.url.data, pf.hint.data, pf.hint_interval.data, 
             pf.mandatory_additional_info.data, pf.solution.data, pf.solution_interval.data, 
-            pf.solution_instructions.data, pf.solution_url.data)
+            solinstr_filename, pf.solution_url.data)
         if not status:
             flash(message, "error")
         else:

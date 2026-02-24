@@ -1,13 +1,12 @@
 FROM python:3-alpine
 
-RUN apk add --update --no-cache --virtual .tmp gcc libc-dev linux-headers
-RUN apk add tzdata
-RUN apk add --no-cache jpeg-dev zlib-dev freetype-dev lcms2-dev openjpeg-dev tiff-dev tk-dev tcl-dev pcre-dev mariadb-connector-c-dev python3-dev
+RUN apk add --update --no-cache --virtual .tmp gcc libc-dev linux-headers 
+RUN apk add tzdata jpeg-dev zlib-dev freetype-dev lcms2-dev openjpeg-dev tiff-dev tk-dev tcl-dev pcre-dev mariadb-connector-c-dev python3-dev
 
-RUN python -m pip install --upgrade pip
+RUN python -m pip install --no-cache-dir --upgrade pip 
 COPY requirements.txt /usr/src/app/
 RUN pip install --no-cache-dir -r /usr/src/app/requirements.txt
-RUN pip install uwsgi
+RUN pip install --no-cache-dir uwsgi
 
 RUN apk del .tmp
 

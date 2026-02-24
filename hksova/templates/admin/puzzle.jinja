@@ -3,7 +3,7 @@
 
 <h2>Úprava šifry</h2>
 
-<form action="{{url_for('admin' ~ year.year ~ ".edit_puzzle", puzzle_id=puzzle.id)}}" method="post">
+<form action="{{url_for('admin' ~ year.year ~ ".edit_puzzle", puzzle_id=puzzle.id)}}" method="post" enctype="multipart/form-data">
   {{ form.csrf_token }}
 
   <div class="form-row">
@@ -24,7 +24,19 @@
   </div>
   <div class="form-row">
     <div class="col"><label for="description">{{ form.description.label }}</label></div>
-    <div class="col">{{ form.description(class="form-control", id="description", placeholder="Popis") }}</div>
+    <div class="col">
+        {{ form.description(class="form-control", id="description") }}
+        {% if puzzle.description %}
+            <div class="mt-2">
+                Aktuální soubor: 
+                {% if puzzle.description.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.webp')) %}
+                    <br><img src="/upload/puzzles/{{ puzzle.description }}" alt="Zadání" style="max-width: 300px; display: block; margin-top: 10px;">
+                {% else %}
+                    <a href="/upload/puzzles/{{ puzzle.description }}" target="_blank">{{ puzzle.description }}</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
   </div>
   <div class="form-row">
     <div class="col"><label for="url">{{ form.url.label }}</label></div>
@@ -56,7 +68,19 @@
   </div>
   <div class="form-row">
     <div class="col"><label for="solution_instructions">{{ form.solution_instructions.label }}</label></div>
-    <div class="col">{{ form.solution_instructions(class="form-control", id="solution_instructions", placeholder="Řešení postup") }}</div>
+    <div class="col">
+        {{ form.solution_instructions(class="form-control", id="solution_instructions") }}
+        {% if puzzle.solution_instructions %}
+            <div class="mt-2">
+                Aktuální soubor: 
+                {% if puzzle.solution_instructions.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.webp')) %}
+                    <br><img src="/upload/puzzles/{{ puzzle.solution_instructions }}" alt="Postup řešení" style="max-width: 300px; display: block; margin-top: 10px;">
+                {% else %}
+                    <a href="/upload/puzzles/{{ puzzle.solution_instructions }}" target="_blank">{{ puzzle.solution_instructions }}</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
   </div>
   <div class="form-row">
     <div class="col"><label for="solution_url">{{ form.solution_url.label }}</label></div>
@@ -70,7 +94,8 @@
     <div class="col"><label for="final">{{ form.final.label }}</label></div>
     <div class="col">{{ form.final(class="form-control", id="final", placeholder="Je poslední?") }}</div>
   </div>
-    
+
+  {% if puzzle.place %}
   <div id="map2" style="height: 500px;"></div>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
   <script src="https://unpkg.com/leaflet@latest/dist/leaflet.js"></script>
@@ -90,7 +115,8 @@
         marker.setLatLng(ev.latlng)
       });
   </script>
-  
+  {% endif %}
+
   <button type="submit" class="btn btn-primary">Upravit šifru</button>
   <button type="button"  class="btn btn-primary" onclick="history.back()">Zpět</button>
 </form>
