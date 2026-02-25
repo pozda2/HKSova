@@ -868,8 +868,8 @@ def copy_year(year, next_year):
 
 def get_places(year, with_puzzles=False):
     if with_puzzles:
-        results = db.session.query(Place, Puzzle.name).outerjoin(Puzzle, Puzzle.id_place == Place.id).filter(Place.year == year).order_by(Place.id).all()
-        return [{'id': p.id, 'year': p.year, 'name': p.name, 'latitude': p.latitude, 'longitude': p.longitude, 'puzzle_name': pn} for p, pn in results]
+        results = db.session.query(Place, Puzzle.name, Puzzle.position).outerjoin(Puzzle, Puzzle.id_place == Place.id).filter(Place.year == year).order_by(Puzzle.position).all()
+        return [{'id': p.id, 'year': p.year, 'name': p.name, 'latitude': p.latitude, 'longitude': p.longitude, 'puzzle_name': pn, 'puzzle_position': pp} for p, pn, pp in results]
     else:
         places = Place.query.filter_by(year=year).order_by(Place.id).all()
         return [{'id': p.id, 'year': p.year, 'name': p.name, 'latitude': p.latitude, 'longitude': p.longitude} for p in places]

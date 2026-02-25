@@ -160,8 +160,8 @@ class PuzzleForm(FlaskForm):
     solution_instructions = FileField("Řešení postup", validators=[])
     solution_url = StringField("Řešení URL", validators=[validate_url])
     
-    mandatory_additional_info = BooleanField("Jde řešit samostatně?", validators=[])
-    final = BooleanField("Je poslední?", validators=[])
+    mandatory_additional_info = BooleanField("Potřebuje k řešení další informace?", default=False, validators=[])
+    final = BooleanField("Je poslední?", default=False, validators=[])
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

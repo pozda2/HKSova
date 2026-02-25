@@ -28,17 +28,49 @@
           <a href="{{ url_for('admin' ~ year.year ~ '.view_puzzle_delete', puzzle_id=puzzle.id) }}"><img alt="=Smazání" src={{url_for("static", filename="img/delete.gif")}}></a>
         </td>
         <td>{{ puzzle.position }}</td>
-        <td>{{ puzzle.name }}</td>
-        <td>{{ puzzle.code }}</td>
-        <td>{{ puzzle.description }} 
+        <td>{{ puzzle.name or "❗" }}</td>
+        <td>{{ puzzle.code or "❗" }}</td>
+        <td>
+          {% if puzzle.description %}
+            <a href="/upload/puzzles/{{ puzzle.description }}" alt="Zadání" title="{{ puzzle.description }}">
+            {% if puzzle.description.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.webp')) %}
+              🖼
+            {% else %}
+              🗎
+            {% endif %}
+            </a>
+          {% else %}
+            ❗
+          {% endif %}         
           {% if puzzle.url %}
             <a href="{{ puzzle.url | trim }}" target="_blank">🔗</a>
           {% endif %}
         </td>
-        <td>{{ puzzle.place.name }}</td>
+        <td>
+          {{ puzzle.place.name or "❗" }}
+        </td>
         <td>{{ puzzle.specification }}</td>
         <td>{{ puzzle.hint_interval }}: {{ puzzle.hint }}</td>
-        <td>{{ puzzle.solution_interval }}: {{ puzzle.solution }}</td>
+        <td>
+          {{ puzzle.solution }}
+          {% if puzzle.solution_interval %}
+             ({{ puzzle.solution_interval }} min)
+          {% endif %}
+          {% if puzzle.solution_instructions %}
+            <a href="/upload/puzzles/{{ puzzle.solution_instructions }}" alt="Postup řešení" title="{{ puzzle.solution_instructions }}">
+            {% if puzzle.solution_instructions.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.webp')) %}
+              🖼
+            {% else %}
+              🗎
+            {% endif %}
+            </a>
+          {% else %}
+            ❗
+          {% endif %}
+          {% if puzzle.solution_url %}
+            <a href="{{ puzzle.solution_url | trim }}" target="_blank">🔗</a>
+          {% endif %}
+        </td>
         <td>{{ puzzle.comment }}</td>
     </tr>
     {%- endfor -%}

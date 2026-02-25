@@ -964,7 +964,7 @@ def switch_team(idteam):
 @org_login_required
 def view_admin_places():
     year = get_year(request.blueprint)
-    places = get_places(year['year'])
+    places = get_places(year['year'], with_puzzles=True)
     return render_template("admin/places.jinja", title="Správa stanovišť", year=year, places=places)
 
 
@@ -1072,7 +1072,7 @@ def place_delete(place_id):
 def view_admin_puzzles():
     year = get_year(request.blueprint)
     puzzles = get_puzzles(year['year'])
-    return render_template("admin/puzzles.jinja", title="Správa maskotů", year=year, puzzles=puzzles)
+    return render_template("admin/puzzles.jinja", title="Správa šifer", year=year, puzzles=puzzles)
 
 
 @admin_blueprint.route("/admin/puzzle/<int:puzzle_id>", methods=["GET"])
@@ -1101,7 +1101,8 @@ def view_puzzle(puzzle_id):
     puzzle_form.mandatory_additional_info.data = puzzle['mandatory_additional_info']
     puzzle_form.final.data = puzzle['final']
 
-    return render_template("admin/puzzle.jinja", title="Editace šifry", year=year, form=puzzle_form, puzzle=puzzle)
+    all_places = get_places(year['year'])
+    return render_template("admin/puzzle.jinja", title="Editace šifry", year=year, form=puzzle_form, puzzle=puzzle, all_places=all_places)
 
     
 @admin_blueprint.route("/admin/puzzle/add", methods=["GET"])
@@ -1109,7 +1110,8 @@ def view_puzzle(puzzle_id):
 def view_puzzle_add():
     year = get_year(request.blueprint)
     puzzle_form = PuzzleForm(places=get_places(year['year'], with_puzzles=True), position=get_next_puzzle_position(year['year']))
-    return render_template("admin/puzzle_create.jinja", title="Nová šifra", year=year, form=puzzle_form)
+    all_places = get_places(year['year'])
+    return render_template("admin/puzzle_create.jinja", title="Nová šifra", year=year, form=puzzle_form, all_places=all_places)
 
 
 @admin_blueprint.route("/admin/puzzle/delete/<int:puzzle_id>", methods=["GET"])
@@ -1155,6 +1157,8 @@ def create_puzzle():
         if pf.id_place.data == -1:
             pf.id_place.data = None
 
+        print(f"pf: {pf.data}")
+
         # 1. Insert puzzle without files first to get ID
         puzzle_id, message = insert_puzzle(year['year'], pf.name.data, pf.position.data, pf.final.data, 
             pf.code.data, None, pf.id_place.data, pf.specification.data, 
@@ -1199,7 +1203,8 @@ def edit_puzzle(puzzle_id):
         flash('Šifra nenalezena', "error")
         return redirect(url_for("admin" + year['year'] + ".view_admin_puzzles"))
 
-    pf = PuzzleForm(request.form, places=get_places(year['year'], with_puzzles=True))
+    pf = PuzzleForm(places=get_places(year['year'], with_puzzles=True))
+
     if pf.validate():
         desc_filename = puzzle.get('description')
         if pf.description.data:

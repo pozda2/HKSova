@@ -10,6 +10,7 @@
         <th data-field="setting-param" data-sortable="true" data-filter-control="input">Stanoviště</th>
         <th data-field="setting-param1" data-sortable="true" data-filter-control="input">Zem. šířka</th>
         <th data-field="setting-param2" data-sortable="true" data-filter-control="input">Zem. délka</th>
+        <th data-field="setting-param3" data-sortable="true" data-filter-control="input">Šifra</th>
         <th data-field="setting-action" data-formatter="settingsActionFormatter">Akce</th>
     </tr>
   </thead>
@@ -18,8 +19,9 @@
     {%- for place in places -%}
     <tr>
         <td>{{ place.name }}</td>
-        <td>{{ place.latitude }}</td>
-        <td>{{ place.longitude }}</td>
+        <td>{{ place.latitude | round(6)}}</td>
+        <td>{{ place.longitude | round(6)}}</td>
+        <td>{{ place.puzzle_name or "❗"}}</td>
         <td>
           <a href="{{ url_for('admin' ~ year.year ~ '.view_place', place_id=place.id) }}"><img alt="=Úprava" src={{url_for("static", filename="img/edit.gif")}}></a>
         <a href="{{ url_for('admin' ~ year.year ~ '.view_place_delete', place_id=place.id) }}"><img alt="=Smazání" src={{url_for("static", filename="img/delete.gif")}}></a>
@@ -34,16 +36,38 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
   <script src="https://unpkg.com/leaflet@latest/dist/leaflet.js"></script>
   <script>
-      const map = L.map('map2').setView([50.21, +15.83], 13);
-      {%- if places -%}
-        {%- for place in places %}
-          L.marker([{{place.latitude}}, {{place.longitude}}], {'title': '{{place.name}}'}).addTo(map);
-        {%- endfor -%}
-      {%- endif %}
-      const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          maxZoom: 19,
-          attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-      }).addTo(map);
+    const map = L.map('map2').setView([50.21, +15.83], 13);
+    {%- if places -%}
+      {%- set last = namespace(lat=null, lng=null) -%}
+      {%- for place in places %}
+        L.marker([{{place.latitude}}, {{place.longitude}}], {'title': '{{place.name}}', icon: 
+          L.divIcon({
+            className: 'custom-div-icon',
+            html: "<div class='marker-pin' ></div><span>{{ loop.index }}</span>",
+            iconSize: [0, 0],
+            iconAnchor: [0, 20]
+          })
+        }).addTo(map); 
+        
+        {%- if last.lat != null and last.lng != null %}
+        L.polyline([[{{last.lat}}, {{last.lng}}], [{{place.latitude}}, {{place.longitude}}]], {
+          color: 'red',      // Barva čáry
+          weight: 3,         // Tloušťka v pixelech
+          opacity: 0.7,      // Průhlednost
+          smoothFactor: 1    // Vyhlazení při zoomování
+        }).addTo(map);
+        {%- else -%}
+        // {{ last.lat }} | {{ last.lng }}
+        {%- endif -%}
+
+        {%- set last.lat = place.latitude -%}
+        {%- set last.lng = place.longitude -%}
+      {%- endfor -%}
+    {%- endif %}
+    const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
   </script>
 
 {%- endblock -%}
