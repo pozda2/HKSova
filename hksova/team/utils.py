@@ -95,14 +95,14 @@ def send_reset_code(year, code, login, email):
 def connect_to_smtp(server, port, auth, user, password):
     if auth.upper() == "BASIC":
         try:
-            s = smtplib.SMTP(server, str(port))
+            s = smtplib.SMTP(server, str(port), timeout=3)
         except smtplib.SMTPException as e:
             return None, False, e
 
     elif auth.upper() == "SSL":
         smtp_server = server + ":" + str(port)
         try:
-            s = smtplib.SMTP_SSL(smtp_server)
+            s = smtplib.SMTP_SSL(smtp_server, timeout=3)
             if (user and password):
                 s.login(user, password)
         except smtplib.SMTPException as e:
@@ -111,7 +111,7 @@ def connect_to_smtp(server, port, auth, user, password):
     elif auth.upper() == "STARTTLS":
         smtp_server = server + ":" + str(port)
         try:
-            s = smtplib.SMTP(server, str(port))
+            s = smtplib.SMTP(server, str(port), timeout=3)
             s.ehlo()
             s.starttls()
             s.ehlo()
