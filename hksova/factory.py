@@ -1,6 +1,5 @@
 import os
 from flask import Flask
-from flask_mysqldb import MySQL
 from flask_wtf.csrf import CSRFProtect
 from flask_mdeditor import MDEditor
 from flask_qrcode import QRcode
@@ -30,10 +29,6 @@ def create_flask_app():
     # autoreload templates
     flask_app.config['TEMPLATES_AUTO_RELOAD'] = True
 
-    mysql = MySQL()
-    mysql.init_app(flask_app)
-    flask_app.mysql = mysql
-    
     # Configure SQLAlchemy
     if 'SQLALCHEMY_DATABASE_URI' not in flask_app.config:
         m_user = flask_app.config.get('MYSQL_USER')

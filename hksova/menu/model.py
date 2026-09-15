@@ -1,4 +1,3 @@
-from flask import current_app
 from ..database import db
 
 class Menu(db.Model):
@@ -19,7 +18,6 @@ class Menu(db.Model):
 
 
 def get_menu(year):
-    from sqlalchemy import text
     menus = Menu.query.filter_by(idYear=year['year']).order_by(Menu.order).all()
     
     data = []
