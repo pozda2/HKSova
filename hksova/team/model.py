@@ -98,31 +98,6 @@ def get_registred_number_teams(year):
     return Team.query.filter_by(idYear=year['year'], isBackup=False).count()
 
 
-def check_password_org(login, password):
-    # password for org stored in table settings
-    if login == 'org':
-        try:
-            cursor = current_app.mysql.connection.cursor()
-            cursor.execute('''select param, value from setting where idyear is null''')
-            data = cursor.fetchall()
-            hash_in_setting = None
-            salt_in_setting = None
-
-            for param in data:
-                if param['param'] == 'org-pass':
-                    hash_in_setting = param['value']
-                elif param['param'] == 'org-salt':
-                    salt_in_setting = param['value']
-
-            if hash_in_setting and salt_in_setting:
-                return sha256_crypt.verify(current_app.config['SECRET_PEPPER'] + password + salt_in_setting, hash_in_setting)
-            return False
-        except Exception:
-            return False
-    else:
-        return False
-
-
 def check_password_team(year, login, password):
     # password for team stored in table team
     try:

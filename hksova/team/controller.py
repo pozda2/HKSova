@@ -5,11 +5,12 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 
 from ..year.model import get_year, get_years
 from ..menu.model import get_menu
+from ..admin.model import check_password_org
 from ..settings.model import get_min_players, get_max_players, is_registration_open, get_registration_from, get_registration_to, get_payment_information
 
 from .form import LoginForm, RegistrationForm, RegistrationCancelForm, EditTeamForm, PasswordChangeForm, ForgetPasswordForm, ResetPasswordForm
 from .utils import login_required, current_year_required, send_reset_code
-from .model import check_password_team, check_password_org, get_team, insert_team, update_team, get_team_by_email, get_team_by_reset_code
+from .model import check_password_team, get_team, insert_team, update_team, get_team_by_email, get_team_by_reset_code
 from .model import set_team_session, unset_team_session, generate_reset_code, change_team_pass, get_team_players, cancel_registration
 from .model import reset_team_pass, get_teams_not_deleted, get_city_statistics, get_teams_statistics, get_players_statistics
 from .model import is_unique_name, is_unique_email, is_unique_loginname, is_minimum_players
@@ -36,13 +37,13 @@ def login_team():
 
     login_form = LoginForm(request.form)
     if login_form.validate():
-        if check_password_team(year, login_form.loginname.data, login_form.password.data):
-            team = get_team(year, login_form.loginname.data)
-            set_team_session(year, team['name'], login_form.loginname.data, False)
+        if login_form.loginname.data == "org" and check_password_org(login_form.password.data):
+            set_team_session(year, "org", "org", True)
             flash("Úspěšné přihlášení", "info")
             return redirect(url_for("main.view_index"))
-        elif check_password_org(login_form.loginname.data, login_form.password.data):
-            set_team_session(year, "org", "org", True)
+        elif check_password_team(year, login_form.loginname.data, login_form.password.data):
+            team = get_team(year, login_form.loginname.data)
+            set_team_session(year, team['name'], login_form.loginname.data, False)
             flash("Úspěšné přihlášení", "info")
             return redirect(url_for("main.view_index"))
         else:
