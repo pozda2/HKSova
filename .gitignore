@@ -5,8 +5,7 @@ bootstrap.sh
 configs/docker.py
 configs/setevars.sh
 database/db_init.sh
-database/localhost.sql
-database/osjak_cz3.sql
+database/*.sql
 mariadb
 docker-compose.yml
 hksova/configs

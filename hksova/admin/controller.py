@@ -756,6 +756,11 @@ def export_csv():
 def export_envelope():
     year = get_year(request.blueprint)
     teams = get_admin_teams(year)
+    start_time = get_setting("start-time")
+    print("*"*20)
+    print("Start time: ", start_time)
+    print('reg-from', get_setting('reg-from'))
+    print("*"*20)
     output = io.StringIO()
     csv.register_dialect('sova', delimiter=';', quoting=csv.QUOTE_MINIMAL)
     writer = csv.writer(output, dialect='sova')
@@ -774,12 +779,12 @@ def export_envelope():
         line = [team['name'], team['mascot'], team['mobil'], team['email'], team['zaplaceno'], team['stav'], team['players_private']]
         writer.writerow(line)
         teams_output.append(team)
-        print(team['name'])
+        # print(team['name'])
 
     # output.seek(0)
     # return Response(output, mimetype="text/csv", headers={"Content-Disposition": f"attachment;filename=sova-teams-export_{dstr}.csv"})
     # return Response(output, mimetype="text/plain", headers={})
-    return render_template("admin/envelopes.jinja", title="Tisk startovních obálek", year=year, teams=teams_output)
+    return render_template("admin/envelopes.jinja", title="Tisk startovních obálek", year=year, teams=teams_output, start_time=start_time)
 
 
 @admin_blueprint.route("/admin/mascots/", methods=["GET"])

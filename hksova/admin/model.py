@@ -572,11 +572,11 @@ def get_admin_teams(year):
             players = get_team_players(team['idteam'])
 
             kiplayers = match_ki(kidata, players, team['name'])
-            for kp in kiplayers:
-                print(kp)
+            #for kp in kiplayers:
+            #    print(kp)
 
             avgki = sum([p['KI'] for p in kiplayers if p.get('KI') is not None]) / len(kiplayers)
-            print(avgki)
+            # print(avgki)
 
             team['players'] = kiplayers
             # real
@@ -684,6 +684,7 @@ def get_settings(year):
 
 def get_setting(idsetting):
     s = Setting.query.get(idsetting)
+    print(f"IDSET: {idsetting}, S: {s}")
     if s:
         return {'idsetting': s.idSetting, 'idyear': s.idYear, 'param': s.param, 'value': s.value}
     return None
