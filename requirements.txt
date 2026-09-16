@@ -4,6 +4,7 @@ Flask-MDEditor
 Flask-SQLAlchemy
 Flask-WTF
 mistune
+mysqlclient
 python-dateutil
 passlib
 email-validator
