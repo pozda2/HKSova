@@ -42,6 +42,7 @@ def create_flask_app():
                 flask_app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql://{m_user}@{m_host}/{m_db}"
                 
     flask_app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    flask_app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_pre_ping': True}
 
     # db inicialized in database.py
     db.init_app(flask_app)
