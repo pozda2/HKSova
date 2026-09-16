@@ -1076,14 +1076,18 @@ def place_delete(place_id):
 @org_login_required
 def view_admin_puzzles():
     year = get_year(request.blueprint)
+    years = get_years()
+    menu = get_menu(year)
     puzzles = get_puzzles(year['year'])
-    return render_template("admin/puzzles.jinja", title="Správa šifer", year=year, puzzles=puzzles)
+    return render_template("admin/puzzles.jinja", title="Správa šifer", year=year, puzzles=puzzles, menu=menu, years=years)
 
 
 @admin_blueprint.route("/admin/puzzle/<int:puzzle_id>", methods=["GET"])
 @org_login_required
 def view_puzzle(puzzle_id):
     year = get_year(request.blueprint)
+    years = get_years()
+    menu = get_menu(year)
     puzzle = get_puzzle(puzzle_id)
     if not puzzle:
         return render_template("errors/404.jinja", year=year), 404
@@ -1107,28 +1111,32 @@ def view_puzzle(puzzle_id):
     puzzle_form.final.data = puzzle['final']
 
     all_places = get_places(year['year'])
-    return render_template("admin/puzzle.jinja", title="Editace šifry", year=year, form=puzzle_form, puzzle=puzzle, all_places=all_places)
+    return render_template("admin/puzzle.jinja", title="Editace šifry", year=year, form=puzzle_form, puzzle=puzzle, all_places=all_places, menu=menu, years=years)
 
-    
+
 @admin_blueprint.route("/admin/puzzle/add", methods=["GET"])
 @org_login_required
 def view_puzzle_add():
     year = get_year(request.blueprint)
+    years = get_years()
+    menu = get_menu(year)
     puzzle_form = PuzzleForm(places=get_places(year['year'], with_puzzles=True), position=get_next_puzzle_position(year['year']))
     all_places = get_places(year['year'])
-    return render_template("admin/puzzle_create.jinja", title="Nová šifra", year=year, form=puzzle_form, all_places=all_places)
+    return render_template("admin/puzzle_create.jinja", title="Nová šifra", year=year, form=puzzle_form, all_places=all_places, menu=menu, years=years)
 
 
 @admin_blueprint.route("/admin/puzzle/delete/<int:puzzle_id>", methods=["GET"])
 @org_login_required
 def view_puzzle_delete(puzzle_id):
     year = get_year(request.blueprint)
+    years = get_years()
+    menu = get_menu(year)
     puzzle = get_puzzle(puzzle_id)
     if not puzzle:
         return render_template("errors/404.jinja", year=year), 404
 
     puzzle_delete_form = PuzzleDeleteForm()
-    return render_template("admin/puzzle_delete.jinja", title="Smazání šifry", year=year, form=puzzle_delete_form, puzzle=puzzle)
+    return render_template("admin/puzzle_delete.jinja", title="Smazání šifry", year=year, form=puzzle_delete_form, puzzle=puzzle, menu=menu, years=years)
 
 
 @admin_blueprint.route("/admin/puzzle/delete/<int:puzzle_id>", methods=["POST"])
@@ -1156,8 +1164,10 @@ def puzzle_delete(puzzle_id):
 @org_login_required
 def create_puzzle():
     year = get_year(request.blueprint)
+    years = get_years()
+    menu = get_menu(year)
     pf = PuzzleForm(places=get_places(year['year'], with_puzzles=True))
-    
+
     if pf.validate():
         if pf.id_place.data == -1:
             pf.id_place.data = None
@@ -1173,7 +1183,7 @@ def create_puzzle():
         
         if puzzle_id is None:
             flash(message, "error")
-            return render_template("admin/puzzle_create.jinja", title="Nová šifra", year=year, form=pf)
+            return render_template("admin/puzzle_create.jinja", title="Nová šifra", year=year, form=pf, menu=menu, years=years)
 
         # 2. Save files and update puzzle
         desc_filename = save_puzzle_file(pf.description.data, year['year'], puzzle_id)
@@ -1195,14 +1205,16 @@ def create_puzzle():
                         flash(f'{item}: {error[k][0]}', "error")
                 else:
                     flash(f'{item}: {error}', "error")
-        return render_template("admin/puzzle_create.jinja", title="Nová šifra", year=year, form=pf)
-    
+        return render_template("admin/puzzle_create.jinja", title="Nová šifra", year=year, form=pf, menu=menu, years=years)
+
     return redirect(url_for("admin" + year['year'] + ".view_admin_puzzles"))
 
 @admin_blueprint.route("/admin/puzzle/edit/<int:puzzle_id>", methods=["POST"])
 @org_login_required
 def edit_puzzle(puzzle_id):
     year = get_year(request.blueprint)
+    years = get_years()
+    menu = get_menu(year)
     puzzle = get_puzzle(puzzle_id)
     if not puzzle:
         flash('Šifra nenalezena', "error")
@@ -1241,6 +1253,6 @@ def edit_puzzle(puzzle_id):
                         flash(f'{error[k][0]}', "error")
                 else:
                     flash(f'{error}', "error")
-        return render_template("admin/puzzle.jinja", title="Editace šifry", year=year, form=pf, puzzle=puzzle)
+        return render_template("admin/puzzle.jinja", title="Editace šifry", year=year, form=pf, puzzle=puzzle, menu=menu, years=years)
     
     return redirect(url_for("admin" + year['year'] + ".view_admin_puzzles"))
