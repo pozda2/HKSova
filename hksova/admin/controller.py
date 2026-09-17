@@ -969,14 +969,18 @@ def switch_team(idteam):
 @org_login_required
 def view_admin_places():
     year = get_year(request.blueprint)
+    years = get_years()
+    menu = get_menu(year)
     places = get_places(year['year'], with_puzzles=True)
-    return render_template("admin/places.jinja", title="Správa stanovišť", year=year, places=places)
+    return render_template("admin/places.jinja", title="Správa stanovišť", year=year, places=places, menu=menu, years=years)
 
 
 @admin_blueprint.route("/admin/place/<int:place_id>", methods=["GET"])
 @org_login_required
 def view_place(place_id):
     year = get_year(request.blueprint)
+    years = get_years()
+    menu = get_menu(year)
     place = get_place(place_id)
     if not place:
         return render_template("errors/404.jinja", year=year), 404
@@ -984,33 +988,39 @@ def view_place(place_id):
     place_form.name.data = place['name']
     place_form.latitude.data = place['latitude']
     place_form.longitude.data = place['longitude']
-    return render_template("admin/place.jinja", title="Editace stanoviště", year=year, form=place_form, place=place)
+    return render_template("admin/place.jinja", title="Editace stanoviště", year=year, form=place_form, place=place, menu=menu, years=years)
 
 
 @admin_blueprint.route("/admin/place/add", methods=["GET"])
 @org_login_required
 def view_place_add():
     year = get_year(request.blueprint)
+    years = get_years()
+    menu = get_menu(year)
     place_form = PlaceForm()
-    return render_template("admin/place_create.jinja", title="Nové stanoviště", year=year, form=place_form)
+    return render_template("admin/place_create.jinja", title="Nové stanoviště", year=year, form=place_form, menu=menu, years=years)
 
 
 @admin_blueprint.route("/admin/place/delete/<int:place_id>", methods=["GET"])
 @org_login_required
 def view_place_delete(place_id):
     year = get_year(request.blueprint)
+    years = get_years()
+    menu = get_menu(year)
     place = get_place(place_id)
     if not place:
         return render_template("errors/404.jinja", year=year), 404
 
     place_delete_form = PlaceDeleteForm()
-    return render_template("admin/place_delete.jinja", title="Smazání stanoviště", year=year, form=place_delete_form, place=place)
+    return render_template("admin/place_delete.jinja", title="Smazání stanoviště", year=year, form=place_delete_form, place=place, menu=menu, years=years)
 
 
 @admin_blueprint.route("/admin/place/add", methods=["POST"])
 @org_login_required
 def create_place():
     year = get_year(request.blueprint)
+    years = get_years()
+    menu = get_menu(year)
     place_form = PlaceForm(request.form)
 
     if place_form.validate():
@@ -1027,7 +1037,7 @@ def create_place():
                         flash(f'{error[k][0]}', "error")
                 else:
                     flash(f'{error}', "error")
-                    return render_template("admin/place_create.jinja", title="Nové stanoviště", year=year, form=place_form)
+                    return render_template("admin/place_create.jinja", title="Nové stanoviště", year=year, form=place_form, menu=menu, years=years)
 
     return redirect(url_for("admin" + year['year'] + ".view_admin_places"))
 
@@ -1036,6 +1046,8 @@ def create_place():
 @org_login_required
 def edit_place(place_id):
     year = get_year(request.blueprint)
+    years = get_years()
+    menu = get_menu(year)
     place_form = PlaceForm(request.form)
     if place_form.validate():
         status, message = update_place(place_id, place_form.name.data, place_form.latitude.data, place_form.longitude.data)
@@ -1051,7 +1063,7 @@ def edit_place(place_id):
                         flash(f'{error[k][0]}', "error")
                 else:
                     flash(f'{error}', "error")
-                    return render_template("admin/place.jinja", title="Editace stanoviště", year=year)
+                    return render_template("admin/place.jinja", title="Editace stanoviště", year=year, menu=menu, years=years)
     
     return redirect(url_for("admin" + year['year'] + ".view_admin_places"))
 
