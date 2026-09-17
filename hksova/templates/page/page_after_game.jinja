@@ -1,0 +1,55 @@
+{%- extends "_main.jinja" -%}
+{%- block main -%}
+{%- if (session.org) -%}
+<p class="float-right"><a href="{{ url_for('admin' ~ year.year ~ '.view_admin_page', idpage=page.idpage) }}"><button type="submit" class="btn btn-primary">Upravit</button></a></p>
+{%- endif -%}
+{{ page['html'] }}
+
+{%- if published -%}
+{%- if puzzles -%}
+<h3>Šifry</h3>
+<ul>
+    {%- for puzzle in puzzles -%}
+    <li><a href="{{ url_for('main' ~ year.year ~ '.view_after_game_puzzle', position=puzzle.position) }}">{% if puzzle.final %}Cíl{% else %}{{ puzzle.position }}. {{ puzzle.name }}{% endif %}</a></li>
+    {%- endfor -%}
+</ul>
+
+<div id="map-after-game" style="height: 500px;"></div>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@latest/dist/leaflet.js"></script>
+<script>
+    const map = L.map('map-after-game').setView([50.21, +15.83], 13);
+    {%- set last = namespace(lat=null, lng=null) -%}
+    {%- for puzzle in puzzles -%}
+    {%- if puzzle.place -%}
+    {%- set label = 'Cíl' if puzzle.final else (puzzle.position ~ '. ' ~ puzzle.name) -%}
+    L.marker([{{ puzzle.place.latitude }}, {{ puzzle.place.longitude }}], {'title': {{ label | tojson }}, icon:
+        L.divIcon({
+            className: 'custom-div-icon',
+            html: "<div class='marker-pin'></div><span>{% if puzzle.final %}C{% else %}{{ puzzle.position }}{% endif %}</span>",
+            iconSize: [0, 0],
+            iconAnchor: [0, 20]
+        })
+    }).addTo(map).bindPopup({{ label | tojson }});
+
+    {%- if last.lat != null and last.lng != null %}
+    L.polyline([[{{ last.lat }}, {{ last.lng }}], [{{ puzzle.place.latitude }}, {{ puzzle.place.longitude }}]], {
+        color: 'red',
+        weight: 3,
+        opacity: 0.7,
+        smoothFactor: 1
+    }).addTo(map);
+    {%- endif -%}
+
+    {%- set last.lat = puzzle.place.latitude -%}
+    {%- set last.lng = puzzle.place.longitude -%}
+    {%- endif -%}
+    {%- endfor %}
+    const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+</script>
+{%- endif -%}
+{%- endif -%}
+{%- endblock -%}

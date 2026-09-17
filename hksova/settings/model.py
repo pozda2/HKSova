@@ -40,6 +40,10 @@ def get_settings_global(param):
     return setting.value
 
 
+def is_after_game_published(year):
+    return get_settings_year(year, 'po-hre-zverejneno') == year['year']
+
+
 def is_registration_open(year):
     reg_from = parser.parse(get_settings_year(year, 'reg-from'))
     reg_to = parser.parse(get_settings_year(year, 'reg-to'))

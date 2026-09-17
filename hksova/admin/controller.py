@@ -1104,13 +1104,13 @@ def view_puzzle(puzzle_id):
     if not puzzle:
         return render_template("errors/404.jinja", year=year), 404
 
-    puzzle_form = PuzzleForm(places=get_places(year['year'], with_puzzles=True))
+    puzzle_form = PuzzleForm(places=get_places(year['year'], with_puzzles=True), forum_sections=get_admin_forum_sections(year))
     puzzle_form.position.data = puzzle['position']
     puzzle_form.name.data = puzzle['name']
     puzzle_form.code.data = puzzle['code']
     puzzle_form.description.data = puzzle['description']
     puzzle_form.url.data = puzzle['url']
-    puzzle_form.id_place.data = puzzle['id_place']    
+    puzzle_form.id_place.data = puzzle['id_place']
     puzzle_form.specification.data = puzzle['specification']
     puzzle_form.comment.data = puzzle['comment']
     puzzle_form.hint.data = puzzle['hint']
@@ -1121,6 +1121,7 @@ def view_puzzle(puzzle_id):
     puzzle_form.solution_url.data = puzzle['solution_url']
     puzzle_form.mandatory_additional_info.data = puzzle['mandatory_additional_info']
     puzzle_form.final.data = puzzle['final']
+    puzzle_form.forum_section.data = puzzle['id_forum_section'] or 0
 
     all_places = get_places(year['year'])
     return render_template("admin/puzzle.jinja", title="Editace šifry", year=year, form=puzzle_form, puzzle=puzzle, all_places=all_places, menu=menu, years=years)
@@ -1132,7 +1133,7 @@ def view_puzzle_add():
     year = get_year(request.blueprint)
     years = get_years()
     menu = get_menu(year)
-    puzzle_form = PuzzleForm(places=get_places(year['year'], with_puzzles=True), position=get_next_puzzle_position(year['year']))
+    puzzle_form = PuzzleForm(places=get_places(year['year'], with_puzzles=True), forum_sections=get_admin_forum_sections(year), position=get_next_puzzle_position(year['year']))
     all_places = get_places(year['year'])
     return render_template("admin/puzzle_create.jinja", title="Nová šifra", year=year, form=puzzle_form, all_places=all_places, menu=menu, years=years)
 
@@ -1178,35 +1179,45 @@ def create_puzzle():
     year = get_year(request.blueprint)
     years = get_years()
     menu = get_menu(year)
-    pf = PuzzleForm(places=get_places(year['year'], with_puzzles=True))
+    pf = PuzzleForm(places=get_places(year['year'], with_puzzles=True), forum_sections=get_admin_forum_sections(year))
 
     if pf.validate():
         if pf.id_place.data == -1:
             pf.id_place.data = None
 
+        forum_section_id = pf.forum_section.data or None
+
         print(f"pf: {pf.data}")
 
         # 1. Insert puzzle without files first to get ID
-        puzzle_id, message = insert_puzzle(year['year'], pf.name.data, pf.position.data, pf.final.data, 
-            pf.code.data, None, pf.id_place.data, pf.specification.data, 
-            pf.comment.data, pf.url.data, pf.hint.data, pf.hint_interval.data, 
-            pf.mandatory_additional_info.data, pf.solution.data, pf.solution_interval.data, 
-            None, pf.solution_url.data)
-        
+        puzzle_id, message = insert_puzzle(year['year'], pf.name.data, pf.position.data, pf.final.data,
+            pf.code.data, None, pf.id_place.data, pf.specification.data,
+            pf.comment.data, pf.url.data, pf.hint.data, pf.hint_interval.data,
+            pf.mandatory_additional_info.data, pf.solution.data, pf.solution_interval.data,
+            None, pf.solution_url.data, forum_section_id)
+
         if puzzle_id is None:
             flash(message, "error")
             return render_template("admin/puzzle_create.jinja", title="Nová šifra", year=year, form=pf, menu=menu, years=years)
 
         # 2. Save files and update puzzle
-        desc_filename = save_puzzle_file(pf.description.data, year['year'], puzzle_id)
-        solinstr_filename = save_puzzle_file(pf.solution_instructions.data, year['year'], puzzle_id)
+        try:
+            desc_filename = save_puzzle_file(pf.description.data, year['year'], puzzle_id)
+        except OSError as e:
+            desc_filename = None
+            flash(f"Zadání se nepodařilo uložit: {e}", "error")
+        try:
+            solinstr_filename = save_puzzle_file(pf.solution_instructions.data, year['year'], puzzle_id)
+        except OSError as e:
+            solinstr_filename = None
+            flash(f"Řešení se nepodařilo uložit: {e}", "error")
 
         if desc_filename or solinstr_filename:
-            update_puzzle(puzzle_id, year['year'], pf.name.data, pf.position.data, pf.final.data, 
-                pf.code.data, desc_filename, pf.id_place.data, pf.specification.data, 
-                pf.comment.data, pf.url.data, pf.hint.data, pf.hint_interval.data, 
-                pf.mandatory_additional_info.data, pf.solution.data, pf.solution_interval.data, 
-                solinstr_filename, pf.solution_url.data)
+            update_puzzle(puzzle_id, year['year'], pf.name.data, pf.position.data, pf.final.data,
+                pf.code.data, desc_filename, pf.id_place.data, pf.specification.data,
+                pf.comment.data, pf.url.data, pf.hint.data, pf.hint_interval.data,
+                pf.mandatory_additional_info.data, pf.solution.data, pf.solution_interval.data,
+                solinstr_filename, pf.solution_url.data, forum_section_id)
 
         flash('Šifra přidána', "info")
     else:
@@ -1232,27 +1243,35 @@ def edit_puzzle(puzzle_id):
         flash('Šifra nenalezena', "error")
         return redirect(url_for("admin" + year['year'] + ".view_admin_puzzles"))
 
-    pf = PuzzleForm(places=get_places(year['year'], with_puzzles=True))
+    pf = PuzzleForm(places=get_places(year['year'], with_puzzles=True), forum_sections=get_admin_forum_sections(year))
 
     if pf.validate():
         desc_filename = puzzle.get('description')
         if pf.description.data:
-            delete_puzzle_file(desc_filename)
-            desc_filename = save_puzzle_file(pf.description.data, year['year'], puzzle_id)
-        
+            try:
+                new_desc_filename = save_puzzle_file(pf.description.data, year['year'], puzzle_id)
+                delete_puzzle_file(desc_filename)
+                desc_filename = new_desc_filename
+            except OSError as e:
+                flash(f"Zadání se nepodařilo uložit, ponechán původní soubor: {e}", "error")
+
         solinstr_filename = puzzle.get('solution_instructions')
         if pf.solution_instructions.data:
-            delete_puzzle_file(solinstr_filename)
-            solinstr_filename = save_puzzle_file(pf.solution_instructions.data, year['year'], puzzle_id)
+            try:
+                new_solinstr_filename = save_puzzle_file(pf.solution_instructions.data, year['year'], puzzle_id)
+                delete_puzzle_file(solinstr_filename)
+                solinstr_filename = new_solinstr_filename
+            except OSError as e:
+                flash(f"Řešení se nepodařilo uložit, ponechán původní soubor: {e}", "error")
 
         if pf.id_place.data == -1:
             pf.id_place.data = None
 
-        status, message = update_puzzle(puzzle_id, year['year'], pf.name.data, pf.position.data, pf.final.data, 
-            pf.code.data, desc_filename, pf.id_place.data, pf.specification.data, 
-            pf.comment.data, pf.url.data, pf.hint.data, pf.hint_interval.data, 
-            pf.mandatory_additional_info.data, pf.solution.data, pf.solution_interval.data, 
-            solinstr_filename, pf.solution_url.data)
+        status, message = update_puzzle(puzzle_id, year['year'], pf.name.data, pf.position.data, pf.final.data,
+            pf.code.data, desc_filename, pf.id_place.data, pf.specification.data,
+            pf.comment.data, pf.url.data, pf.hint.data, pf.hint_interval.data,
+            pf.mandatory_additional_info.data, pf.solution.data, pf.solution_interval.data,
+            solinstr_filename, pf.solution_url.data, pf.forum_section.data or None)
         if not status:
             flash(message, "error")
         else:

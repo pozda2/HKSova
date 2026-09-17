@@ -7,6 +7,7 @@ import locale
 import requests
 from datetime import datetime
 from flask import current_app
+from sqlalchemy import func
 from passlib.hash import sha256_crypt
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
@@ -690,6 +691,32 @@ def get_setting(idsetting):
     return None
 
 
+def publish_after_game(year):
+    '''
+    Assign a forum section to every puzzle of the year that doesn't have one yet.
+    Called once the 'po-hre-zverejneno' setting is saved with the current year as
+    its value, so section names (which can hint at a puzzle's nature) only appear
+    on the forum once the game is over and puzzles are actually being published.
+    '''
+    try:
+        puzzles = Puzzle.query.filter_by(year=year['year'], id_forum_section=None).order_by(Puzzle.position).all()
+        if not puzzles:
+            return True, ""
+        next_order = (db.session.query(func.max(ForumSection.order)).filter_by(idYear=year['year']).scalar() or 0) + 1
+        for puzzle in puzzles:
+            label = f"Cíl - {puzzle.name}" if puzzle.final else f"Šifra {puzzle.position} - {puzzle.name}"
+            section = ForumSection(idYear=year['year'], section=label, order=next_order, isVisible=True)
+            db.session.add(section)
+            db.session.flush()
+            puzzle.id_forum_section = section.idForumSection
+            next_order += 1
+        db.session.commit()
+        return True, ""
+    except Exception as e:
+        db.session.rollback()
+        return False, "Problem publishing puzzles: " + str(e)
+
+
 def insert_setting(year, param, value):
     if param == "email-smtp-password":
         kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=b'246', iterations=390000,)
@@ -701,6 +728,8 @@ def insert_setting(year, param, value):
         new_setting = Setting(idYear=year['year'], param=param, value=value)
         db.session.add(new_setting)
         db.session.commit()
+        if param == "po-hre-zverejneno" and value == year['year']:
+            publish_after_game(year)
         return True, ""
     except Exception as e:
         db.session.rollback()
@@ -720,6 +749,8 @@ def update_setting(idsetting, param, value):
             s.param = param
             s.value = value
             db.session.commit()
+            if param == "po-hre-zverejneno" and value == str(s.idYear):
+                publish_after_game({'year': str(s.idYear)})
             return True, ""
         return False, "Setting not found"
     except Exception as e:
@@ -930,7 +961,8 @@ def get_puzzles(year):
         'url': p.url, 'hint': p.hint, 'hint_interval': p.hint_interval,
         'mandatory_additional_info': 1 if p.mandatory_additional_info else 0,
         'solution': p.solution, 'solution_interval': p.solution_interval,
-        'solution_instructions': p.solution_instructions, 'solution_url': p.solution_url
+        'solution_instructions': p.solution_instructions, 'solution_url': p.solution_url,
+        'id_forum_section': p.id_forum_section
     } for p in puzzles]
 
 
@@ -940,13 +972,14 @@ def get_puzzle(pid):
         return {
             'id': p.id, 'year': p.year, 'position': p.position, 'name': p.name,
             'final': 1 if p.final else 0, 'code': p.code, 'description': p.description,
-            'id_place': p.id_place, 
+            'id_place': p.id_place,
             'place': p.place,
             'specification': p.specification, 'comment': p.comment,
             'url': p.url, 'hint': p.hint, 'hint_interval': p.hint_interval,
             'mandatory_additional_info': 1 if p.mandatory_additional_info else 0,
             'solution': p.solution, 'solution_interval': p.solution_interval,
-            'solution_instructions': p.solution_instructions, 'solution_url': p.solution_url
+            'solution_instructions': p.solution_instructions, 'solution_url': p.solution_url,
+            'id_forum_section': p.id_forum_section
         }
     return None
 
@@ -956,9 +989,9 @@ def get_next_puzzle_position(year):
         return puzzles.position + 1
     return 1
 
-def insert_puzzle(year, name, position, final, code, description, id_place, specification, comment, url, hint, hint_interval, mandatory_additional_info, solution, solution_interval, solution_instructions, solution_url):
+def insert_puzzle(year, name, position, final, code, description, id_place, specification, comment, url, hint, hint_interval, mandatory_additional_info, solution, solution_interval, solution_instructions, solution_url, id_forum_section=None):
     try:
-        new_puzzle = Puzzle(year=year, name=name, position=position, final=final, code=code, description=description, id_place=id_place, specification=specification, comment=comment, url=url, hint=hint, hint_interval=hint_interval, mandatory_additional_info=mandatory_additional_info, solution=solution, solution_interval=solution_interval, solution_instructions=solution_instructions, solution_url=solution_url)
+        new_puzzle = Puzzle(year=year, name=name, position=position, final=final, code=code, description=description, id_place=id_place, specification=specification, comment=comment, url=url, hint=hint, hint_interval=hint_interval, mandatory_additional_info=mandatory_additional_info, solution=solution, solution_interval=solution_interval, solution_instructions=solution_instructions, solution_url=solution_url, id_forum_section=id_forum_section)
         db.session.add(new_puzzle)
         db.session.commit()
         return new_puzzle.id, ""
@@ -966,7 +999,7 @@ def insert_puzzle(year, name, position, final, code, description, id_place, spec
         db.session.rollback()
         return None, "Problem inserting into db: " + str(e)
 
-def update_puzzle(pid, year, name, position, final, code, description, id_place, specification, comment, url, hint, hint_interval, mandatory_additional_info, solution, solution_interval, solution_instructions, solution_url):
+def update_puzzle(pid, year, name, position, final, code, description, id_place, specification, comment, url, hint, hint_interval, mandatory_additional_info, solution, solution_interval, solution_instructions, solution_url, id_forum_section=None):
     try:
         p = Puzzle.query.get(pid)
         if p:
@@ -987,6 +1020,7 @@ def update_puzzle(pid, year, name, position, final, code, description, id_place,
             p.solution_interval = solution_interval
             p.solution_instructions = solution_instructions
             p.solution_url = solution_url
+            p.id_forum_section = id_forum_section
             db.session.commit()
             return True, ""
         return False, "Puzzle not found"

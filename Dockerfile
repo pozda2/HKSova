@@ -31,7 +31,7 @@ RUN pip install --no-cache-dir uwsgi
 
 RUN apt-get purge -y --auto-remove build-essential
 
-RUN groupadd -r hksova && useradd -r -M -u 2000 -g hksova hksova
+RUN groupadd -r -g 1000 hksova && useradd -r -M -u 1000 -g hksova hksova
 
 COPY --from=ghcr.io/ufoscout/docker-compose-wait:latest /wait /wait
 
@@ -42,4 +42,4 @@ EXPOSE 5000
 
 # stale to pri startu containeru pinda, ze chces --uid flag...
 # script wait ocekava nastavenou env promennou WAIT_HOSTS a to o hodnote host:port, pripadne carkou oddelit vice
-CMD ["/bin/sh", "-c", "/wait && uwsgi --ini /usr/src/app/configs/uwsgi/docker_uwsgi.ini --uid 2000"]
+CMD ["/bin/sh", "-c", "/wait && uwsgi --ini /usr/src/app/configs/uwsgi/docker_uwsgi.ini --uid 1000"]

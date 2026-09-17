@@ -151,7 +151,9 @@ class PuzzleForm(FlaskForm):
     id_place = SelectField("Stanoviště", validators=[], coerce=int)
     specification = StringField("Upřesnítko", validators=[])
     comment = TextAreaField("Komentář", validators=[])
-        
+
+    forum_section = SelectField("Sekce fóra", validators=[], coerce=int, default=0)
+
     hint = TextAreaField("Nápověda", validators=[])
     hint_interval = IntegerField("Nápověda po", default=30, validators=[])
     
@@ -179,6 +181,11 @@ class PuzzleForm(FlaskForm):
                         self.id_place.choices.append((pl['id'], f"{pl['name']} (šifra: {pl['puzzle_name']})"))
                 else:
                     self.id_place.choices.append((pl['id'], pl['name']))
+
+        self.forum_section.choices = [(0, ' --- zatím nepřiřazeno (napojí se automaticky při zveřejnění po hře) --- ')]
+        if 'forum_sections' in kwargs:
+            for fs in kwargs['forum_sections']:
+                self.forum_section.choices.append((fs['idforumsection'], fs['section']))
         
 class PuzzleDeleteForm(FlaskForm):
     agree = BooleanField("Opravdu chcete smazat šifru?", validators=[InputRequired()])

@@ -83,4 +83,8 @@ def create_post(section_id):
     if post_form.source_url.data == "forum":
         return redirect(url_for("forum" + year['year'] + ".view_forum", section_id=section_id))
 
+    if post_form.source_url.data.startswith("po-hre/"):
+        position = post_form.source_url.data.split("/", 1)[1]
+        return redirect(url_for("main" + year['year'] + ".view_after_game_puzzle", position=position))
+
     return redirect(url_for("main" + year['year'] + ".view_page", pageurl=post_form.source_url.data))
