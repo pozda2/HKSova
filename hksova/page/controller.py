@@ -1,6 +1,8 @@
 '''
 Page - controller
 '''
+import math
+
 from flask import Blueprint, render_template, make_response, request, session, send_from_directory
 
 from flask_paginate import Pagination, get_page_parameter
@@ -19,6 +21,31 @@ from ..settings.model import is_after_game_published
 main_blueprint = Blueprint("main", __name__)
 
 PUZZLE_FILE_FIELD = {'zadani': 'description', 'reseni': 'solution_instructions'}
+
+
+def _haversine_km(lat1, lon1, lat2, lon2):
+    earth_radius_km = 6371.0
+    phi1, phi2 = math.radians(lat1), math.radians(lat2)
+    dphi = math.radians(lat2 - lat1)
+    dlambda = math.radians(lon2 - lon1)
+    a = math.sin(dphi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2) ** 2
+    return 2 * earth_radius_km * math.asin(math.sqrt(a))
+
+
+def _route_length_km(puzzles):
+    '''Air-line distance along puzzles with a known place, in route order (mirrors the map's polyline).'''
+    total = 0.0
+    last_place = None
+    points = 0
+    for puzzle in puzzles:
+        place = puzzle['place']
+        if not place:
+            continue
+        if last_place is not None:
+            total += _haversine_km(last_place.latitude, last_place.longitude, place.latitude, place.longitude)
+        last_place = place
+        points += 1
+    return total if points >= 2 else None
 
 
 def check_authorization(page):
@@ -120,7 +147,8 @@ def view_page(pageurl):
         if pageurl == "po-hre":
             published = is_after_game_published(year)
             puzzles = get_puzzles(year) if published else []
-            r = make_response(render_template("page/page_after_game.jinja", title=page['title'], page=page, year=year, years=years, menu=menu, puzzles=puzzles, published=published))
+            route_km = _route_length_km(puzzles)
+            r = make_response(render_template("page/page_after_game.jinja", title=page['title'], page=page, year=year, years=years, menu=menu, puzzles=puzzles, published=published, route_km=route_km))
             set_custom_headers(r)
             return r
 
