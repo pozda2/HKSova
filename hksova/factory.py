@@ -37,9 +37,9 @@ def create_flask_app():
         m_db = flask_app.config.get('MYSQL_DB')
         if m_user and m_db and m_host:
             if m_pass:
-                flask_app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql://{m_user}:{m_pass}@{m_host}/{m_db}"
+                flask_app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql://{m_user}:{m_pass}@{m_host}/{m_db}?charset=utf8mb4"
             else:
-                flask_app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql://{m_user}@{m_host}/{m_db}"
+                flask_app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql://{m_user}@{m_host}/{m_db}?charset=utf8mb4"
                 
     flask_app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     flask_app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_pre_ping': True}

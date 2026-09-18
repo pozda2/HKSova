@@ -15,7 +15,7 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 
 from .kimatch import load_ki, match_ki
-from ..database import db
+from ..database import db, db_error_message
 from ..page.model import Page
 from ..menu.model import Menu
 from ..forum.model import ForumSection, Forum
@@ -263,7 +263,7 @@ def update_page(idpage, title, url, texy, html, ispublic, isprivate, isvisible, 
         return False, "Page not found"
     except Exception as e:
         db.session.rollback()
-        return False, "Problem updating db: " + str(e)
+        return False, db_error_message(e, "uložit úpravy stránky")
 
 
 def delete_page(idpage):
@@ -273,7 +273,7 @@ def delete_page(idpage):
         return True, ""
     except Exception as e:
         db.session.rollback()
-        return False, "Problem deleting from db: " + str(e)
+        return False, db_error_message(e, "smazat stránku")
 
 
 def insert_page(year, title, url, texy, html, ispublic, isprivate, isvisible, idforumsection):
@@ -288,7 +288,7 @@ def insert_page(year, title, url, texy, html, ispublic, isprivate, isvisible, id
         return True, ""
     except Exception as e:
         db.session.rollback()
-        return False, "Problem inserting into db: " + str(e)
+        return False, db_error_message(e, "vytvořit stránku")
 
 
 def get_admin_menu(year):
@@ -349,7 +349,7 @@ def update_menu_item(idmenu, year, idpage, menu, link, order, isnewpart, ispubli
         return False, "Menu item not found"
     except Exception as e:
         db.session.rollback()
-        return False, "Problem updating into db: " + str(e)
+        return False, db_error_message(e, "uložit úpravy položky menu")
 
 
 def delete_menu_item(idmenu):
@@ -359,7 +359,7 @@ def delete_menu_item(idmenu):
         return True, ""
     except Exception as e:
         db.session.rollback()
-        return False, "Problem deleting from db: " + str(e)
+        return False, db_error_message(e, "smazat položku menu")
 
 
 def insert_menu_item(year, idpage, menu, link, order, isnewpart, ispublic, isprivate, isvisible, issystem, iscurrentyear):
@@ -374,7 +374,7 @@ def insert_menu_item(year, idpage, menu, link, order, isnewpart, ispublic, ispri
         return True, ""
     except Exception as e:
         db.session.rollback()
-        return False, "Problem inserting into db: " + str(e)
+        return False, db_error_message(e, "vytvořit položku menu")
 
 
 def get_admin_forum_sections(year):
@@ -413,7 +413,7 @@ def update_forum_section(idsection, section, order, isvisible):
         return False, "Section not found"
     except Exception as e:
         db.session.rollback()
-        return False, "Problem updating into db: " + str(e)
+        return False, db_error_message(e, "uložit úpravy sekce fóra")
 
 
 def delete_forum_section(idforumsection):
@@ -424,7 +424,7 @@ def delete_forum_section(idforumsection):
         return True, ""
     except Exception as e:
         db.session.rollback()
-        return False, "Problem deleting from db: " + str(e)
+        return False, db_error_message(e, "smazat sekci fóra")
 
 
 def insert_forum_section(year, section, order, isvisible):
@@ -437,7 +437,7 @@ def insert_forum_section(year, section, order, isvisible):
         return True, ""
     except Exception as e:
         db.session.rollback()
-        return False, "Problem inserting into db: " + str(e)
+        return False, db_error_message(e, "vytvořit sekci fóra")
 
 
 def change_admin_pass(password_old, password_new):
@@ -461,7 +461,7 @@ def change_admin_pass(password_old, password_new):
             return True, ""
         except Exception as e:
             db.session.rollback()
-            return False, "Problem updating db: " + str(e)
+            return False, db_error_message(e, "změnit heslo")
 
     return False, "Nesprávné staré heslo"
 
@@ -655,7 +655,7 @@ def update_admin_team(idteam, year, login, name, email, mobil, weburl, reporturl
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return False, "Problem updating db: " + str(e)
+        return False, db_error_message(e, "uložit úpravy týmu")
 
     # recalculate normal and backup teams
     recalculate_teams(year)
@@ -675,7 +675,7 @@ def get_emails_list(year, _filter):
         teams = q.all()
         return [{'email': t.email} for t in teams], True, ""
     except Exception as e:
-        return None, False, "Problem reading from db: " + str(e)
+        return None, False, db_error_message(e, "načíst seznam e-mailů")
 
 
 def get_settings(year):
@@ -714,7 +714,7 @@ def publish_after_game(year):
         return True, ""
     except Exception as e:
         db.session.rollback()
-        return False, "Problem publishing puzzles: " + str(e)
+        return False, db_error_message(e, "zveřejnit šifry po hře")
 
 
 def insert_setting(year, param, value):
@@ -733,7 +733,7 @@ def insert_setting(year, param, value):
         return True, ""
     except Exception as e:
         db.session.rollback()
-        return False, "Problem inserting into db: " + str(e)
+        return False, db_error_message(e, "uložit nastavení")
 
 
 def update_setting(idsetting, param, value):
@@ -755,7 +755,7 @@ def update_setting(idsetting, param, value):
         return False, "Setting not found"
     except Exception as e:
         db.session.rollback()
-        return False, "Problem updating into db: " + str(e)
+        return False, db_error_message(e, "uložit nastavení")
 
 
 def delete_setting(idsetting):
@@ -765,7 +765,7 @@ def delete_setting(idsetting):
         return True, ""
     except Exception as e:
         db.session.rollback()
-        return False, "Problem deleting from db: " + str(e)
+        return False, db_error_message(e, "smazat nastavení")
 
 
 def get_mascots():
@@ -787,7 +787,7 @@ def insert_mascot(mascot):
         return True, ""
     except Exception as e:
         db.session.rollback()
-        return False, "Problem inserting into db: " + str(e)
+        return False, db_error_message(e, "přidat maskota")
 
 
 def update_mascot(oldmascot, newmascot):
@@ -804,7 +804,7 @@ def update_mascot(oldmascot, newmascot):
         return False, "Mascot not found"
     except Exception as e:
         db.session.rollback()
-        return False, "Problem updating into db: " + str(e)
+        return False, db_error_message(e, "upravit maskota")
 
 
 def delete_mascot(mascot):
@@ -814,7 +814,7 @@ def delete_mascot(mascot):
         return True, ""
     except Exception as e:
         db.session.rollback()
-        return False, "Problem deleting from db: " + str(e)
+        return False, db_error_message(e, "smazat maskota")
 
 
 def copy_year(year, next_year):
@@ -825,7 +825,7 @@ def copy_year(year, next_year):
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return False, "Problem inserting into table year : " + str(e)
+        return False, db_error_message(e, "založit nový ročník")
 
     try:
         # settings
@@ -835,7 +835,7 @@ def copy_year(year, next_year):
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return False, "Problem inserting into table setting : " + str(e)
+        return False, db_error_message(e, "zkopírovat nastavení do nového ročníku")
 
     try:
         # forum_section
@@ -851,7 +851,7 @@ def copy_year(year, next_year):
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return False, "Problem inserting into table forum_section : " + str(e)
+        return False, db_error_message(e, "zkopírovat sekce fóra do nového ročníku")
 
     try:
         # pages
@@ -873,7 +873,7 @@ def copy_year(year, next_year):
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return False, "Problem inserting into table page : " + str(e)
+        return False, db_error_message(e, "zkopírovat stránky do nového ročníku")
 
     try:
         # menu
@@ -895,7 +895,7 @@ def copy_year(year, next_year):
         return True, ""
     except Exception as e:
         db.session.rollback()
-        return False, "Problem inserting into table menu : " + str(e)
+        return False, db_error_message(e, "zkopírovat menu do nového ročníku")
 
 
 def get_places(year, with_puzzles=False):
@@ -925,7 +925,7 @@ def update_place(pid, name, lat, lon):
         return False, "Place not found"
     except Exception as e:
         db.session.rollback()
-        return False, "Problem updating into db: " + str(e)
+        return False, db_error_message(e, "uložit úpravy stanoviště")
     
     
 def insert_place(year, name, lat, lon):
@@ -937,7 +937,7 @@ def insert_place(year, name, lat, lon):
         return True, ""
     except Exception as e:
         db.session.rollback()
-        return False, "Problem inserting into db: " + str(e)
+        return False, db_error_message(e, "vytvořit stanoviště")
 
 
 def delete_place(pid):
@@ -947,7 +947,7 @@ def delete_place(pid):
         return True, ""
     except Exception as e:
         db.session.rollback()
-        return False, "Problem deleting from db: " + str(e)
+        return False, db_error_message(e, "smazat stanoviště")
 
 
 def get_puzzles(year):
@@ -997,7 +997,7 @@ def insert_puzzle(year, name, position, final, code, description, id_place, spec
         return new_puzzle.id, ""
     except Exception as e:
         db.session.rollback()
-        return None, "Problem inserting into db: " + str(e)
+        return None, db_error_message(e, "vytvořit šifru")
 
 def update_puzzle(pid, year, name, position, final, code, description, id_place, specification, comment, url, hint, hint_interval, mandatory_additional_info, solution, solution_interval, solution_instructions, solution_url, id_forum_section=None):
     try:
@@ -1026,7 +1026,7 @@ def update_puzzle(pid, year, name, position, final, code, description, id_place,
         return False, "Puzzle not found"
     except Exception as e:
         db.session.rollback()
-        return False, "Problem updating into db: " + str(e)
+        return False, db_error_message(e, "uložit úpravy šifry")
 
 def delete_puzzle(pid):
     try:
@@ -1035,7 +1035,7 @@ def delete_puzzle(pid):
         return True, ""
     except Exception as e:
         db.session.rollback()
-        return False, "Problem deleting from db: " + str(e)
+        return False, db_error_message(e, "smazat šifru")
 
 
 def sync_teams_trakar(year, teams):

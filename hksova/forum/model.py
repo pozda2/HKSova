@@ -4,7 +4,7 @@ Forum - model
 from datetime import datetime
 from flask import current_app
 from sqlalchemy import func
-from ..database import db
+from ..database import db, db_error_message
 
 class ForumSection(db.Model):
     __tablename__ = 'forum_section'
@@ -77,5 +77,5 @@ def insert_post(id_forum_section, name, text, ip, dns, browser):
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return False, "Problem inserting into db: " + str(e)
+        return False, db_error_message(e, "uložit příspěvek")
     return True, ""

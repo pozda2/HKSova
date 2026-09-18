@@ -4,7 +4,7 @@ from datetime import datetime
 from flask import current_app, session
 from passlib.hash import sha256_crypt
 from sqlalchemy import func
-from ..database import db
+from ..database import db, db_error_message
 
 from ..settings.model import get_max_teams
 
@@ -146,7 +146,7 @@ def insert_team(form, year):
         return True, ""
     except Exception as e:
         db.session.rollback()
-        return False, "Problem inserting into db: " + str(e)
+        return False, db_error_message(e, "zaregistrovat tým")
 
 
 def update_team(form, year, login):
@@ -194,7 +194,7 @@ def update_team(form, year, login):
         return True, ""
     except Exception as e:
         db.session.rollback()
-        return False, "Problem updating db: " + str(e)
+        return False, db_error_message(e, "uložit úpravy týmu")
 
 
 def get_team_players(idteam):
@@ -329,7 +329,7 @@ def generate_reset_code(idteam):
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return None, False, "Problem updating db: " + str(e)
+        return None, False, db_error_message(e, "vygenerovat kód pro reset hesla")
     return code, True, ""
 
 
@@ -343,7 +343,7 @@ def reset_team_pass(idteam, password_new):
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return False, "Problem updating db: " + str(e)
+        return False, db_error_message(e, "nastavit nové heslo")
     return True, ""
 
 
@@ -451,7 +451,7 @@ def change_team_pass(year, login, password_old, password_new):
                 return True, ""
         except Exception as e:
             db.session.rollback()
-            return False, "Problem updating db: " + str(e)
+            return False, db_error_message(e, "změnit heslo")
 
     return False, "Nesprávné staré heslo"
 
@@ -464,7 +464,7 @@ def cancel_registration(year, login):
             db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return False, "Problem updating db: " + str(e)
+        return False, db_error_message(e, "zrušit registraci")
 
     status, message = recalculate_teams(year)
     return status, message
@@ -482,7 +482,7 @@ def recalculate_teams(year):
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return False, "Problem calculation db: " + str(e)
+        return False, db_error_message(e, "přepočítat pořadí týmů")
 
     return True, ""
 
