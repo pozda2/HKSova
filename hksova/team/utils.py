@@ -1,4 +1,5 @@
 import smtplib
+import socket
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from functools import wraps
@@ -9,6 +10,8 @@ from flask import flash
 from flask import request
 from ..year.model import get_year
 from ..settings.model import get_settings_year
+
+SMTP_TIMEOUT = 5  # sekund na jednu síťovou operaci (connect, ehlo, sendmail, ...)
 
 
 def login_required(func):
@@ -85,40 +88,56 @@ def send_reset_code(year, code, login, email):
             s.sendmail(email_smtp_from, email, m.as_string())
         except (smtplib.SMTPDataError, smtplib.SMTPRecipientsRefused) as e:
             return False, e
-        except Exception as e:
+        except (socket.timeout, TimeoutError) as e:
+            return False, f"SMTP server neodpovídá (timeout): {e}"
+        except smtplib.SMTPException as e:
             return False, e
+        except OSError as e:
+            return False, f"Chyba připojení k SMTP serveru: {e}"
 
     disconnect_from_stmp(s)
     return True, ""
 
 
-def connect_to_smtp(server, port, auth, user, password):
+def connect_to_smtp(server, port, auth, user, password, timeout=SMTP_TIMEOUT):
     if auth.upper() == "BASIC":
         try:
-            s = smtplib.SMTP(server, str(port))
+            s = smtplib.SMTP(server, str(port), timeout=timeout)
+        except (socket.timeout, TimeoutError) as e:
+            return None, False, f"SMTP server neodpovídá (timeout): {e}"
         except smtplib.SMTPException as e:
             return None, False, e
+        except OSError as e:
+            return None, False, f"Chyba připojení k SMTP serveru: {e}"
 
     elif auth.upper() == "SSL":
         smtp_server = server + ":" + str(port)
         try:
-            s = smtplib.SMTP_SSL(smtp_server)
+            s = smtplib.SMTP_SSL(smtp_server, timeout=timeout)
             if (user and password):
                 s.login(user, password)
+        except (socket.timeout, TimeoutError) as e:
+            return None, False, f"SMTP server neodpovídá (timeout): {e}"
         except smtplib.SMTPException as e:
             return None, False, e
+        except OSError as e:
+            return None, False, f"Chyba připojení k SMTP serveru: {e}"
 
     elif auth.upper() == "STARTTLS":
         smtp_server = server + ":" + str(port)
         try:
-            s = smtplib.SMTP(server, str(port))
+            s = smtplib.SMTP(server, str(port), timeout=timeout)
             s.ehlo()
             s.starttls()
             s.ehlo()
             if (user and password):
                 s.login(user, password)
+        except (socket.timeout, TimeoutError) as e:
+            return None, False, f"SMTP server neodpovídá (timeout): {e}"
         except smtplib.SMTPException as e:
             return None, False, e
+        except OSError as e:
+            return None, False, f"Chyba připojení k SMTP serveru: {e}"
 
     return s, True, ""
 

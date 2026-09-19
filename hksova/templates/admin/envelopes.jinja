@@ -32,6 +32,7 @@ div.env {
 {%- block main -%}
 
 <div id="pokyny">
+<h3>Celkově je: {{ teams|length }} obálek</h3>
 <h3>Pokyny k tisku startovních obálek:</h3>
 <ul>
   <li>vynechat tuto první stránku; rozsah: 2-</li>
@@ -48,27 +49,27 @@ div.env {
     <div class="env">
       <h1>{{ t.name }}</h1>
       
-      <p>Startovní obálka <strong>Hradecká sova 2023</strong> &ndash; otevřete v 9:45.</p>
-      
+      <p>Startovní obálka <strong>Hradecká sova 2026</strong> &ndash; otevřete 12. 9. 2026 v 9:30.</p>
+
       <h3>Přihlášení do systému</h3>
       <img src="{{ qrcode("https://seslost.cz/t/" ~ t.mascot, border=1, box_size=5) }}" /><br />
       <strong>https://seslos­t.cz/t/{{ t.mascot }}</strong>
 
       <h3>Posílání zpráv (vždy po příchodu na stanoviště)</h3>
-      Zprávy posílejte přes stránku <strong>https://trakar.seslost.cz/hradecka-sova-2023</strong>
+      Zprávy posílejte přes stránku <strong>https://trakar.seslost.cz/hradecka-sova-2026</strong>
       <pre>
       kod_stanoviste jaky­koli_dalsi_text
       NAPOVEDA kod_stanoviste
       RESENI kod_stanoviste
-      KAPITULACE jaky­koli_dalsi_text
-      </pre>
+      KAPITULACE jaky­koli_dalsi_text</pre>
       
       Lze též nascanovat QR kód na záhlaví šifry, který vás přesměruje rovnou do systému a předvyplní za vás kod_stanoviste.
       
+      <p>Červené logo na obálce není součást žádné šifry. Choďte přes pozemní komunikace zásadně po přechodech. Tiskové chyby nejsou součástí šifer.</p>
+
       <h3>Telefony</h3>
       <ul>
         <li>Helpdesk na systém zpráv: 737 979 992</li>
-        <li>Nouzové nápovědy a řešení: 737 481 334</li>
         <li>Krizový telefon: 728 040 555</li>
       </ul>
     </div>

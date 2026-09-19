@@ -1,0 +1,198 @@
+{%- extends "_main.jinja" -%}
+{%- block main -%}
+
+<h2>Úprava šifry</h2>
+
+<form action="{{url_for('admin' ~ year.year ~ ".edit_puzzle", puzzle_id=puzzle.id)}}" method="post" enctype="multipart/form-data">
+  {{ form.csrf_token }}
+
+  <div class="form-row">
+    <div class="col-2"><label for="position">{{ form.position.label }}</label></div>
+    <div class="col-1">{{ form.position(class="form-control", id="position", placeholder="Pořadí") }}</div>
+    <div class="col-2"><label for="final">{{ form.final.label }}</label></div>
+    <div class="col-1">{{ form.final(class="form-control", id="final", placeholder="Je poslední?") }}</div>
+    <div class="col-4"><label for="mandatory_additional_info">{{ form.mandatory_additional_info.label }}</label></div>
+    <div class="col-2">{{ form.mandatory_additional_info(class="form-control", id="mandatory_additional_info", placeholder="Jde řešit samostatně?") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col-2"><label for="name"><strong>{{ form.name.label }}</strong></label></div>
+    <div class="col-10">{{ form.name(class="form-control", id="name", placeholder="Název") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col-2"><label for="code"><strong>{{ form.code.label }}</strong></label></div>
+    <div class="col-10">{{ form.code(class="form-control", id="code", placeholder="Kód") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col-2"><label for="id_place">{{ form.id_place.label }}</label></div>
+    <div class="col-10">{{ form.id_place(class="form-control", id="id_place", placeholder="Stanoviště") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col-2"><label for="specification">{{ form.specification.label }}</label></div>
+    <div class="col-10">{{ form.specification(class="form-control", id="specification", placeholder="Upřesnítko") }}</div>
+  </div>
+  <div class="form-row mb-3">
+    <div class="col-2"><label for="map2">Mapa</label></div>
+    <div class="col-10"><div id="map2" style="height: 300px;"></div></div>
+  </div>
+  <div class="form-row">
+    <div class="col-2"><label for="solution">{{ form.solution.label }}</label></div>
+    <div class="col-7">{{ form.solution(class="form-control", id="solution", placeholder="Řešení") }}</div>
+    <div class="col-2"><label for="solution_interval">{{ form.solution_interval.label }}</label></div>
+    <div class="col-1">{{ form.solution_interval(class="form-control", id="solution_interval", placeholder="Řešení po") }}</div>
+  </div>
+  <div class="form-row mb-3">
+    <div class="col-2"><label for="hint">{{ form.hint.label }}</label></div>
+    <div class="col-7">{{ form.hint(class="form-control", id="hint", placeholder="Nápověda") }}</div>
+    <div class="col-2"><label for="hint_interval">{{ form.hint_interval.label }}</label></div>
+    <div class="col-1">{{ form.hint_interval(class="form-control", id="hint_interval", placeholder="Nápověda po") }}</div>
+  </div>
+
+  <div class="form-row">
+    <div class="col-2"></div>
+    <div class="col-5">
+        <label for="description" class="mb-0"><strong>{{ form.description.label }}</strong></label><br />
+        {% if puzzle.description %}
+            Aktuální soubor: 
+            {% if puzzle.description.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.webp')) %}
+                <br /><img src="/upload/puzzles/{{ puzzle.description }}" alt="Zadání" class="img-fluid" />
+            {% elif puzzle.description.lower().endswith(('.pdf')) %}
+                <div id="pdf-container-description" style="border: 1px solid #ccc; max-height: 500px; overflow: auto; background: #eee;">
+                    <canvas id="pdf-canvas-description"></canvas>
+                </div>
+            {% else %}
+                <a href="/upload/puzzles/{{ puzzle.description }}" target="_blank">{{ puzzle.description }}</a><br />
+            {% endif %}
+        {% endif %}
+        Nový soubor: {{ form.description(class="form-control", id="description") }}
+    </div>
+    <div class="col-5">
+        <label for="solution_instructions" class="mb-0"><strong>{{ form.solution_instructions.label }}</strong></label><br />
+        {% if puzzle.solution_instructions %}
+            Aktuální soubor: 
+            {% if puzzle.solution_instructions.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.webp')) %}
+                <br /><img src="/upload/puzzles/{{ puzzle.solution_instructions }}" alt="Postup řešení" class="img-fluid" />
+            {% elif puzzle.solution_instructions.lower().endswith(('.pdf')) %}
+                <div id="pdf-container-solution" style="border: 1px solid #ccc; max-height: 500px; overflow: auto; background: #eee;">
+                    <canvas id="pdf-canvas-solution"></canvas>
+                </div>
+            {% else %}
+                <a href="/upload/puzzles/{{ puzzle.solution_instructions }}" target="_blank">{{ puzzle.solution_instructions }}</a><br />
+            {% endif %}
+        {% endif %}
+        Nový soubor: {{ form.solution_instructions(class="form-control", id="solution_instructions") }}
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="col-2"></div>
+    <div class="col-5">
+        <label for="url" class="mb-0">{{ form.url.label }}</label><br />
+        {{ form.url(class="form-control", id="url", placeholder="Zadání URL") }}
+    </div>
+    <div class="col-5 mb-3">
+        <label for="solution_url" class="mb-0">{{ form.solution_url.label }}</label><br />
+        {{ form.solution_url(class="form-control", id="solution_url", placeholder="Řešení URL") }}
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="col-2"><label for="comment">{{ form.comment.label }}</label></div>
+    <div class="col-10">{{ form.comment(class="form-control", id="comment", placeholder="Komentář") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col-2"><label for="forum_section">{{ form.forum_section.label }}</label></div>
+    <div class="col-10">{{ form.forum_section(class="form-control", id="forum_section") }}</div>
+  </div>
+  <div class="form-row">
+    <div class="col-2"></div>
+    <div class="col-10">
+        <button type="submit" class="btn btn-primary">Upravit šifru</button>
+        <button type="button"  class="btn btn-primary" onclick="history.back()">Zpět</button>
+    </div>
+  </div>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@latest/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    /* pdf */
+    // Nastavení workeru (nutné pro PDF.js)
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    const url_description = '/upload/puzzles/{{ puzzle.description }}';
+    const url_solution = '/upload/puzzles/{{ puzzle.solution_instructions }}';
+
+    function render_pdf(url, canvas_id, container_id) {
+        pdfjsLib.getDocument(url).promise.then(pdf => {
+                // Vykreslíme pouze 1. stránku jako náhled
+                pdf.getPage(1).then(page => {
+                    const canvas = document.getElementById(canvas_id);
+                    const context = canvas.getContext('2d');
+                const container = document.getElementById(container_id);
+
+                // Výpočet měřítka podle šířky kontejneru
+                const viewport = page.getViewport({ scale: 1 });
+                const scale = container.clientWidth / viewport.width;
+                const scaledViewport = page.getViewport({ scale: scale });
+
+                canvas.height = scaledViewport.height;
+                canvas.width = scaledViewport.width;
+
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: scaledViewport
+                };
+                page.render(renderContext);
+            });
+        }).catch(err => {
+            console.error('Chyba při načítání PDF: ', err);
+            document.getElementById(container_id).innerHTML = '❌ Náhled PDF nelze zobrazit.';
+        });
+    }
+
+    {% if puzzle.description %}
+    render_pdf(url_description, 'pdf-canvas-description', 'pdf-container-description');
+    {% endif %}
+    {% if puzzle.solution_instructions %}
+    render_pdf(url_solution, 'pdf-canvas-solution', 'pdf-container-solution');
+    {% endif %}
+
+    /* mapa */
+    const places = {
+        {% for pl in all_places %}
+        "{{ pl.id }}": { lat: {{ pl.latitude }}, lng: {{ pl.longitude }} },
+        {% endfor %}
+    };
+
+    const initialLat = {{ puzzle.place.latitude if puzzle.place else 50.21 }} ;
+    const initialLng = {{ puzzle.place.longitude if puzzle.place else 15.83 }} ;
+
+    const map = L.map('map2').setView([initialLat, initialLng], 15);
+    const marker = L.marker([initialLat, initialLng]).addTo(map);
+    
+    const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+
+    // Listener pro změnu stanoviště v dropdownu
+    document.getElementById("id_place").addEventListener("change", function() {
+        const placeId = this.value;
+        if (places[placeId]) {
+            const pos = [places[placeId].lat, places[placeId].lng];
+            map.setView(pos, 15);
+            marker.setLatLng(pos);
+        }
+    });
+
+    map.on('click', function(ev) {
+    console.log(ev.latlng, ev.latlng.lat);
+    // Poznámka: elat/elon nemusí v tomto formuláři existovat, 
+    // ale ponecháváme pro případnou kompatibilitu
+    const elat = document.getElementById("latitude");
+    const elon = document.getElementById("longitude");
+    if (elat) elat.value = ev.latlng.lat;
+    if (elon) elon.value = ev.latlng.lng;
+    marker.setLatLng(ev.latlng)
+    });
+  </script>
+</form>
+{%- endblock -%}

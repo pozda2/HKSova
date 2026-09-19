@@ -1,26 +1,45 @@
-FROM python:3-alpine
+FROM python:3-slim
 
-RUN apk add --update --no-cache --virtual .tmp gcc libc-dev linux-headers
-RUN apk add tzdata
-RUN apk add --no-cache jpeg-dev zlib-dev freetype-dev lcms2-dev openjpeg-dev tiff-dev tk-dev tcl-dev pcre-dev mariadb-connector-c-dev python3-dev
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Europe/Prague
 
-RUN python -m pip install --upgrade pip
+RUN apt-get update && apt-get install --no-install-recommends -y \
+        tzdata \
+        locales \
+        libjpeg62-turbo-dev \
+        zlib1g-dev \
+        libfreetype6-dev \
+        liblcms2-dev \
+        libopenjp2-7-dev \
+        libtiff-dev \
+        tk-dev \
+        tcl-dev \
+        libpcre2-dev \
+        default-libmysqlclient-dev \
+        pkg-config \
+    && echo "cs_CZ.UTF-8 UTF-8" >> /etc/locale.gen \
+    && locale-gen cs_CZ.UTF-8 \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update && apt-get install --no-install-recommends -y build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN python -m pip install --no-cache-dir --upgrade pip
 COPY requirements.txt /usr/src/app/
 RUN pip install --no-cache-dir -r /usr/src/app/requirements.txt
-RUN pip install uwsgi
+RUN pip install --no-cache-dir uwsgi
 
-RUN apk del .tmp
+RUN apt-get purge -y --auto-remove build-essential
 
-RUN addgroup -S hksova && adduser -u 2000 -S hksova -G hksova
+RUN groupadd -r -g 1000 hksova && useradd -r -M -u 1000 -g hksova hksova
 
 COPY --from=ghcr.io/ufoscout/docker-compose-wait:latest /wait /wait
 
 ENV HKSOVA_CONFIG_DIR=/usr/src/app/configs
 ENV HKSOVA_CONFIG=/usr/src/app/configs/docker.py
-ENV TZ=Europe/Prague
 
 EXPOSE 5000
 
 # stale to pri startu containeru pinda, ze chces --uid flag...
 # script wait ocekava nastavenou env promennou WAIT_HOSTS a to o hodnote host:port, pripadne carkou oddelit vice
-CMD ["/bin/sh", "-c", "/wait && uwsgi --ini /usr/src/app/configs/uwsgi/docker_uwsgi.ini --uid 2000"]
+CMD ["/bin/sh", "-c", "/wait && uwsgi --ini /usr/src/app/configs/uwsgi/docker_uwsgi.ini --uid 1000"]

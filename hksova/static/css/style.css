@@ -559,3 +559,41 @@ h1, .h1 {
     padding: .1em .25em;
     font-size: 150%;
 }
+
+/* Kontejner ikony - Leaflet mu dává class .leaflet-marker-icon */
+.custom-div-icon {
+    background: none !important; /* Odstraní výchozí bílý čtverec */
+    border: none !important;
+}
+
+/* Kapka (pozadí) */
+.marker-pin {
+    width: 30px;
+    height: 30px;
+    border-radius: 50% 50% 50% 0;
+    background: #FF0000;
+    position: absolute;
+    /* Trik: Otočení + posun o polovinu vlastní šířky/výšky pro vystředění */
+    transform: rotate(-45deg) translate(0%, 100%); 
+    /* Pokud by to nefungovalo, zkuste tento jednodušší zápis: */
+    left: -15px; 
+    top: -15px;
+    transform: rotate(-45deg);
+    border-radius: 50% 50% 50% 0;
+    border: 1px solid #000000;
+}
+
+/* Číslo (text) */
+.custom-div-icon span {
+    width: 30px; /* Stejná šířka jako kapka */
+    position: absolute;
+    left: -15px; /* Polovina šířky doleva */
+    top: -10px;  /* Jemné doladění výšky (trochu výš než střed kvůli špičce) */
+    display: block;
+    text-align: center;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    font-family: Arial, sans-serif;
+    z-index: 10;
+}

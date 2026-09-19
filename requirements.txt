@@ -1,7 +1,7 @@
 czech-sort
 Flask
 Flask-MDEditor
-Flask-MySQLdb
+Flask-SQLAlchemy
 Flask-WTF
 mistune
 mysqlclient

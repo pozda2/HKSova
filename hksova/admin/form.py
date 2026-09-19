@@ -1,7 +1,7 @@
 import re
 from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, DecimalField, BooleanField, SelectField, PasswordField, RadioField, FieldList, FormField, TextAreaField, FileField
-from wtforms.validators import length, InputRequired, DataRequired, NumberRange, Email, ValidationError
+from wtforms.validators import length, InputRequired, DataRequired, NumberRange, Email, ValidationError, Optional
 from flask_mdeditor import MDEditorField
 
 
@@ -151,20 +151,25 @@ class PuzzleForm(FlaskForm):
     id_place = SelectField("Stanoviště", validators=[], coerce=int)
     specification = StringField("Upřesnítko", validators=[])
     comment = TextAreaField("Komentář", validators=[])
-        
+
+    forum_section = SelectField("Sekce fóra", validators=[], coerce=int, default=0)
+
     hint = TextAreaField("Nápověda", validators=[])
     hint_interval = IntegerField("Nápověda po", default=30, validators=[])
     
     solution = StringField("Řešení", validators=[])
-    solution_interval = IntegerField("Řešení po", validators=[])
+    solution_interval = IntegerField("Řešení po", validators=[Optional()], filters=[lambda x: x if x is not None else None])
     solution_instructions = FileField("Řešení postup", validators=[])
     solution_url = StringField("Řešení URL", validators=[validate_url])
     
-    mandatory_additional_info = BooleanField("Jde řešit samostatně?", validators=[])
-    final = BooleanField("Je poslední?", validators=[])
+    mandatory_additional_info = BooleanField("Potřebuje k řešení další informace?", default=False, validators=[])
+    final = BooleanField("Je poslední?", default=False, validators=[])
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        if 'position' in kwargs:
+            self.position.default = int(kwargs['position'])
         
         if 'places' in kwargs:
             self.id_place.choices = [(-1, ' --- nepřiřazovat --- ')]
@@ -176,6 +181,13 @@ class PuzzleForm(FlaskForm):
                         self.id_place.choices.append((pl['id'], f"{pl['name']} (šifra: {pl['puzzle_name']})"))
                 else:
                     self.id_place.choices.append((pl['id'], pl['name']))
+
+        self.forum_section.choices = [(0, ' --- zatím nepřiřazeno (napojí se automaticky při zveřejnění po hře) --- ')]
+        if 'forum_sections' in kwargs:
+            for fs in kwargs['forum_sections']:
+                self.forum_section.choices.append((fs['idforumsection'], fs['section']))
         
+class PuzzleDeleteForm(FlaskForm):
+    agree = BooleanField("Opravdu chcete smazat šifru?", validators=[InputRequired()])
    
     

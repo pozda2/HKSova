@@ -1,3 +1,4 @@
+-- https://databaze.seslost.cz/doc/sifry
 -- Adminer 5.4.0 MariaDB 12.0.2-MariaDB-ubu2404 dump
 
 SET NAMES utf8;
@@ -25,7 +26,7 @@ CREATE TABLE `puzzle` (
   `year` int(10) unsigned DEFAULT NULL,
   `position` int(11) DEFAULT NULL COMMENT 'poradi',
   `name` varchar(255) NOT NULL,
-  `final` bit(1) NOT NULL DEFAULT b'0',
+  `final` tinyint(1) NOT NULL DEFAULT 0,
   `code` varchar(255) NOT NULL COMMENT 'QR kod',
   `description` text DEFAULT NULL COMMENT 'text sifry',
   `id_place` int(11) DEFAULT NULL,
@@ -34,7 +35,7 @@ CREATE TABLE `puzzle` (
   `url` tinytext DEFAULT NULL,
   `hint` text DEFAULT NULL,
   `hint_interval` int(11) DEFAULT 30 COMMENT 'po kolika minutach jde vzit napovedu',
-  `mandatory_additional_info` bit(1) DEFAULT NULL COMMENT 'je resitelna bez dalsich informaci?',
+  `mandatory_additional_info` tinyint(1) DEFAULT 0 COMMENT 'potrebuje k reseni dalsi informaci?',
   `solution` text DEFAULT NULL COMMENT 'tajenka',
   `solution_interval` int(11) DEFAULT NULL COMMENT 'po kolika minutach jde vzit reseni',
   `solution_instructions` text DEFAULT NULL COMMENT 'postup reseni',
@@ -47,4 +48,4 @@ CREATE TABLE `puzzle` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 
--- 2025-09-21 19:29:14 UTC
+-- 2026-02-25 20:56:36 UTC

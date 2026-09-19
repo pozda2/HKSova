@@ -6,30 +6,42 @@ from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
+from ..database import db
+
+class Setting(db.Model):
+    __tablename__ = 'setting'
+    
+    idSetting = db.Column(db.Integer, primary_key=True)
+    idYear = db.Column(db.Integer, nullable=True) # Add ForeignKey when Year is defined
+    param = db.Column(db.String(100), nullable=False)
+    value = db.Column(db.String(100), nullable=False)
+
 
 def get_settings_year(year, param):
-    cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''SELECT value FROM setting where idYear=%s and param=%s''', [year['year'], param])
-    data = cursor.fetchall()
-    if not data:
+    setting = Setting.query.filter_by(idYear=year['year'], param=param).first()
+    if not setting:
         return None
-    value = data[0]['value']
+    value = setting.value
 
     if param == "email-smtp-password":
         kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=b'246', iterations=390000, )
         key = base64.urlsafe_b64encode(kdf.derive(str.encode(current_app.config['SECRET_PEPPER'])))
         cipher_suite = Fernet(key)
-        encoded_text = str.encode(data[0]['value'])
+        encoded_text = str.encode(setting.value)
         decoded_text = cipher_suite.decrypt(encoded_text)
         value = decoded_text.decode("utf-8")
     return value
 
 
 def get_settings_global(param):
-    cursor = current_app.mysql.connection.cursor()
-    cursor.execute('''SELECT value FROM setting where idYear is null and param=%s''', [param])
-    data = cursor.fetchall()
-    return data[0]['value']
+    setting = Setting.query.filter_by(idYear=None, param=param).first()
+    if not setting:
+        return None
+    return setting.value
+
+
+def is_after_game_published(year):
+    return get_settings_year(year, 'po-hre-zverejneno') == year['year']
 
 
 def is_registration_open(year):

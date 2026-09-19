@@ -1,0 +1,147 @@
+{%- extends "_main.jinja" -%}
+{%- block main -%}
+
+<blockquote>
+<p>
+{%- if prev_position -%}
+<a href="{{ url_for('main' ~ year.year ~ '.view_after_game_puzzle', position=prev_position) }}">&laquo; Předchozí</a> |
+{%- endif -%}
+<a href="{{ url_for('main' ~ year.year ~ '.view_page', pageurl='po-hre') }}">Přehled šifer</a>
+{%- if next_position %}
+| <a href="{{ url_for('main' ~ year.year ~ '.view_after_game_puzzle', position=next_position) }}">Další &raquo;</a>
+{%- endif -%}
+</p>
+</blockquote>
+
+<h2>{% if puzzle.final %}Cíl{% else %}{{ puzzle.position }}. {{ puzzle.name }}{% endif %}</h2>
+
+{%- if puzzle.place %}
+<p>Stanoviště: {{ puzzle.place.name }}</p>
+{%- endif -%}
+
+{%- if puzzle.specification %}
+<p>Upřesnítko: {{ puzzle.specification }}</p>
+{%- endif %}
+
+{%- if puzzle.description %}
+<p>
+    <div id="zadani-preview"></div>
+    <a href="{{ url_for('main' ~ year.year ~ '.download_after_game_puzzle_file', position=puzzle.position, kind='zadani') }}" target="_blank">Stáhnout zadání</a>
+</p>
+{%- endif -%}
+{%- if puzzle.url %}
+<p><a href="{{ puzzle.url }}" target="_blank">Zadání (odkaz)</a></p>
+{%- endif %}
+
+{%- if puzzle.hint or puzzle.solution or puzzle.solution_instructions or puzzle.solution_url %}
+<p><button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('napoveda-box').classList.remove('d-none'); this.classList.add('d-none');">Zobrazit nápovědu</button></p>
+<div id="napoveda-box" class="d-none">
+    <h3>Nápověda</h3>
+    {%- if puzzle.hint %}
+    <p>{{ puzzle.hint }}</p>
+    {%- endif -%}
+</div>
+
+<p><button type="button" class="btn btn-secondary btn-sm" onclick="showReseni(this);">Zobrazit řešení</button></p>
+<div id="reseni-box" class="d-none">
+    <h3>Řešení</h3>
+    {%- if puzzle.solution %}
+    <p>{{ puzzle.solution }}</p>
+    {%- endif -%}
+    {%- if puzzle.solution_instructions %}
+    <p>
+        <div id="reseni-preview"></div>
+        <a href="{{ url_for('main' ~ year.year ~ '.download_after_game_puzzle_file', position=puzzle.position, kind='reseni') }}" target="_blank">Stáhnout postup řešení</a>
+    </p>
+    {%- endif -%}
+    {%- if puzzle.solution_url %}
+    <p><a href="{{ puzzle.solution_url }}" target="_blank">Řešení (odkaz)</a></p>
+    {%- endif -%}
+</div>
+{%- endif %}
+
+{%- if section_id -%}
+<h3>Diskuze</h3>
+{%- if year.is_current_year %}
+<form action="{{ url_for('forum' ~ year.year ~ '.create_post', section_id=section_id) }}" method="post">
+    {{ form.csrf_token }}
+    <input type="hidden" class="hidden" name="source_url" value="{{ form.source_url }}">
+    <div class="form-row">
+      {{ form.user(class="form-control", id="inputUser", placeholder="Jméno") }}
+    </div>
+    <p>
+    <div class="form-row">
+      {{ form.post(class="form-control", id="inputPost", placeholder="Příspěvek") }}
+    </div>
+  <p><p>
+  <button type="submit" class="btn btn-primary">Vložit příspěvek</button>
+</form>
+{%- endif -%}
+{%- if section -%}
+    {%- for post in section -%}
+    <table class="table table-dark table-striped">
+        <tr><td>{{ post.name }} {%- if session.org -%} <small>({{ post.dns }})</small> {%- endif -%}</td><td align="right">{{ post.insertedAt }}  </td></tr>
+        <tr><td colspan=2>{{ post.text }} </td></tr>
+    </table>
+    {%- endfor -%}
+    <div class="d-flex justify-content-center">{{ pagination.links }}</div>
+{%- endif -%}
+{%- endif %}
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    function render_puzzle_file(url, filename, containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        const lower = filename.toLowerCase();
+        if (lower.endsWith('.jpg') || lower.endsWith('.jpeg') || lower.endsWith('.png') || lower.endsWith('.gif') || lower.endsWith('.webp')) {
+            const img = document.createElement('img');
+            img.src = url;
+            img.className = 'img-fluid';
+            container.appendChild(img);
+        } else if (lower.endsWith('.pdf')) {
+            const canvas = document.createElement('canvas');
+            container.style.border = '1px solid #ccc';
+            container.style.maxHeight = '600px';
+            container.style.overflow = 'auto';
+            container.style.background = '#eee';
+            container.appendChild(canvas);
+            pdfjsLib.getDocument(url).promise.then(pdf => {
+                pdf.getPage(1).then(page => {
+                    const context = canvas.getContext('2d');
+                    const viewport = page.getViewport({ scale: 1 });
+                    const scale = container.clientWidth / viewport.width;
+                    const scaledViewport = page.getViewport({ scale: scale });
+                    canvas.height = scaledViewport.height;
+                    canvas.width = scaledViewport.width;
+                    page.render({ canvasContext: context, viewport: scaledViewport });
+                });
+            }).catch(err => {
+                console.error('Chyba při načítání PDF: ', err);
+                container.innerHTML = '❌ Náhled PDF nelze zobrazit.';
+            });
+        }
+    }
+
+    {%- if puzzle.description %}
+    render_puzzle_file(
+        {{ url_for('main' ~ year.year ~ '.download_after_game_puzzle_file', position=puzzle.position, kind='zadani') | tojson }},
+        {{ puzzle.description | tojson }}, "zadani-preview");
+    {%- endif %}
+
+    // Solution preview is rendered lazily, on reveal: while "reseni-box" is d-none its
+    // container has zero width, which would make the PDF.js canvas render at zero size.
+    function showReseni(button) {
+        document.getElementById('reseni-box').classList.remove('d-none');
+        button.classList.add('d-none');
+        {%- if puzzle.solution_instructions %}
+        render_puzzle_file(
+            {{ url_for('main' ~ year.year ~ '.download_after_game_puzzle_file', position=puzzle.position, kind='reseni') | tojson }},
+            {{ puzzle.solution_instructions | tojson }}, "reseni-preview");
+        {%- endif %}
+    }
+</script>
+{%- endblock -%}

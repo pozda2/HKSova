@@ -46,5 +46,4 @@ sudo docker-compose up -d
 
 Side notices
 ------------
-- `flask_mysqldb` needs `libmysqlclient-dev` package installed
 - DO NOT try to install it in conda env, you'll end in dependency hell (originates in mistune pkg)

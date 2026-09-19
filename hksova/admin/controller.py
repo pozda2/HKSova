@@ -12,17 +12,17 @@ from ..year.model import get_year, get_years
 from ..menu.model import get_menu
 from ..settings.model import get_min_players, get_max_players, get_trakar_token
 from .form import PageForm, PageDeleteForm, MenuItemForm, MenuItemDeleteForm, ForumSectionForm, ForumSectionDeleteForm, PasswordChangeForm, EditTeamForm
-from .form import SettingForm, SettingDeleteForm, GeneratingEmailsForm, MascotForm, MascotDeleteForm, NextYearForm, PlaceForm, PlaceDeleteForm, PuzzleForm
+from .form import SettingForm, SettingDeleteForm, GeneratingEmailsForm, MascotForm, MascotDeleteForm, NextYearForm, PlaceForm, PlaceDeleteForm, PuzzleForm, PuzzleDeleteForm
 from .model import encode_access_rights, encode_menu_item, decode_access_rights, decode_menu_item
-from .model import insert_forum_section, insert_mascot, insert_menu_item, insert_page, insert_setting, insert_place
-from .model import update_admin_team, update_forum_section, update_mascot, update_menu_item, update_page, update_setting, update_place
-from .model import delete_forum_section, delete_mascot, delete_menu_item, delete_page, delete_setting, delete_place
+from .model import insert_forum_section, insert_mascot, insert_menu_item, insert_page, insert_setting, insert_place, insert_puzzle
+from .model import update_admin_team, update_forum_section, update_mascot, update_menu_item, update_page, update_setting, update_place, update_puzzle
+from .model import delete_forum_section, delete_mascot, delete_menu_item, delete_page, delete_setting, delete_place, delete_puzzle
 from .model import copy_year, change_admin_pass
 from .model import sync_teams_trakar
 from .model import get_admin_forum_section, get_admin_forum_sections, get_admin_menu, get_admin_menu_item, get_admin_page, get_admin_pages, get_admin_team, get_admin_teams
-from .model import get_emails_list, get_mascot, get_mascots, get_setting, get_settings, get_team_players, get_place, get_places, get_puzzles, get_puzzle
+from .model import get_emails_list, get_mascot, get_mascots, get_setting, get_settings, get_team_players, get_place, get_places, get_puzzles, get_puzzle, get_next_puzzle_position
 from .model import is_minimum_players, is_unique_email, is_unique_name
-from .utils import org_login_required
+from .utils import org_login_required, save_puzzle_file, delete_puzzle_file
 
 
 admin_blueprint = Blueprint("admin", __name__)
@@ -756,6 +756,11 @@ def export_csv():
 def export_envelope():
     year = get_year(request.blueprint)
     teams = get_admin_teams(year)
+    start_time = get_setting("start-time")
+    print("*"*20)
+    print("Start time: ", start_time)
+    print('reg-from', get_setting('reg-from'))
+    print("*"*20)
     output = io.StringIO()
     csv.register_dialect('sova', delimiter=';', quoting=csv.QUOTE_MINIMAL)
     writer = csv.writer(output, dialect='sova')
@@ -774,12 +779,12 @@ def export_envelope():
         line = [team['name'], team['mascot'], team['mobil'], team['email'], team['zaplaceno'], team['stav'], team['players_private']]
         writer.writerow(line)
         teams_output.append(team)
-        print(team['name'])
+        # print(team['name'])
 
     # output.seek(0)
     # return Response(output, mimetype="text/csv", headers={"Content-Disposition": f"attachment;filename=sova-teams-export_{dstr}.csv"})
     # return Response(output, mimetype="text/plain", headers={})
-    return render_template("admin/envelopes.jinja", title="Tisk startovních obálek", year=year, teams=teams_output)
+    return render_template("admin/envelopes.jinja", title="Tisk startovních obálek", year=year, teams=teams_output, start_time=start_time)
 
 
 @admin_blueprint.route("/admin/mascots/", methods=["GET"])
@@ -956,18 +961,26 @@ def switch_team(idteam):
     return redirect(url_for("main.view_index"))
 
 
+# ============================================================================
+# Places
+# ============================================================================
+
 @admin_blueprint.route("/admin/places/", methods=["GET"])
 @org_login_required
 def view_admin_places():
     year = get_year(request.blueprint)
-    places = get_places(year['year'])
-    return render_template("admin/places.jinja", title="Správa stanovišť", year=year, places=places)
+    years = get_years()
+    menu = get_menu(year)
+    places = get_places(year['year'], with_puzzles=True)
+    return render_template("admin/places.jinja", title="Správa stanovišť", year=year, places=places, menu=menu, years=years)
 
 
 @admin_blueprint.route("/admin/place/<int:place_id>", methods=["GET"])
 @org_login_required
 def view_place(place_id):
     year = get_year(request.blueprint)
+    years = get_years()
+    menu = get_menu(year)
     place = get_place(place_id)
     if not place:
         return render_template("errors/404.jinja", year=year), 404
@@ -975,33 +988,39 @@ def view_place(place_id):
     place_form.name.data = place['name']
     place_form.latitude.data = place['latitude']
     place_form.longitude.data = place['longitude']
-    return render_template("admin/place.jinja", title="Editace stanoviště", year=year, form=place_form, place=place)
+    return render_template("admin/place.jinja", title="Editace stanoviště", year=year, form=place_form, place=place, menu=menu, years=years)
 
 
 @admin_blueprint.route("/admin/place/add", methods=["GET"])
 @org_login_required
 def view_place_add():
     year = get_year(request.blueprint)
+    years = get_years()
+    menu = get_menu(year)
     place_form = PlaceForm()
-    return render_template("admin/place_create.jinja", title="Nové stanoviště", year=year, form=place_form)
+    return render_template("admin/place_create.jinja", title="Nové stanoviště", year=year, form=place_form, menu=menu, years=years)
 
 
 @admin_blueprint.route("/admin/place/delete/<int:place_id>", methods=["GET"])
 @org_login_required
 def view_place_delete(place_id):
     year = get_year(request.blueprint)
+    years = get_years()
+    menu = get_menu(year)
     place = get_place(place_id)
     if not place:
         return render_template("errors/404.jinja", year=year), 404
 
     place_delete_form = PlaceDeleteForm()
-    return render_template("admin/place_delete.jinja", title="Smazání maskota", year=year, form=place_delete_form, place=place)
+    return render_template("admin/place_delete.jinja", title="Smazání stanoviště", year=year, form=place_delete_form, place=place, menu=menu, years=years)
 
 
 @admin_blueprint.route("/admin/place/add", methods=["POST"])
 @org_login_required
 def create_place():
     year = get_year(request.blueprint)
+    years = get_years()
+    menu = get_menu(year)
     place_form = PlaceForm(request.form)
 
     if place_form.validate():
@@ -1018,7 +1037,7 @@ def create_place():
                         flash(f'{error[k][0]}', "error")
                 else:
                     flash(f'{error}', "error")
-                    return render_template("admin/place_create.jinja", title="Nové stanoviště", year=year, form=place_form)
+                    return render_template("admin/place_create.jinja", title="Nové stanoviště", year=year, form=place_form, menu=menu, years=years)
 
     return redirect(url_for("admin" + year['year'] + ".view_admin_places"))
 
@@ -1027,6 +1046,8 @@ def create_place():
 @org_login_required
 def edit_place(place_id):
     year = get_year(request.blueprint)
+    years = get_years()
+    menu = get_menu(year)
     place_form = PlaceForm(request.form)
     if place_form.validate():
         status, message = update_place(place_id, place_form.name.data, place_form.latitude.data, place_form.longitude.data)
@@ -1042,7 +1063,8 @@ def edit_place(place_id):
                         flash(f'{error[k][0]}', "error")
                 else:
                     flash(f'{error}', "error")
-                    return render_template("admin/place.jinja", title="Editace stanoviště", year=year)
+                    return render_template("admin/place.jinja", title="Editace stanoviště", year=year, menu=menu, years=years)
+    
     return redirect(url_for("admin" + year['year'] + ".view_admin_places"))
 
 
@@ -1058,73 +1080,210 @@ def place_delete(place_id):
     return redirect(url_for("admin" + year['year'] + ".view_admin_places"))
 
 
+# ============================================================================
+# Puzzles
+# ============================================================================
+
 @admin_blueprint.route("/admin/puzzles/", methods=["GET"])
 @org_login_required
 def view_admin_puzzles():
     year = get_year(request.blueprint)
+    years = get_years()
+    menu = get_menu(year)
     puzzles = get_puzzles(year['year'])
-    return render_template("admin/puzzles.jinja", title="Správa maskotů", year=year, puzzles=puzzles)
+    return render_template("admin/puzzles.jinja", title="Správa šifer", year=year, puzzles=puzzles, menu=menu, years=years)
 
 
 @admin_blueprint.route("/admin/puzzle/<int:puzzle_id>", methods=["GET"])
 @org_login_required
 def view_puzzle(puzzle_id):
-    pass    
+    year = get_year(request.blueprint)
+    years = get_years()
+    menu = get_menu(year)
+    puzzle = get_puzzle(puzzle_id)
+    if not puzzle:
+        return render_template("errors/404.jinja", year=year), 404
 
-    
+    puzzle_form = PuzzleForm(places=get_places(year['year'], with_puzzles=True), forum_sections=get_admin_forum_sections(year))
+    puzzle_form.position.data = puzzle['position']
+    puzzle_form.name.data = puzzle['name']
+    puzzle_form.code.data = puzzle['code']
+    puzzle_form.description.data = puzzle['description']
+    puzzle_form.url.data = puzzle['url']
+    puzzle_form.id_place.data = puzzle['id_place']
+    puzzle_form.specification.data = puzzle['specification']
+    puzzle_form.comment.data = puzzle['comment']
+    puzzle_form.hint.data = puzzle['hint']
+    puzzle_form.hint_interval.data = puzzle['hint_interval']
+    puzzle_form.solution.data = puzzle['solution']
+    puzzle_form.solution_interval.data = puzzle['solution_interval']
+    puzzle_form.solution_instructions.data = puzzle['solution_instructions']
+    puzzle_form.solution_url.data = puzzle['solution_url']
+    puzzle_form.mandatory_additional_info.data = puzzle['mandatory_additional_info']
+    puzzle_form.final.data = puzzle['final']
+    puzzle_form.forum_section.data = puzzle['id_forum_section'] or 0
+
+    all_places = get_places(year['year'])
+    return render_template("admin/puzzle.jinja", title="Editace šifry", year=year, form=puzzle_form, puzzle=puzzle, all_places=all_places, menu=menu, years=years)
+
+
 @admin_blueprint.route("/admin/puzzle/add", methods=["GET"])
 @org_login_required
 def view_puzzle_add():
     year = get_year(request.blueprint)
-    puzzle_form = PuzzleForm(places=get_places(year['year'], with_puzzles=True))
-    return render_template("admin/puzzle_create.jinja", title="Nová šifra", year=year, form=puzzle_form)
+    years = get_years()
+    menu = get_menu(year)
+    puzzle_form = PuzzleForm(places=get_places(year['year'], with_puzzles=True), forum_sections=get_admin_forum_sections(year), position=get_next_puzzle_position(year['year']))
+    all_places = get_places(year['year'])
+    return render_template("admin/puzzle_create.jinja", title="Nová šifra", year=year, form=puzzle_form, all_places=all_places, menu=menu, years=years)
 
 
-@admin_blueprint.route("/admin/puzzle/del/ete<int:puzzle_id>", methods=["GET"])
+@admin_blueprint.route("/admin/puzzle/delete/<int:puzzle_id>", methods=["GET"])
 @org_login_required
 def view_puzzle_delete(puzzle_id):
-    pass
+    year = get_year(request.blueprint)
+    years = get_years()
+    menu = get_menu(year)
+    puzzle = get_puzzle(puzzle_id)
+    if not puzzle:
+        return render_template("errors/404.jinja", year=year), 404
+
+    puzzle_delete_form = PuzzleDeleteForm()
+    return render_template("admin/puzzle_delete.jinja", title="Smazání šifry", year=year, form=puzzle_delete_form, puzzle=puzzle, menu=menu, years=years)
+
+
+@admin_blueprint.route("/admin/puzzle/delete/<int:puzzle_id>", methods=["POST"])
+@org_login_required
+def puzzle_delete(puzzle_id):
+    year = get_year(request.blueprint)
+    puzzle = get_puzzle(puzzle_id)
+    if not puzzle:
+        flash('Šifra nenalezena', "error")
+        return redirect(url_for("admin" + year['year'] + ".view_admin_puzzles"))
+
+    # Delete files from disk
+    delete_puzzle_file(puzzle.get('description'))
+    delete_puzzle_file(puzzle.get('solution_instructions'))
+
+    status, message = delete_puzzle(puzzle_id)
+    if not status:
+        flash(message, "error")
+    else:
+        flash('Šifra smazána', "info")
+    return redirect(url_for("admin" + year['year'] + ".view_admin_puzzles"))
 
 
 @admin_blueprint.route("/admin/puzzle/add", methods=["POST"])
 @org_login_required
 def create_puzzle():
     year = get_year(request.blueprint)
-    puzzle_form = PuzzleForm(places=get_places(year['year'], with_puzzles=True))
-    
-    if puzzle_form.validate():
-        print('-' * 80)    
-        if puzzle_form.description.data:
-            file = puzzle_form.description.data   # <- tady je ten soubor jako FileStorage objekt
-            print(file, type(file))
-            if file:
-                filename = secure_filename(file.filename)
-                # Soubor můžeš přečíst jako:
-                contents = file.read()  # bytes
-                # nebo uložit rovnou:
-                # file.save(f"/tmp/{filename}")
-        
-            # desc_data = request.FILES[puzzle_form.description.name].read()
-            # open(os.path.join(UPLOAD_PATH, form.image.data), 'w').write(image_data)
-        
-        if puzzle_form.solution_instructions.data:
-            solinstr_data = request.FILES[puzzle_form.solution_instructions.name].read()
-        
-        
-        # status, message = update_place(place_id, place_form.name.data, place_form.latitude.data, place_form.longitude.data)
-        # if not status:
-        #     flash(message, "error")
-        # else:
-        #     flash('Stanoviště upraveno', "info")
+    years = get_years()
+    menu = get_menu(year)
+    pf = PuzzleForm(places=get_places(year['year'], with_puzzles=True), forum_sections=get_admin_forum_sections(year))
+
+    if pf.validate():
+        if pf.id_place.data == -1:
+            pf.id_place.data = None
+
+        forum_section_id = pf.forum_section.data or None
+
+        print(f"pf: {pf.data}")
+
+        # 1. Insert puzzle without files first to get ID
+        puzzle_id, message = insert_puzzle(year['year'], pf.name.data, pf.position.data, pf.final.data,
+            pf.code.data, None, pf.id_place.data, pf.specification.data,
+            pf.comment.data, pf.url.data, pf.hint.data, pf.hint_interval.data,
+            pf.mandatory_additional_info.data, pf.solution.data, pf.solution_interval.data,
+            None, pf.solution_url.data, forum_section_id)
+
+        if puzzle_id is None:
+            flash(message, "error")
+            return render_template("admin/puzzle_create.jinja", title="Nová šifra", year=year, form=pf, menu=menu, years=years)
+
+        # 2. Save files and update puzzle
+        try:
+            desc_filename = save_puzzle_file(pf.description.data, year['year'], puzzle_id)
+        except OSError as e:
+            desc_filename = None
+            flash(f"Zadání se nepodařilo uložit: {e}", "error")
+        try:
+            solinstr_filename = save_puzzle_file(pf.solution_instructions.data, year['year'], puzzle_id)
+        except OSError as e:
+            solinstr_filename = None
+            flash(f"Řešení se nepodařilo uložit: {e}", "error")
+
+        if desc_filename or solinstr_filename:
+            update_puzzle(puzzle_id, year['year'], pf.name.data, pf.position.data, pf.final.data,
+                pf.code.data, desc_filename, pf.id_place.data, pf.specification.data,
+                pf.comment.data, pf.url.data, pf.hint.data, pf.hint_interval.data,
+                pf.mandatory_additional_info.data, pf.solution.data, pf.solution_interval.data,
+                solinstr_filename, pf.solution_url.data, forum_section_id)
+
+        flash('Šifra přidána', "info")
     else:
-        for _, errors in puzzle_form.errors.items():
+        for item, errors in pf.errors.items():
+            for error in errors:
+                if isinstance(error, dict) and (len(error) > 0):
+                    for k in error.keys():
+                        flash(f'{item}: {error[k][0]}', "error")
+                else:
+                    flash(f'{item}: {error}', "error")
+        return render_template("admin/puzzle_create.jinja", title="Nová šifra", year=year, form=pf, menu=menu, years=years)
+
+    return redirect(url_for("admin" + year['year'] + ".view_admin_puzzles"))
+
+@admin_blueprint.route("/admin/puzzle/edit/<int:puzzle_id>", methods=["POST"])
+@org_login_required
+def edit_puzzle(puzzle_id):
+    year = get_year(request.blueprint)
+    years = get_years()
+    menu = get_menu(year)
+    puzzle = get_puzzle(puzzle_id)
+    if not puzzle:
+        flash('Šifra nenalezena', "error")
+        return redirect(url_for("admin" + year['year'] + ".view_admin_puzzles"))
+
+    pf = PuzzleForm(places=get_places(year['year'], with_puzzles=True), forum_sections=get_admin_forum_sections(year))
+
+    if pf.validate():
+        desc_filename = puzzle.get('description')
+        if pf.description.data:
+            try:
+                new_desc_filename = save_puzzle_file(pf.description.data, year['year'], puzzle_id)
+                delete_puzzle_file(desc_filename)
+                desc_filename = new_desc_filename
+            except OSError as e:
+                flash(f"Zadání se nepodařilo uložit, ponechán původní soubor: {e}", "error")
+
+        solinstr_filename = puzzle.get('solution_instructions')
+        if pf.solution_instructions.data:
+            try:
+                new_solinstr_filename = save_puzzle_file(pf.solution_instructions.data, year['year'], puzzle_id)
+                delete_puzzle_file(solinstr_filename)
+                solinstr_filename = new_solinstr_filename
+            except OSError as e:
+                flash(f"Řešení se nepodařilo uložit, ponechán původní soubor: {e}", "error")
+
+        if pf.id_place.data == -1:
+            pf.id_place.data = None
+
+        status, message = update_puzzle(puzzle_id, year['year'], pf.name.data, pf.position.data, pf.final.data,
+            pf.code.data, desc_filename, pf.id_place.data, pf.specification.data,
+            pf.comment.data, pf.url.data, pf.hint.data, pf.hint_interval.data,
+            pf.mandatory_additional_info.data, pf.solution.data, pf.solution_interval.data,
+            solinstr_filename, pf.solution_url.data, pf.forum_section.data or None)
+        if not status:
+            flash(message, "error")
+        else:
+            flash('Šifra upravena', "info")
+    else:
+        for _, errors in pf.errors.items():
             for error in errors:
                 if isinstance(error, dict) and (len(error) > 0):
                     for k in error.keys():
                         flash(f'{error[k][0]}', "error")
                 else:
                     flash(f'{error}', "error")
-                    # return render_template("admin/puzzle.jinja", title="Editace šifry", year=year)
-                
+        return render_template("admin/puzzle.jinja", title="Editace šifry", year=year, form=pf, puzzle=puzzle, menu=menu, years=years)
+    
     return redirect(url_for("admin" + year['year'] + ".view_admin_puzzles"))
-
